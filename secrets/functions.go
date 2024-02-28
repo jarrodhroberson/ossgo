@@ -98,7 +98,7 @@ func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
 	return Path{
 		ProjectNumber: must.ParseInt(matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "projectid")]),
 		Name:          matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "name")],
-		Version:       mustParseInt(matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "version")]),
+		Version:       must.ParseInt(matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "version")]),
 	}
 }
 
