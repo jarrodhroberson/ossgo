@@ -1,6 +1,7 @@
 package must
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -36,4 +37,29 @@ func FindStringInSlice(toSearch []string, target string) int {
 		return idx
 	}
 	return idx
+}
+
+func UnMarshalJson(bytes []byte, o any) {
+	err := json.Unmarshal(bytes, o)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("could not unmarshal %s", string(bytes))
+		return
+	}
+	return
+}
+
+func MarshalJson(o any) []byte {
+	bytes, err := json.Marshal(o)
+	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("could not marshal %v", o))
+		log.Fatal().Stack().Err(err).Msg(err.Error())
+		return []byte{}
+	}
+	return bytes
+}
+
+func MarshallMap[T any](o T) map[string]interface{} {
+	m := make(map[string]interface{})
+	UnMarshalJson(MarshalJson(o), &m)
+	return m
 }
