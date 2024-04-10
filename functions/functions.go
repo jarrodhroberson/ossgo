@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/joomcode/errorx"
 )
 
@@ -32,8 +31,4 @@ func FindStructInSlice[T any](toSearch []T, find func(t T) bool) (int, error) {
 		return idx, struct_not_found.New("could not find struct in slice")
 	}
 	return idx, nil
-}
-
-func UnmarshallMap[T any](m map[string]interface{}, o T) {
-	must.UnMarshalJson(must.MarshalJson(m), o)
 }

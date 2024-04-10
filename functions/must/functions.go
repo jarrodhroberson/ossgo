@@ -76,3 +76,7 @@ func MarshallMap[T any](o T) map[string]interface{} {
 	UnMarshalJson(MarshalJson(o), &m)
 	return m
 }
+
+func UnmarshallMap[T any](m map[string]interface{}, o T) {
+	UnMarshalJson(MarshalJson(m), o)
+}
