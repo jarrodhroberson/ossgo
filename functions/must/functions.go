@@ -8,8 +8,21 @@ import (
 
 	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/pkgerrors"
 )
+
+func init() {
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+}
+
+func Must[T any](result T, err error) T {
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("this must not fail")
+	}
+	return result
+}
 
 func ParseInt(s string) int {
 	i, err := strconv.Atoi(s)
