@@ -13,3 +13,7 @@ func Tags[T any](t T) map[string][]Tag {
 	}
 	return m
 }
+
+func Hash[T any](t T) []byte {
+	return []byte{}
+}

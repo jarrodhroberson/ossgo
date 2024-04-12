@@ -2,7 +2,6 @@ package functions
 
 import (
 	"fmt"
-	"math"
 	"slices"
 	"strings"
 
@@ -10,10 +9,6 @@ import (
 )
 
 var struct_not_found = errorx.NewType(errorx.NewNamespace("SERVER"), "STRUCT NOT FOUND", errorx.NotFound())
-
-func MinInt(first int, second int) int {
-	return int(math.Min(float64(first), float64(second)))
-}
 
 func FindStringInSlice(toSearch []string, target string) (int, error) {
 	idx := slices.IndexFunc(toSearch, func(s string) bool {
