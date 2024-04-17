@@ -2,12 +2,12 @@ package must
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jarrodhroberson/ossgo/functions"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -19,25 +19,39 @@ func init() {
 
 func Must[T any](result T, err error) T {
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("this must not fail")
+		err = mustNeverError.New("the wrapped function is expected to never fail; it failed with error:%s", err.Error())
+		log.Error().Stack().Err(err).Msg(err.Error())
+		panic(err)
 	}
 	return result
+}
+
+func ParseTime(format string, s string) time.Time {
+	t, err := time.Parse(format, s)
+	if err != nil {
+		err = errors.Join(err, parseError.New("Could not parse %s as time %s", s, format))
+		log.Error().Err(err).Msgf(err.Error())
+		panic(err)
+	}
+	return t
 }
 
 func ParseInt(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		log.Fatal().Err(err).Str("arg", s).Msg(err.Error())
-		return -1
+		err = errors.Join(err, parseError.New("Could not parse %s as int", s))
+		log.Error().Err(err).Str("arg", s).Msg(err.Error())
+		panic(err)
 	}
 	return i
 }
 
-func FindStructInSlice[T any](toSearch []T, find func(t T) bool) int {
-	idx, err := functions.FindStructInSlice[T](toSearch, find)
+func FindInSlice[T any](toSearch []T, find func(t T) bool) int {
+	idx, err := functions.FindInSlice[T](toSearch, find)
 	if err != nil {
-		log.Fatal().Err(err).Msg(err.Error())
-		return -1
+		err = notFoundError.New("Could not find instance of %T in slice", *new(T))
+		log.Error().Err(err).Msg(err.Error())
+		panic(err)
 	}
 	return idx
 }
@@ -45,9 +59,9 @@ func FindStructInSlice[T any](toSearch []T, find func(t T) bool) int {
 func FindStringInSlice(toSearch []string, target string) int {
 	idx, err := functions.FindStringInSlice(toSearch, target)
 	if err != nil {
-		err = errors.Wrap(err, fmt.Sprintf("could not find %s in %s", target, strings.Join(toSearch, ",")))
-		log.Fatal().Err(err).Msg(err.Error())
-		return idx
+		err = errors.Join(err, notFoundError.New("could not find %s in %s", target, strings.Join(toSearch, ",")))
+		log.Error().Err(err).Msg(err.Error())
+		panic(err)
 	}
 	return idx
 }
@@ -55,8 +69,9 @@ func FindStringInSlice(toSearch []string, target string) int {
 func UnMarshalJson(bytes []byte, o any) {
 	err := json.Unmarshal(bytes, o)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("could not unmarshal %s", string(bytes))
-		return
+		err = errors.Join(err, unMarshalError.New("could not unmarshal %s", string(bytes)))
+		log.Error().Err(err).Msg(err.Error())
+		panic(err)
 	}
 	return
 }
@@ -64,9 +79,9 @@ func UnMarshalJson(bytes []byte, o any) {
 func MarshalJson(o any) []byte {
 	bytes, err := json.Marshal(o)
 	if err != nil {
-		err = errors.Wrap(err, fmt.Sprintf("could not marshal %v", o))
-		log.Fatal().Stack().Err(err).Msg(err.Error())
-		return []byte{}
+		err = errors.Join(err, marshalError.New("could not marshal %v", o))
+		log.Error().Stack().Err(err).Msg(err.Error())
+		panic(err)
 	}
 	return bytes
 }
