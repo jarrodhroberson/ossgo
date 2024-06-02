@@ -1,10 +1,11 @@
 module github.com/jarrodhroberson/ossgo
 
-go 1.22.0
+go 1.22.3
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
 	cloud.google.com/go/firestore v1.14.0
+	cloud.google.com/go/kms v1.15.6
 	cloud.google.com/go/secretmanager v1.11.5
 	github.com/joomcode/errorx v1.1.1
 	github.com/kofalt/go-memoize v0.0.0-20240506050413-9e5eb99a0f2a
@@ -12,6 +13,7 @@ require (
 	golang.org/x/crypto v0.20.0
 	golang.org/x/sync v0.7.0
 	google.golang.org/api v0.167.0
+	google.golang.org/genproto v0.0.0-20240205150955-31a09d347014
 )
 
 require (
@@ -43,7 +45,6 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto v0.0.0-20240205150955-31a09d347014 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240213162025-012b6fc9bca9 // indirect
 	google.golang.org/grpc v1.61.1 // indirect
