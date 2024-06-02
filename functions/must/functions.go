@@ -3,15 +3,17 @@ package must
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/kofalt/go-memoize"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
+
+	"github.com/jarrodhroberson/ossgo/functions"
 )
 
 func init() {
@@ -103,4 +105,8 @@ func Call[T any](m *memoize.Memoizer, key string, f memoize.MemoizedFunction[T])
 		panic(err)
 	}
 	return result
+}
+
+func MinInt(first int, second int) int {
+	return int(math.Min(float64(first), float64(second)))
 }
