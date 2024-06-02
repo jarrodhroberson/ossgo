@@ -1,4 +1,4 @@
-package firebase
+package firestore
 
 import (
 	"context"
@@ -17,20 +17,11 @@ func Must(client *firestore.Client, err error) *firestore.Client {
 	}
 }
 
-func Client(ctx context.Context, database string) (*firestore.Client, error) {
-	if database == "" {
-		client, err := firestore.NewClient(ctx, os.Getenv("GOOGLE_CLOUD_PROJECT"))
-		if err != nil {
-			log.Error().Err(err).Msgf("error creating firestore client %s", err)
-			return nil, err
-		}
-		return client, nil
-	} else {
-		client, err := firestore.NewClientWithDatabase(ctx, os.Getenv("GOOGLE_CLOUD_PROJECT"), string(database))
-		if err != nil {
-			log.Fatal().Err(err).Msgf("error creating firestore client %s", err)
-			return nil, err
-		}
-		return client, nil
+func Client(ctx context.Context, database DatabaseName) (*firestore.Client, error) {
+	client, err := firestore.NewClientWithDatabase(ctx, os.Getenv("GOOGLE_CLOUD_PROJECT"), string(database))
+	if err != nil {
+		log.Fatal().Err(err).Msgf("error creating firestore client %s", err)
+		return nil, err
 	}
+	return client, nil
 }
