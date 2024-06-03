@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kofalt/go-memoize"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -76,14 +75,6 @@ func MarshallMap[T any](o T) map[string]interface{} {
 
 func UnmarshallMap[T any](m map[string]interface{}, o T) {
 	UnMarshalJson(MarshalJson(m), o)
-}
-
-func Call[T any](m *memoize.Memoizer, key string, f memoize.MemoizedFunction[T]) T {
-	result, err, _ := memoize.Call(m, key, f)
-	if err != nil {
-		panic(err)
-	}
-	return result
 }
 
 func MinInt(first int, second int) int {
