@@ -1,0 +1,18 @@
+package errors
+
+import (
+	"github.com/joomcode/errorx"
+)
+
+var MustNeverErrorTrait = errorx.RegisterTrait("Must Never Error")
+var UnableToParseTrait = errorx.RegisterTrait("Unable to Parse")
+var UnableToMarshalTrait = errorx.RegisterTrait("Unable to Marshal")
+var UnableToUnmarshalTrait = errorx.RegisterTrait("Unable to Marshal")
+
+var MustNeverError = errorx.NewType(errorx.NewNamespace("Must"), "Must Never Fail", MustNeverErrorTrait)
+
+var ParseError = MustNeverError.NewSubtype("Unable to Parse", UnableToParseTrait)
+var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
+var MarshalError = MustNeverError.NewSubtype("Unable To Marshal", UnableToMarshalTrait)
+var UnMarshalError = MustNeverError.NewSubtype("Unable To Marshal", UnableToUnmarshalTrait)
+var StructNotFound = NotFoundError.NewSubtype("Struct not found", errorx.NotFound())
