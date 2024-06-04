@@ -3,6 +3,8 @@ package must
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -97,8 +99,21 @@ func UnmarshallMap[T any](m map[string]interface{}, o T) {
 	UnMarshalJson(MarshalJson(m), o)
 }
 
+func Identity[T any](t T) string {
+	switch reflect.ValueOf(t).Kind() {
+	case reflect.Pointer:
+		return fmt.Sprintf("%T_%p", t, t)
+	case reflect.Struct:
+		return fmt.Sprintf("%T_%p", t, &t)
+	default:
+
+		panic("unhandled default case")
+	}
+}
+
 func Call[T any](m *memoize.Memoizer, key string, f memoize.MemoizedFunction[T]) T {
-	result, err, _ := memoize.Call(m, key, f)
+	result, err, cached := memoize.Call(m, key, f)
+	log.Debug().Msgf("%s:%s:%t", result, err, cached)
 	if err != nil {
 		panic(err)
 	}
