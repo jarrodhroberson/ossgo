@@ -1,10 +1,13 @@
 package functions
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
 	"github.com/joomcode/errorx"
+
+	"github.com/jarrodhroberson/ossgo/functions/must"
 )
 
 var none = -1
@@ -24,13 +27,30 @@ func FindStringInSlice(toSearch []string, target string) (int, error) {
 	return idx, nil
 }
 
-func FindInSlice[T any](toSearch []T, find func(t T) bool) (int, error) {
-	if len(toSearch) == 0 {
-		return none, errorx.IllegalArgument.New("toSearch Argument can not be empty")
+var struct_not_found = errorx.NewType(errorx.NewNamespace("SERVER"), "STRUCT NOT FOUND", errorx.NotFound())
+
+func UnmarshallMap[T any](m map[string]interface{}, o T) {
+	must.UnMarshalJson(must.MarshalJson(m), o)
+}
+
+func InsteadOfNil[T any](a *T, b *T) *T {
+	if b == nil {
+		panic(fmt.Errorf("second argument to function \"b\" can not be \"nil\""))
 	}
-	idx := slices.IndexFunc(toSearch, find)
-	if idx == none {
-		return idx, notFoundError.New("could not find instance of %T in slice", *new(T))
+	if a == nil {
+		return b
 	}
-	return idx, nil
+	return a
+}
+
+func FirstNonNil[T any](structs ...*T) *T {
+	if len(structs) < 1 {
+		return nil
+	}
+	for _, s := range structs {
+		if s != nil {
+			return s
+		}
+	}
+	return nil
 }
