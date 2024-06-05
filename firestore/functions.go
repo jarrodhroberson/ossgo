@@ -6,7 +6,13 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+func IsErrNotFound(err error) bool {
+	return status.Code(err) == codes.NotFound
+}
 
 func Must(client *firestore.Client, err error) *firestore.Client {
 	if err != nil {
