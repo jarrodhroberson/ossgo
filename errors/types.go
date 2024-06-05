@@ -4,12 +4,15 @@ import (
 	"github.com/joomcode/errorx"
 )
 
+var MustNamespace = errorx.NewNamespace("Must")
+
 var MustNeverErrorTrait = errorx.RegisterTrait("Must Never Error")
 var UnableToParseTrait = errorx.RegisterTrait("Unable to Parse")
 var UnableToMarshalTrait = errorx.RegisterTrait("Unable to Marshal")
 var UnableToUnmarshalTrait = errorx.RegisterTrait("Unable to Marshal")
+var UnableToCreateTrait = errorx.RegisterTrait("Unable to Create")
 
-var MustNeverError = errorx.NewType(errorx.NewNamespace("Must"), "Must Never Fail", MustNeverErrorTrait)
+var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
 var ParseError = MustNeverError.NewSubtype("Unable to Parse", UnableToParseTrait)
 var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
