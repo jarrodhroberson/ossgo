@@ -6,7 +6,7 @@ import (
 )
 
 func MustGetValue[T any](c *g.Context, key string) T {
-	value, exists := c.Get("account_id")
+	value, exists := c.Get(key)
 	if !exists {
 		panic(errs.NotFoundError.New("%s not found in context", key))
 	}
