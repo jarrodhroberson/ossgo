@@ -3,7 +3,7 @@ module github.com/jarrodhroberson/ossgo
 go 1.22.3
 
 require (
-	cloud.google.com/go/compute/metadata v0.2.3
+	cloud.google.com/go/compute/metadata v0.3.0
 	cloud.google.com/go/firestore v1.14.0
 	cloud.google.com/go/kms v1.15.6
 	cloud.google.com/go/secretmanager v1.11.5
@@ -40,6 +40,7 @@ require (
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.1 // indirect
+	github.com/jarrodhroberson/destruct v1.0.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect

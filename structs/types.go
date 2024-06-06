@@ -8,6 +8,7 @@ import (
 
 const ReadOnly = "readonly"
 const Immutable = "immutable"
+const Ignore = "ignore"
 
 type Tag struct {
 	Name   string   `json:"name"`

@@ -2,6 +2,8 @@ package structs
 
 import (
 	"reflect"
+
+	"github.com/jarrodhroberson/destruct/destruct"
 )
 
 func Tags[T any](t T) map[string][]Tag {
@@ -14,6 +16,6 @@ func Tags[T any](t T) map[string][]Tag {
 	return m
 }
 
-func Hash[T any](t T) []byte {
-	return []byte{}
+func Hash[T any](t T) string {
+	return destruct.MustHashIdentity(t)
 }

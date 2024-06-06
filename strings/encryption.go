@@ -6,50 +6,43 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"io"
 
 	kms "cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
-	"github.com/joomcode/errorx"
-
 	"github.com/jarrodhroberson/ossgo/gcp"
+	"github.com/joomcode/errorx"
+	"github.com/rs/zerolog/log"
 )
 
 var malformed_cypher_text_error = errorx.NewErrorBuilder(errorx.IllegalFormat).WithCause(fmt.Errorf("malformed cypher text")).Create()
 
 // generateRandomBytes generates random bytes with entropy sourced from the
-// given location.
-func generateRandomBytes(numBytes int32) (string, error) {
+// current location.
+func GenerateRandomBytes(w io.Writer, numBytes int32) ([]byte, error) {
 	ctx := context.Background()
 	client, err := kms.NewKeyManagementClient(ctx)
 	if err != nil {
-		return NUL, err
+		return nil, fmt.Errorf("failed to create kms client: %w", err) //TODO: replace with errorx error
 	}
 	defer func(client *kms.KeyManagementClient) {
 		err := client.Close()
 		if err != nil {
-			panic(err)
+			log.Error().Err(err).Msg(err.Error())
 		}
 	}(client)
 
-	// Build the request.
 	req := &kmspb.GenerateRandomBytesRequest{
-		// Location := "projects/my-project/locations/us-east1"
-		Location:        fmt.Sprintf("projects/%s/locations/%s", gcp.Must(gcp.ProjectId()), gcp.Must(gcp.Region())),
+		Location:        gcp.Must(gcp.Region()),
 		LengthBytes:     numBytes,
 		ProtectionLevel: kmspb.ProtectionLevel_HSM,
 	}
-
 	result, err := client.GenerateRandomBytes(ctx, req)
 	if err != nil {
-		return NUL, err
+		return nil, fmt.Errorf("failed to generate random bytes: %w", err) //TODO: replace with errorx error
 	}
-
-	encodedData := base64.StdEncoding.EncodeToString(result.Data)
-
-	return encodedData, nil
+	return result.GetData(), nil
 }
 
 // Encrypt encrypts data using 256-bit AES-GCM.  This both hides the content of
