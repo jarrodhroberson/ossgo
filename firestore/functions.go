@@ -2,16 +2,18 @@ package firestore
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/firestore/apiv1/firestorepb"
+	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func IsErrNotFound(err error) bool {
+func IsDocumentNotFound(err error) bool {
 	return status.Code(err) == codes.NotFound
 }
 
@@ -47,4 +49,20 @@ func Count(ctx context.Context, query firestore.Query) int64 {
 	}
 	val := value.(*firestorepb.Value)
 	return val.GetIntegerValue()
+}
+
+func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T) error {
+	client := Must(Client(ctx, database))
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Error().Err(err).Msgf("error closing firestore client %s", err)
+		}
+	}(client)
+	doc, err := client.Doc(path).Get(ctx)
+	if err != nil {
+		err = errors.Join(errs.NotFoundError.New("could not find document %s", path), err)
+		return err
+	}
+	return doc.DataTo(t)
 }

@@ -21,7 +21,7 @@ func Must(result int, err error) int {
 	return result
 }
 
-func FindStructInSlice[T any](toSearch []T, find func(t T) bool) (int, error) {
+func FindStructIn[T any](toSearch []T, find func(t T) bool) (int, error) {
 	idx := slices.IndexFunc(toSearch, find)
 	if idx == -1 {
 		return idx, errs.StructNotFound.New("could not find struct in slice")
@@ -29,7 +29,7 @@ func FindStructInSlice[T any](toSearch []T, find func(t T) bool) (int, error) {
 	return idx, nil
 }
 
-func FindInSlice[T any](toSearch []T, find func(t T) bool) (int, error) {
+func FindIn[T any](toSearch []T, find func(t T) bool) (int, error) {
 	if len(toSearch) == 0 {
 		return none, errorx.IllegalArgument.New("toSearch Argument can not be empty")
 	}
@@ -38,4 +38,13 @@ func FindInSlice[T any](toSearch []T, find func(t T) bool) (int, error) {
 		return idx, errs.NotFoundError.New("could not find instance of %T in slice", *new(T))
 	}
 	return idx, nil
+}
+
+func FirstNonNilIn[T any](toSearch ...*T) (*T, error) {
+	for _, v := range toSearch {
+		if v != nil {
+			return v, nil
+		}
+	}
+	return nil, errs.NotFoundError.New("could not find a non-nil value in the provided slice")
 }
