@@ -2,13 +2,16 @@ package secrets
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions/must"
+	strs "github.com/jarrodhroberson/ossgo/strings"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
@@ -96,9 +99,9 @@ func NewPath(name string, version NewPathVersionOption) Path {
 func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
 	matches := validSecretPathWithVersionRegex.FindStringSubmatch(sv.GetName())
 	p := Path{
-		ProjectNumber: must.ParseInt(matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "projectid")]),
-		Name:          matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "name")],
-		Version:       must.ParseInt(matches[must.FindStringInSlice(validSecretPathWithVersionRegex.SubexpNames(), "version")]),
+		ProjectNumber: must.ParseInt(matches[must.Must(strs.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "projectid"))]),
+		Name:          matches[must.Must(strs.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "name"))],
+		Version:       must.ParseInt(matches[must.Must(strs.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "version"))]),
 	}
 	return p
 }
@@ -123,7 +126,7 @@ func GetSecretValueAsString(ctx context.Context, name string) string {
 func getSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, error) {
 	path := buildPathToSecretWithLatest(name)
 	if !validSecretPathWithVersionRegex.MatchString(path) {
-		return nil, fmt.Errorf("%s does not match the validPathWithVersionPattern %s", path, validPathWithVersionPattern)
+		return nil, errorx.IllegalState.New("%s does not match the validPathWithVersionPattern %s", path, validPathWithVersionPattern)
 	}
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
@@ -177,7 +180,7 @@ func getSecretLatestVersion(ctx context.Context, name string) (int, error) {
 func GetSecretValue(ctx context.Context, name string) ([]byte, error) {
 	path := buildPathToSecretWithLatest(name)
 	if !validSecretPathWithVersionRegex.MatchString(path) {
-		return nil, fmt.Errorf("%s does not match the validPathWithVersionPattern %s", path, validPathWithVersionPattern)
+		return nil, errorx.IllegalState.New("%s does not match the validPathWithVersionPattern %s", path, validPathWithVersionPattern)
 	}
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
@@ -204,8 +207,9 @@ func GetSecretValue(ctx context.Context, name string) ([]byte, error) {
 
 func MustGetSecretValue(ctx context.Context, name string, f func(ctx context.Context, name string) ([]byte, error)) []byte {
 	if value, err := f(ctx, name); err != nil {
-		log.Fatal().Err(err).Msgf("Error trying to retrieve secret: %s", name)
-		return []byte(NO_DATA)
+		err = errors.Join(errs.NotFoundError.New("Error trying to retrieve secret: %s", name), err)
+		log.Error().Err(err).Msgf(err.Error())
+		panic(errorx.EnsureStackTrace(err))
 	} else {
 		return value
 	}
