@@ -16,6 +16,7 @@ var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverE
 
 var ParseError = MustNeverError.NewSubtype("Unable to Parse", UnableToParseTrait)
 var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
+var NotCreatedError = MustNeverError.NewSubtype("Not Created", UnableToCreateTrait)
 var MarshalError = MustNeverError.NewSubtype("Unable To Marshal", UnableToMarshalTrait)
 var UnMarshalError = MustNeverError.NewSubtype("Unable To Marshal", UnableToUnmarshalTrait)
 var StructNotFound = NotFoundError.NewSubtype("Struct not found", errorx.NotFound())
