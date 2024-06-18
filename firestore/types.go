@@ -6,7 +6,7 @@ import (
 
 type DatabaseName string
 
-const DEFAULT DatabaseName = "[default]"
+const DEFAULT DatabaseName = firestore.DefaultDatabaseID
 
 // The op argument must be one of "==", "!=", "<", "<=", ">", ">=",
 // "array-contains", "array-contains-any", "in" or "not-in"
