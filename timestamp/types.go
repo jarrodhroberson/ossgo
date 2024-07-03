@@ -25,6 +25,18 @@ type Timestamp struct {
 	t time.Time
 }
 
+func (ts Timestamp) Year() int {
+	return ts.t.Year()
+}
+
+func (ts Timestamp) Month() time.Month {
+	return ts.t.Month()
+}
+
+func (ts Timestamp) Day() time.Weekday {
+	return ts.t.Weekday()
+}
+
 func (ts Timestamp) Before(ots Timestamp) bool {
 	return ts.t.Before(ots.t)
 }
