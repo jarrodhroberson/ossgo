@@ -10,6 +10,15 @@ import (
 var instances Timestamps
 var once sync.Once
 
+func NextMonth() time.Month {
+	today := time.Now().UTC()
+	month := today.Month()
+	if month == time.December {
+		return time.January
+	}
+	return month + 1
+}
+
 func MonthFromToday() Period {
 	today := time.Now().UTC()
 	return Period{

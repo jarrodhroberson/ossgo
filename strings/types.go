@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-var NUL = `\u0000`
+var NO_DATA = `\u0000`
 
 type Rope []string
 
