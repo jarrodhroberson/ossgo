@@ -10,7 +10,7 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
-const none = -1
+const NOT_FOUND = -1
 
 func Must(result int, err error) int {
 	if err != nil {
@@ -21,6 +21,14 @@ func Must(result int, err error) int {
 	return result
 }
 
+func Map[F any, T any](in []F, f func(F) T) []T {
+	m := make([]T, len(in))
+	for i, el := range in {
+		m[i] = f(el)
+	}
+	return m
+}
+
 func FindStructIn[T any](toSearch []T, find func(t T) bool) (int, error) {
 	idx := slices.IndexFunc(toSearch, find)
 	if idx == -1 {
@@ -29,22 +37,35 @@ func FindStructIn[T any](toSearch []T, find func(t T) bool) (int, error) {
 	return idx, nil
 }
 
-func FindIn[T any](toSearch []T, find func(t T) bool) (int, error) {
+func Filter[T any](toSearch []T, match func(t T) bool) ([]int, error) {
+	var results []int
+	for idx, v := range toSearch {
+		if match(v) {
+			results = append(results, idx)
+		}
+	}
+	if len(results) == 0 {
+		return nil, errs.NotFoundError.New("could not match any instance of %T in slice", *new(T))
+	}
+	return results, nil
+}
+
+func FindFirst[T any](toSearch []T, find func(t T) bool) (int, error) {
 	if len(toSearch) == 0 {
-		return none, errorx.IllegalArgument.New("toSearch Argument can not be empty")
+		return NOT_FOUND, errorx.IllegalArgument.New("toSearch Argument can not be empty")
 	}
 	idx := slices.IndexFunc(toSearch, find)
-	if idx == none {
+	if idx == NOT_FOUND {
 		return idx, errs.NotFoundError.New("could not find instance of %T in slice", *new(T))
 	}
 	return idx, nil
 }
 
-func FirstNonNilIn[T any](toSearch ...*T) (*T, error) {
-	for _, v := range toSearch {
+func FirstNonNilIn[T any](toSearch ...*T) (int, error) {
+	for idx, v := range toSearch {
 		if v != nil {
-			return v, nil
+			return idx, nil
 		}
 	}
-	return nil, errs.NotFoundError.New("could not find a non-nil value in the provided slice")
+	return NOT_FOUND, errs.NotFoundError.New("could not find a non-nil value in the provided slice")
 }
