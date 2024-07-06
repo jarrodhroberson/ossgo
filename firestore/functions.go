@@ -34,12 +34,12 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 				break
 			}
 			if err != nil {
-				return err
+				return BulkWriterError.New("error deleting collection at %s", path)
 			}
 
 			_, err = bulkwriter.Delete(doc.Ref)
 			if err != nil {
-				return err
+				return BulkWriterError.New("error deleting document %s in collection %s", doc.Ref.ID, path)
 			}
 			numDeleted++
 		}
