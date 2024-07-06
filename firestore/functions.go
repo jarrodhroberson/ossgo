@@ -12,16 +12,30 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func IsDocumentNotFound(err error) bool {
-	return status.Code(err) == codes.NotFound
+func CollectionExists(ctx context.Context, client *fs.Client, path string) bool {
+	iter := client.Collections(ctx)
+	for {
+		colRef, err := iter.Next()
+		if err == iterator.Done {
+			return false
+		}
+		if err != nil {
+			panic(err)
+		}
+		if colRef.Path == path {
+			return true
+		}
+	}
 }
 
 func DeleteCollection(ctx context.Context, client *fs.Client, path string) error {
 	colRef := client.Collection(path)
+	if !CollectionExists(ctx, client, path) {
+		return errs.NotFoundError.New("collection \"%s\" does not exist", path)
+	}
+
 	bulkwriter := client.BulkWriter(ctx)
 	defer bulkwriter.End()
 
@@ -34,12 +48,12 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 				break
 			}
 			if err != nil {
-				return BulkWriterError.New("error deleting collection at %s", path)
+				return BulkWriterError.New("error deleting collection at \"%s\"", path)
 			}
 
 			_, err = bulkwriter.Delete(doc.Ref)
 			if err != nil {
-				return BulkWriterError.New("error deleting document %s in collection %s", doc.Ref.ID, path)
+				return BulkWriterError.New("error deleting document \"%s\" in collection \"%s\"", doc.Ref.ID, path)
 			}
 			numDeleted++
 		}
