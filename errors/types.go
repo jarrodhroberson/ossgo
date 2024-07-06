@@ -20,3 +20,5 @@ var NotCreatedError = MustNeverError.NewSubtype("Not Created", UnableToCreateTra
 var MarshalError = MustNeverError.NewSubtype("Unable To Marshal", UnableToMarshalTrait)
 var UnMarshalError = MustNeverError.NewSubtype("Unable To Marshal", UnableToUnmarshalTrait)
 var StructNotFound = NotFoundError.NewSubtype("Struct not found", errorx.NotFound())
+
+var DuplicateFound = errorx.IllegalState.NewSubtype("Duplicate Found")
