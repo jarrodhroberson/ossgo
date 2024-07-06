@@ -4,6 +4,8 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
+const MAX_BULK_WRITE_SIZE = 20
+
 type DatabaseName string
 
 const DEFAULT DatabaseName = firestore.DefaultDatabaseID
