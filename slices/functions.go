@@ -21,6 +21,18 @@ func Must(result int, err error) int {
 	return result
 }
 
+func Partition[T any](s []T, size int) [][]T {
+	chunks := make([][]T, 0, len(s)/size+1)
+	for i := 0; i < len(s); i += size {
+		end := i + size
+		if end > len(s) {
+			end = len(s)
+		}
+		chunks = append(chunks, s[i:end])
+	}
+	return chunks
+}
+
 func Map[F any, T any](in []F, f func(F) T) []T {
 	m := make([]T, len(in))
 	for i, el := range in {
@@ -32,7 +44,7 @@ func Map[F any, T any](in []F, f func(F) T) []T {
 func FindStructIn[T any](toSearch []T, find func(t T) bool) (int, error) {
 	idx := slices.IndexFunc(toSearch, find)
 	if idx == -1 {
-		return idx, errs.StructNotFound.New("could not find struct in slice")
+		return idx, errs.NotFoundError.New("could not find struct in slice")
 	}
 	return idx, nil
 }
