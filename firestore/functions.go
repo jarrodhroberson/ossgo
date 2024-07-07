@@ -12,7 +12,13 @@ import (
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+func IsNotFound(err error) bool {
+	return status.Code(err) == codes.NotFound
+}
 
 func CollectionExists(ctx context.Context, client *fs.Client, path string) bool {
 	iter := client.Collections(ctx)
