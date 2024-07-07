@@ -19,12 +19,16 @@ func NextMonth() time.Month {
 	return month + 1
 }
 
-func MonthFromToday() Period {
-	today := time.Now().UTC()
+func ToPeriod(from Timestamp, d time.Duration) Period {
 	return Period{
-		Start: From(today.AddDate(0, 0, -today.Day()+1)),
-		End:   From(today.AddDate(0, 1, -today.Day())),
+		Start: from,
+		End:   from.Add(d),
 	}
+}
+
+func Today() Period {
+	today := time.Now().UTC()
+	return ToPeriod(From(today).ZeroTime(), time.Hour*24)
 }
 
 func MustParse(format string, s string) Timestamp {

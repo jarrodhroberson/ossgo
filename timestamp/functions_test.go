@@ -35,3 +35,26 @@ func TestToRange(t *testing.T) {
 		})
 	}
 }
+
+func TestToday(t *testing.T) {
+	now := Now()
+	tests := []struct {
+		name string
+		want Period
+	}{
+		{
+			name: "test today",
+			want: Period{
+				Start: now.ZeroTime(),
+				End:   now.Add(time.Hour * 24).ZeroTime(),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Today(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Today() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
