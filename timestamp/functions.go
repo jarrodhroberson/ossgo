@@ -61,7 +61,7 @@ func Enums() Timestamps {
 }
 
 func ToRange(from Timestamp, to Timestamp, d time.Duration) []Timestamp {
-	r := make([]Timestamp, 0, 12)
+	r := make([]Timestamp, 0, d)
 	r = append(r, from)
 	i := From(from.t.Add(d))
 	for i.Before(to) {
