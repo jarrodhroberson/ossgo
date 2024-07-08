@@ -124,3 +124,11 @@ func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T)
 	}
 	return doc.DataTo(t)
 }
+
+func MapToUpdates(m map[string]interface{}) []fs.Update {
+	updates := make([]fs.Update, 0, len(m))
+	for k, v := range m {
+		updates = append(updates, fs.Update{Path: k, Value: v})
+	}
+	return updates
+}
