@@ -3,17 +3,20 @@ package firestore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	fs "cloud.google.com/go/firestore"
 	fspb "cloud.google.com/go/firestore/apiv1/firestorepb"
-	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
 func IsNotFound(err error) bool {
@@ -50,11 +53,12 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 		numDeleted := 0
 		for {
 			doc, err := iter.Next()
-			if err == iterator.Done {
-				break
-			}
 			if err != nil {
-				return BulkWriterError.New("error deleting collection at \"%s\"", path)
+				if err == iterator.Done {
+					break
+				} else {
+					return BulkWriterError.New("error deleting collection at \"%s\"", path)
+				}
 			}
 
 			_, err = bulkwriter.Delete(doc.Ref)
@@ -131,4 +135,51 @@ func MapToUpdates(m map[string]interface{}) []fs.Update {
 		updates = append(updates, fs.Update{Path: k, Value: v})
 	}
 	return updates
+}
+
+func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]interface{}, error) {
+	var tree map[string]interface{}
+
+	// Get the document snapshot
+	colIter := docRef.Collections(ctx)
+	for {
+		colRef, err := colIter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		tree[colRef.Path] = make([]interface{}, 0)
+	}
+
+	docSnap, err := docRef.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract document data and subcollections
+	data := docSnap.Data()
+	for k, v := range data {
+		switch v.(type) {
+		case map[string]interface{}:
+			tree[k] = v.(map[string]interface{})
+		case []interface{}:
+			tree[k] = v.([]interface{})
+		case string, float64, bool:
+			tree[k] = v
+		case int64:
+			tree[k] = strconv.Itoa(int(v.(int64)))
+		case uint64:
+			tree[k] = strconv.Itoa(int(v.(uint64)))
+		case int:
+			tree[k] = strconv.Itoa(v.(int))
+		case uint:
+			tree[k] = strconv.Itoa(int(v.(uint)))
+		default:
+			return nil, fmt.Errorf("unsupported type %T for key %s", v, k)
+		}
+	}
+
+	return tree, nil
 }

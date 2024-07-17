@@ -43,3 +43,9 @@ var QueryOps = struct {
 }
 
 type WherePredicate func(q firestore.Query) firestore.Query
+
+type Document struct {
+	Ref         firestore.DocumentRef  `json:"ref"`
+	Data        map[string]interface{} `json:"data"`
+	Collections []string               `json:"collections"`
+}
