@@ -12,16 +12,18 @@ var UnableToMarshalTrait = errorx.RegisterTrait("Unable to Marshal")
 var UnableToUnmarshalTrait = errorx.RegisterTrait("Unable to Marshal")
 var UnableToCreateTrait = errorx.RegisterTrait("Unable to Create")
 var UnableToDeleteTrait = errorx.RegisterTrait("Unable to Delete")
-var UnableWriteTrait = errorx.RegisterTrait("Unable to Write")
-var UnableReadTrait = errorx.RegisterTrait("Unable to Read")
+var UnableToWriteTrait = errorx.RegisterTrait("Unable to Write")
+var UnableToReadTrait = errorx.RegisterTrait("Unable to Read")
+var MultipleErrorTrait = errorx.RegisterTrait("Multiple Errors")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
-// creation errors
+// create, read, write errors
 var NotCreatedError = MustNeverError.NewSubtype("Not Created", UnableToCreateTrait)
 var NotDeletedError = MustNeverError.NewSubtype("Not Deleted", UnableToDeleteTrait)
-var NotWrittenError = MustNeverError.NewSubtype("Not Written", UnableWriteTrait)
-var NotReadError = MustNeverError.NewSubtype("Not Read", UnableReadTrait)
+var NotWrittenError = MustNeverError.NewSubtype("Not Written", UnableToWriteTrait)
+var NotReadError = MustNeverError.NewSubtype("Not Read", UnableToReadTrait)
+var DuplicateExistsError = errorx.IllegalState.NewSubtype("Duplicate Exists", errorx.Duplicate())
 
 // marshalling errors
 var ParseError = MustNeverError.NewSubtype("Unable to Parse", UnableToParseTrait)
@@ -30,4 +32,5 @@ var UnMarshalError = MustNeverError.NewSubtype("Unable To UnMarshal", UnableToUn
 
 // searching errors
 var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
-var DuplicateExistsError = errorx.IllegalState.NewSubtype("Duplicate Exists", errorx.Duplicate())
+
+var MultipleErrors = errorx.IllegalState.NewSubtype("Multiple Errors", MultipleErrorTrait)
