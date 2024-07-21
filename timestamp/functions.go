@@ -10,13 +10,21 @@ import (
 var instances Timestamps
 var once sync.Once
 
-func NextMonth() time.Month {
-	today := time.Now().UTC()
-	month := today.Month()
-	if month == time.December {
-		return time.January
+// AddMonth returns the same day and clock time as t if possible,
+// the day of the month of t does not exist m months from t
+// the previous day is returned. ie: you request one month from October 31
+// you would get November 30 and NOT December 1. This is OPPOSITE of the
+// behavior of the standard library time.AddDate(), which would return December 1
+func addMonth(t time.Time, m int) time.Time {
+	x := t.AddDate(0, m, 0)
+	if d := x.Day(); d != t.Day() {
+		return x.AddDate(0, 0, -d)
 	}
-	return month + 1
+	return x
+}
+
+func AddMonth(ts Timestamp, m int) Timestamp {
+	return From(addMonth(ts.t, m))
 }
 
 func ToPeriod(from Timestamp, d time.Duration) Period {
@@ -64,13 +72,14 @@ func Enums() Timestamps {
 	return instances
 }
 
-func ToRange(from Timestamp, to Timestamp, d time.Duration) []Timestamp {
-	r := make([]Timestamp, 0, d)
+func ToRange(from Timestamp, to Timestamp, interval int64, d time.Duration) []Timestamp {
+	r := make([]Timestamp, 0, interval)
 	r = append(r, from)
-	i := From(from.t.Add(d))
-	for i.Before(to) {
+	id := time.Duration(interval * int64(d))
+	i := From(from.t.Add(id))
+	for !i.Before(to) {
+		i = From(i.t.Add(id))
 		r = append(r, i)
-		i = From(i.t.Add(d))
 	}
 	r = append(r, to)
 	return r
