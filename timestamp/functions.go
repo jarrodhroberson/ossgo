@@ -23,6 +23,12 @@ func addMonth(t time.Time, m int) time.Time {
 	return x
 }
 
+// AddMonth returns the same day and clock time as t if possible,
+// the day of the month of t does not exist m months from t
+// the previous day is returned. ie: you request one month from October 31
+// you would get November 30 and NOT December 1. This is OPPOSITE of the
+// behavior of the standard library time.AddDate(), which would return December 1
+// m is the number of months to add
 func AddMonth(ts Timestamp, m int) Timestamp {
 	return From(addMonth(ts.t, m))
 }
