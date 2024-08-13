@@ -78,13 +78,14 @@ func Enums() Timestamps {
 	return instances
 }
 
-func ToRange(from Timestamp, to Timestamp, interval int64, d time.Duration) []Timestamp {
+// ToRange create an iterable slice of Timestamps with the interval d Duration
+func ToRange(from Timestamp, to Timestamp, d time.Duration) []Timestamp {
+	interval := to.Sub(from) / d
 	r := make([]Timestamp, 0, interval)
 	r = append(r, from)
-	id := time.Duration(interval * int64(d))
-	i := From(from.t.Add(id))
-	for !i.Before(to) {
-		i = From(i.t.Add(id))
+	i := From(from.t.Add(d))
+	for i.Before(to) {
+		i = From(i.t.Add(d))
 		r = append(r, i)
 	}
 	r = append(r, to)

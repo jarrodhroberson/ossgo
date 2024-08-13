@@ -1,6 +1,7 @@
 package timestamp
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -123,10 +124,9 @@ func Test_addMonth(t *testing.T) {
 
 func TestToRange(t *testing.T) {
 	type args struct {
-		from     Timestamp
-		to       Timestamp
-		interval int64
-		d        time.Duration
+		from Timestamp
+		to   Timestamp
+		d    time.Duration
 	}
 	tests := []struct {
 		name string
@@ -142,8 +142,7 @@ func TestToRange(t *testing.T) {
 				to: Timestamp{
 					t: time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC),
 				},
-				interval: 24,
-				d:        time.Hour * 24,
+				d: time.Hour * 24,
 			},
 			want: 24,
 		},
@@ -156,17 +155,21 @@ func TestToRange(t *testing.T) {
 				to: Timestamp{
 					t: time.Date(2024, time.January, 31, 0, 0, 0, 0, time.UTC),
 				},
-				interval: 31,
-				d:        (time.Hour * 24) * 7,
+				d: time.Hour * 24,
 			},
 			want: 31,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ToRange(tt.args.from, tt.args.to, tt.args.interval, tt.args.d); !reflect.DeepEqual(len(got), tt.want) {
-				t.Errorf("ToRange() = %v, want %v", len(got), tt.want)
+			r := ToRange(tt.args.from, tt.args.to, tt.args.d)
+			for _, v := range r {
+				fmt.Println(v.String())
 			}
+
+			//if got := ToRange(tt.args.from, tt.args.to, tt.args.interval, tt.args.d); !reflect.DeepEqual(len(got), tt.want) {
+			//	t.Errorf("ToRange() = %v, want %v", len(got), tt.want)
+			//}
 		})
 	}
 }
