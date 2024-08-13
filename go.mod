@@ -7,7 +7,10 @@ require (
 	cloud.google.com/go/firestore v1.14.0
 	cloud.google.com/go/kms v1.15.6
 	cloud.google.com/go/secretmanager v1.11.5
+	cloud.google.com/go/storage v1.36.0
+	firebase.google.com/go v3.13.0+incompatible
 	github.com/gin-gonic/gin v1.10.0
+	github.com/jarrodhroberson/destruct v1.0.1
 	github.com/joomcode/errorx v1.1.1
 	github.com/kofalt/go-memoize v0.0.0-20240506050413-9e5eb99a0f2a
 	github.com/rs/zerolog v1.32.0
@@ -19,7 +22,6 @@ require (
 
 require (
 	cloud.google.com/go v0.112.0 // indirect
-	cloud.google.com/go/compute v1.23.4 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/longrunning v0.5.5 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
@@ -38,9 +40,9 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.1 // indirect
-	github.com/jarrodhroberson/destruct v1.0.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect

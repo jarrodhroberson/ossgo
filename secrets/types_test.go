@@ -1,10 +1,7 @@
 package secrets
 
 import (
-	"fmt"
 	"testing"
-
-	"github.com/jarrodhroberson/ossgo/functions/must"
 )
 
 func TestPath_String(t *testing.T) {
@@ -53,7 +50,6 @@ func TestPath_String(t *testing.T) {
 				Name:          tt.fields.Name,
 				Version:       tt.fields.Version,
 			}
-			fmt.Println(must.Identity(p))
 			if got := p.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)
 			}
