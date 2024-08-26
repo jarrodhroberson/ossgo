@@ -10,6 +10,10 @@ import (
 var instances Timestamps
 var once sync.Once
 
+func daysIn(m time.Month, year int) int {
+	return time.Date(year, m+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
 // AddMonth returns the same day and clock time as t if possible,
 // the day of the month of t does not exist m months from t
 // the previous day is returned. ie: you request one month from October 31
@@ -31,6 +35,12 @@ func addMonth(t time.Time, m int) time.Time {
 // m is the number of months to add
 func AddMonth(ts Timestamp, m int) Timestamp {
 	return From(addMonth(ts.t, m))
+}
+
+func MonthToPeriod(ts Timestamp) Period {
+	firstDayOfMonth := From(time.Date(ts.Year(), ts.Month(), 1, 0, 0, 0, 0, time.UTC))
+	duration := time.Duration(24 * 7 * daysIn(ts.Month(), ts.Year()))
+	return ToPeriod(firstDayOfMonth, duration)
 }
 
 func ToPeriod(from Timestamp, d time.Duration) Period {
