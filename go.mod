@@ -15,6 +15,7 @@ require (
 	github.com/jarrodhroberson/destruct v1.0.1
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/joomcode/errorx v1.1.1
+	github.com/nyaruka/phonenumbers v1.4.0
 	github.com/rs/zerolog v1.32.0
 	golang.org/x/crypto v0.23.0
 	golang.org/x/sync v0.7.0
