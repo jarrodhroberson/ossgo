@@ -2,6 +2,8 @@ package containers
 
 import (
 	"context"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 func NewCache[T any](ctx context.Context) Cache[T] {
@@ -11,7 +13,13 @@ func NewCache[T any](ctx context.Context) Cache[T] {
 	}
 }
 
-func AsCache[T any](ctx context.Context, m map[string]T) Cache[T] {
+func RedisAsCache[T any](client *redis.Pool) Cache[T] {
+	return redisCache[T]{
+		redisClient: client,
+	}
+}
+
+func MapAsCache[T any](ctx context.Context, m map[string]T) Cache[T] {
 	return mapCache[T]{
 		ctx:        ctx,
 		backingMap: m,
