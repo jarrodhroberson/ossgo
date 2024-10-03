@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-type pathSeparator string
-type labelSeparator string
-type namespaceLabelSeparator string
-type keyValueSeparator string
-
 const PATH_SEPARATOR = "/"
 const LABEL_SEPARATOR = ":"
 const NAMESPACE_LABEL_SEPARATOR = "?"
