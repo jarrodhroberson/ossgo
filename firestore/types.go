@@ -51,3 +51,6 @@ type Document struct {
 	Data        map[string]interface{} `json:"data"`
 	Collections []string               `json:"collections"`
 }
+
+type BatchWriteContext interface {
+}

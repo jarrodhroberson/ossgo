@@ -3,6 +3,7 @@ package containers
 import (
 	"context"
 	"errors"
+	"regexp"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/joomcode/errorx"
@@ -12,11 +13,61 @@ import (
 	"github.com/jarrodhroberson/ossgo/functions/must"
 )
 
+//type Cache interface {
+//	Set(entry Entry) error
+//	Get(path string, labels map[string]string) ([]byte, error)
+//	Keys() []string
+//	Find(path string, labels map[string]string) (Entry, error)
+//}
+
+//type MapCache struct {
+//	cache map[string]Entry
+//}
+//
+//// Keys returns a sorted []string slice of all the keys in the cache
+//func (m MapCache) Keys() []string {
+//	return slices.Sorted(maps.Keys(m.cache))
+//}
+//
+//func (m MapCache) Set(entry Entry) error {
+//	m.cache[entry.Path] = entry
+//	return nil
+//}
+//
+//func (m MapCache) Get(path string, labels map[string]string) ([]byte, error) {
+//	return m.cache[path].Data, nil
+//}
+
+type KeyMatcher func(key string) bool
+
+func RegExKeyMatcher(expr string) KeyMatcher {
+	matcher := regexp.MustCompile(expr)
+	return func(key string) bool {
+		return matcher.MatchString(key)
+	}
+}
+
+func AllKeysMatcher() KeyMatcher {
+	return func(key string) bool {
+		return true
+	}
+}
+
+func AllValuesMatcher[T any]() ValueMatcher[T] {
+	return func(value T) bool {
+		return true
+	}
+}
+
+type ValueMatcher[T any] func(value T) bool
+
 // Cache .Get returns a errors.NotFound() with a custom error messages if the key was
 // not found in the cache.
 type Cache[T any] interface {
 	Set(key string, value T)
 	Get(key string) (T, error)
+	FindKeys(searchFunc KeyMatcher) ([]string, error)
+	FindValues(searchFunc ValueMatcher[T]) ([]T, error)
 	Remove(key string) (T, error)
 }
 
@@ -60,7 +111,13 @@ func (l loadingCache[T]) Set(key string, value T) {
 func (l loadingCache[T]) Get(key string) (T, error) {
 	value, err := l.cache.Get(key)
 	if errorx.IsNotFound(err) {
-		return l.load(key)
+		value, err = l.loadingFunc(key)
+		if err != nil {
+			return value, err
+		} else {
+			l.cache.Set(key, value)
+			return value, nil
+		}
 	} else {
 		return value, err
 	}
@@ -68,16 +125,6 @@ func (l loadingCache[T]) Get(key string) (T, error) {
 
 func (l loadingCache[T]) Remove(key string) (T, error) {
 	return l.cache.Remove(key)
-}
-
-func (l loadingCache[T]) load(key string) (T, error) {
-	value, err := l.loadingFunc(key)
-	if err != nil {
-		return value, err
-	} else {
-		l.cache.Set(key, value)
-		return value, nil
-	}
 }
 
 type redisCache[T any] struct {

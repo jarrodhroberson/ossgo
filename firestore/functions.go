@@ -23,6 +23,10 @@ func IsNotFound(err error) bool {
 	return status.Code(err) == codes.NotFound
 }
 
+func Exists(err error) bool {
+	return !IsNotFound(err)
+}
+
 func CollectionExists(ctx context.Context, client *fs.Client, path string) bool {
 	iter := client.Collections(ctx)
 	for {
@@ -158,7 +162,7 @@ func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]i
 		return nil, err
 	}
 
-	// Extract document data and subcollections
+	// Extract document data and collections
 	data := docSnap.Data()
 	for k, v := range data {
 		switch v.(type) {
