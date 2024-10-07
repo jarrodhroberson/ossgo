@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/rs/zerolog"
@@ -129,5 +130,22 @@ func logSwitch(data *ginHands) {
 			level = zerolog.InfoLevel
 		}
 		log.WithLevel(level).Str("ser_name", data.SerName).Str("method", data.Method).Str("path", data.Path).Dur("resp_time", data.Latency).Int("status", data.StatusCode).Str("client_ip", data.ClientIP).Msg(data.MsgStr)
+	}
+}
+
+func CORS(allowOrigins ...string) cors.Config {
+
+	clientURL := os.Getenv("CLIENT_URL")
+	if clientURL == "" {
+		allowOrigins = append(allowOrigins, clientURL)
+	}
+
+	return cors.Config{
+		AllowOrigins:     allowOrigins,
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}
 }
