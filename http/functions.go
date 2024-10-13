@@ -133,19 +133,19 @@ func logSwitch(data *ginHands) {
 	}
 }
 
-func CORS(allowOrigins ...string) cors.Config {
+func CORS(allowOrigins ...string) gin.HandlerFunc {
 
 	clientURL := os.Getenv("CLIENT_URL")
 	if clientURL == "" {
 		allowOrigins = append(allowOrigins, clientURL)
 	}
 
-	return cors.Config{
+	return cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"*"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	}
+	})
 }

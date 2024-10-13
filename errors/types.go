@@ -22,6 +22,7 @@ var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverE
 var NotCreatedError = MustNeverError.NewSubtype("Not Created", UnableToCreateTrait)
 var NotDeletedError = MustNeverError.NewSubtype("Not Deleted", UnableToDeleteTrait)
 var NotWrittenError = MustNeverError.NewSubtype("Not Written", UnableToWriteTrait)
+var NotUpdatedError = MustNeverError.NewSubtype("Not Updated", UnableToWriteTrait)
 var NotReadError = MustNeverError.NewSubtype("Not Read", UnableToReadTrait)
 var DuplicateExistsError = errorx.IllegalState.NewSubtype("Duplicate Exists", errorx.Duplicate())
 
