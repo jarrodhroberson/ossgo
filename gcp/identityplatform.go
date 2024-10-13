@@ -39,11 +39,7 @@ type Client struct {
 	apiKey string
 }
 
-func New() IdentityPlatform {
-	return IdentityPlatform{}
-}
-
-func (ip IdentityPlatform) Client() *Client {
+func NewIdentityPlatformClient() *Client {
 	return &Client{
 		host:   "identitytoolkit.googleapis.com",
 		apiKey: secrets.GetSecretValueAsString(context.Background(), "IDENTITY_PLATFORM_API_KEY"), //TODO: make this dynamic otherwise it will require server restarts to change it.
