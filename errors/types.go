@@ -19,6 +19,7 @@ var MultipleErrorTrait = errorx.RegisterTrait("Multiple Errors")
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
 // create, read, write errors
+var StructNotInitialized = MustNeverError.NewSubtype("Struct Not Initialized", UnableToCreateTrait)
 var NotCreatedError = MustNeverError.NewSubtype("Not Created", UnableToCreateTrait)
 var NotDeletedError = MustNeverError.NewSubtype("Not Deleted", UnableToDeleteTrait)
 var NotWrittenError = MustNeverError.NewSubtype("Not Written", UnableToWriteTrait)
