@@ -11,7 +11,6 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
-	"github.com/jarrodhroberson/ossgo/gcp"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 )
