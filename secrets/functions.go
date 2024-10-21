@@ -18,7 +18,6 @@ import (
 )
 
 const (
-	NO_DATA                         = string('\u0000')
 	project_number                  = 310766351697
 	pathToSecret                    = "projects/%d/secrets/%s"
 	pathToLatestVersion             = "projects/%d/secrets/%s/versions/latest"

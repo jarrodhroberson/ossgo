@@ -1,3 +1,6 @@
+/*
+Package errors contains general purpose errors and error traits for you to build more specific errors in your own packages.
+*/
 package errors
 
 import (
