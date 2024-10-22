@@ -12,6 +12,7 @@ import (
 	"github.com/jarrodhroberson/ossgo/timestamp"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 var validBucketNamePattern = "^[a-z0-9]{1}[a-z0-9-_]{1,62}[a-z0-9]{1}$"
@@ -27,6 +28,18 @@ func newClient(ctx context.Context) *gcs.Client {
 		log.Fatal().Err(err).Msg(err.Error())
 	}
 	return client
+}
+
+func Must[T any](r T, err error) T {
+	if err != nil {
+		panic(err)
+	} else {
+		return r
+	}
+}
+
+func Client(ctx context.Context, options ...option.ClientOption) (*gcs.Client, error) {
+	return gcs.NewClient(ctx, options...)
 }
 
 func AttrToObject(attrs *gcs.ObjectAttrs) Metadata {
