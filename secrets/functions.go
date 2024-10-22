@@ -11,7 +11,7 @@ import (
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions/must"
-	strs "github.com/jarrodhroberson/ossgo/strings"
+	"github.com/jarrodhroberson/ossgo/slices"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
@@ -98,9 +98,9 @@ func NewPath(name string, version NewPathVersionOption) Path {
 func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
 	matches := validSecretPathWithVersionRegex.FindStringSubmatch(sv.GetName())
 	p := Path{
-		ProjectNumber: must.ParseInt(matches[must.Must(strs.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "projectid"))]),
-		Name:          matches[must.Must(strs.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "name"))],
-		Version:       must.ParseInt(matches[must.Must(strs.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "version"))]),
+		ProjectNumber: must.ParseInt(matches[must.Must(slices.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "projectid"))]),
+		Name:          matches[must.Must(slices.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "name"))],
+		Version:       must.ParseInt(matches[must.Must(slices.FindInSlice(validSecretPathWithVersionRegex.SubexpNames(), "version"))]),
 	}
 	return p
 }

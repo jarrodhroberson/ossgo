@@ -3,6 +3,7 @@ package slices
 import (
 	"errors"
 	"slices"
+	"strings"
 
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
@@ -80,4 +81,14 @@ func FirstNonNilIn[T any](toSearch ...*T) (int, error) {
 		}
 	}
 	return NOT_FOUND, errs.NotFoundError.New("could not find a non-nil value in the provided slice")
+}
+
+func FindInSlice(toSearch []string, target string) (int, error) {
+	idx := slices.IndexFunc(toSearch, func(s string) bool {
+		return s == target
+	})
+	if idx == -1 {
+		return idx, errs.NotFoundError.New("could not find %s in %s", target, strings.Join(toSearch, ","))
+	}
+	return idx, nil
 }
