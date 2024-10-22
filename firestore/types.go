@@ -4,8 +4,6 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-var NO_DATA = `\u0000`
-
 const MAX_BULK_WRITE_SIZE = 20
 
 type DatabaseName string
