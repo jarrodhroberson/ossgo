@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"net/http"
 	"os"
 	"sync/atomic"
 	"time"
@@ -149,8 +148,4 @@ func CORS(allowOrigins ...string) gin.HandlerFunc {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	})
-}
-
-func GetString(r *http.Request, key string) (string, error) {
-	return r
 }
