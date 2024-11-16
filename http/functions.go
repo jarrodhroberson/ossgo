@@ -136,7 +136,7 @@ func logSwitch(data *ginHands) {
 func CORS(allowOrigins ...string) gin.HandlerFunc {
 
 	clientURL := os.Getenv("CLIENT_URL")
-	if clientURL == "" {
+	if clientURL != "" {
 		allowOrigins = append(allowOrigins, clientURL)
 	}
 
