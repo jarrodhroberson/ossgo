@@ -14,19 +14,21 @@ import (
 IdentityToolkitAccountSignUpError
 This is an example of the payload when there is an error from the IdentityToolkit
 
-	<code>{
-	  "error": {
-	    "code": 400,
-	    "message": "EMAIL_EXISTS",
-	    "errors": [
-	      {
-	        "message": "EMAIL_EXISTS",
-	        "domain": "global",
-	        "reason": "invalid"
-	      }
-	    ]
-	  }
-	}</code>
+		<code>
+	    {
+		  "error": {
+		    "code": 400,
+		    "message": "EMAIL_EXISTS",
+		    "errors": [
+		      {
+		        "message": "EMAIL_EXISTS",
+		        "domain": "global",
+		        "reason": "invalid"
+		      }
+		    ]
+		  }
+		}
+	    </code>
 */
 type IdentityToolkitAccountSignUpError struct {
 	Error struct {

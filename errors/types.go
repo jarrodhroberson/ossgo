@@ -37,3 +37,4 @@ var UnMarshalError = MustNeverError.NewSubtype("Unable To UnMarshal", UnableToUn
 
 // searching errors
 var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
+var CookieNotFoundError = NotFoundError.NewSubtype("CookieNotFoundError")
