@@ -1,7 +1,6 @@
 package gcp
 
 import (
-	"os"
 	"sync"
 )
 
@@ -64,23 +63,4 @@ func (e *Environment) CloudProject() string {
 
 func (e *Environment) Port() string {
 	return e.port
-}
-
-func NewEnvironment() *Environment {
-	once.Do(func() {
-		environment = &Environment{
-			gin_mode:             os.Getenv("GIN_MODE"),
-			gae_application:      os.Getenv("GAE_APPLICATION"),
-			gae_deployment_id:    os.Getenv("GAE_DEPLOYMENT_ID"),
-			gae_env:              os.Getenv("GAE_ENV"),
-			gae_instance:         os.Getenv("GAE_INSTANCE"),
-			gae_memory_mb:        os.Getenv("GAE_MEMORY_MD"),
-			gae_runtime:          os.Getenv("GAE_RUNTIME"),
-			gae_service:          os.Getenv("GAE_SERVICE"),
-			gae_version:          os.Getenv("GAE_VERSION"),
-			google_cloud_project: os.Getenv("GOOGLE_CLOUD_PROJECT"),
-			port:                 os.Getenv("PORT"),
-		}
-	})
-	return environment
 }

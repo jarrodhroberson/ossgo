@@ -2,7 +2,7 @@ module github.com/jarrodhroberson/ossgo
 
 go 1.22.7
 
-toolchain go1.23.1
+toolchain go1.23.3
 
 require (
 	cloud.google.com/go/compute/metadata v0.5.2
@@ -11,17 +11,16 @@ require (
 	cloud.google.com/go/secretmanager v1.14.1
 	cloud.google.com/go/storage v1.45.0
 	firebase.google.com/go v3.13.0+incompatible
+	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
-	github.com/gomodule/redigo v1.9.2
 	github.com/googleapis/google-cloudevents-go v0.9.0
 	github.com/jarrodhroberson/destruct v1.0.1
 	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/joomcode/errorx v1.1.1
 	github.com/rs/zerolog v1.33.0
 	golang.org/x/crypto v0.28.0
-	golang.org/x/sync v0.8.0
 	google.golang.org/api v0.201.0
 	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.35.1
@@ -38,7 +37,6 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.24.3 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.3 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.3 // indirect
-	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/bytedance/sonic v1.12.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
@@ -65,7 +63,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -88,10 +85,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.31.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	gocloud.dev v0.40.0 // indirect
 	golang.org/x/arch v0.11.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.7.0 // indirect

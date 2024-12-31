@@ -18,8 +18,8 @@ func MustGetValue[T any](c *g.Context, key string) T {
 	return value.(T)
 }
 
-func MustGetIdToken(c *g.Context) *auth.Token {
-	idToken, err := GetIdToken(c)
+func MustGetCurrentUserIdToken(c *g.Context) *auth.Token {
+	idToken, err := GetCurrentUserIdToken(c)
 	if err != nil {
 		//TODO: put some logging here this should never happen
 		return nil
@@ -27,7 +27,7 @@ func MustGetIdToken(c *g.Context) *auth.Token {
 	return idToken
 }
 
-func GetIdToken(c *g.Context) (*auth.Token, error) {
+func GetCurrentUserIdToken(c *g.Context) (*auth.Token, error) {
 	idToken, ok := c.Get(CURRENT_USER_ID_TOKEN)
 	if !ok {
 		return nil, COOKIE_NOT_FOUND.Wrap(fmt.Errorf("%s not found in gin.Context", CURRENT_USER_ID_TOKEN), "")
