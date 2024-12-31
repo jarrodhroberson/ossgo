@@ -41,14 +41,3 @@ var QueryOps = struct {
 	In:                  "in",
 	NotIn:               "not-in",
 }
-
-type WherePredicate func(q firestore.Query) firestore.Query
-
-type Document struct {
-	Ref         firestore.DocumentRef  `json:"ref"`
-	Data        map[string]interface{} `json:"data"`
-	Collections []string               `json:"collections"`
-}
-
-type BatchWriteContext interface {
-}

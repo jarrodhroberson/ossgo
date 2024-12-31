@@ -9,6 +9,7 @@ var environment *Environment
 var once sync.Once
 
 type Environment struct {
+	gin_mode             string
 	gae_application      string
 	gae_deployment_id    string
 	gae_env              string
@@ -23,6 +24,10 @@ type Environment struct {
 
 func (e *Environment) Application() string {
 	return e.gae_application
+}
+
+func (env *Environment) GinMode() string {
+	return env.gin_mode
 }
 
 func (e *Environment) DeploymentId() string {
@@ -64,6 +69,7 @@ func (e *Environment) Port() string {
 func NewEnvironment() *Environment {
 	once.Do(func() {
 		environment = &Environment{
+			gin_mode:             os.Getenv("GIN_MODE"),
 			gae_application:      os.Getenv("GAE_APPLICATION"),
 			gae_deployment_id:    os.Getenv("GAE_DEPLOYMENT_ID"),
 			gae_env:              os.Getenv("GAE_ENV"),
