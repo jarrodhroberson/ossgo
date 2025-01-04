@@ -10,6 +10,14 @@ import (
 
 const CURRENT_USER_ID_TOKEN = "CURRENT_USER_ID_TOKEN"
 
+func GetValue[T any](c *g.Context, key string) (T, error) {
+	value, exists := c.Get(key)
+	if !exists {
+		return *new(T), errs.NotFoundError.New("%s not found in context", key)
+	}
+	return value.(T), nil
+}
+
 func MustGetValue[T any](c *g.Context, key string) T {
 	value, exists := c.Get(key)
 	if !exists {
