@@ -21,6 +21,9 @@ var MultipleErrorTrait = errorx.RegisterTrait("Multiple Errors")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
+// security
+var Unauthorized = MustNeverError.NewSubtype("Unauthorized")
+
 // create, read, write errors
 var StructNotInitialized = MustNeverError.NewSubtype("Struct Not Initialized", UnableToCreateTrait)
 var NotCreatedError = MustNeverError.NewSubtype("Not Created", UnableToCreateTrait)
