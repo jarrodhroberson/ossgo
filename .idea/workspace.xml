@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding Unauthorized error" />
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="replacing interface removed by accident" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -85,7 +85,8 @@
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="adding some sugar coating to experiment with wrapping gin completely away." />
     <MESSAGE value="adding Unauthorized error" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding Unauthorized error" />
+    <MESSAGE value="replacing interface removed by accident" />
+    <option name="LAST_COMMIT_MESSAGE" value="replacing interface removed by accident" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
