@@ -41,3 +41,5 @@ var QueryOps = struct {
 	In:                  "in",
 	NotIn:               "not-in",
 }
+
+type WherePredicate func(q firestore.Query) firestore.Query
