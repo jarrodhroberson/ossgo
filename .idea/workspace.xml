@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="replacing interface removed by accident" />
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -55,12 +57,12 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250107_0012",
+    "com.google.cloudcode.ide_session_index": "20250116_0001",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "//wsl$/Ubuntu/home/jhr/git/clicklikegive",
+    "last_opened_file_path": "//wsl$/Ubuntu/home/jhr/git/ossgo",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -86,7 +88,8 @@
     <MESSAGE value="adding some sugar coating to experiment with wrapping gin completely away." />
     <MESSAGE value="adding Unauthorized error" />
     <MESSAGE value="replacing interface removed by accident" />
-    <option name="LAST_COMMIT_MESSAGE" value="replacing interface removed by accident" />
+    <MESSAGE value="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
