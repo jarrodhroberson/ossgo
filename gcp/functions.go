@@ -1,6 +1,7 @@
 package gcp
 
 import (
+	"context"
 	"errors"
 	"os"
 
@@ -22,7 +23,7 @@ func Must(s string, err error) string {
 }
 
 func Region() (string, error) {
-	region, err := metadata.Zone()
+	region, err := metadata.ZoneWithContext(context.Background())
 	if region == "" {
 		return "", errors.Join(err, EnvVariableNotFound.New("environment variable %s not found", "REGION"))
 	} else {
@@ -31,7 +32,7 @@ func Region() (string, error) {
 }
 
 func ProjectId() (string, error) {
-	projectId, err := metadata.ProjectID()
+	projectId, err := metadata.ProjectIDWithContext(context.Background())
 	if err != nil {
 		return "", errors.Join(err, EnvVariableNotFound.New("env variable %s not found", "GOOGLE_CLOUD_PROJECT"))
 	} else {

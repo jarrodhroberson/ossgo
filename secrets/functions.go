@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
+	"cloud.google.com/go/compute/metadata"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	errs "github.com/jarrodhroberson/ossgo/errors"
@@ -18,7 +20,6 @@ import (
 )
 
 const (
-	project_number                  = 310766351697
 	pathToSecret                    = "projects/%d/secrets/%s"
 	pathToLatestVersion             = "projects/%d/secrets/%s/versions/latest"
 	pathToNumericVersion            = "projects/%d/secrets/%s/versions/%d"
@@ -28,6 +29,7 @@ const (
 	validPathWithVersionPattern     = "^projects/(?P<projectid>\\d+)/secrets/(?P<name>[\\w-]+)(?:/versions/(?P<version>\\d+|latest))?$"
 )
 
+var project_number = must.Must(strconv.Atoi(must.Must(metadata.ProjectIDWithContext(context.Background()))))
 var validSecretPathRegex *regexp.Regexp = nil
 var validSecretNameRegex *regexp.Regexp = nil
 var validSecretPathWithVersionRegex *regexp.Regexp = nil
