@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 
 	"cloud.google.com/go/compute/metadata"
 	"github.com/joomcode/errorx"
@@ -23,10 +24,12 @@ func Must(s string, err error) string {
 }
 
 func Region() (string, error) {
-	region, err := metadata.ZoneWithContext(context.Background())
+	region, err := metadata.GetWithContext(context.Background(), "instance/region")
 	if region == "" {
 		return "", errors.Join(err, EnvVariableNotFound.New("environment variable %s not found", "REGION"))
 	} else {
+		parts := strings.Split(region, "/")
+		region = parts[len(parts)-1]
 		return region, nil
 	}
 }
