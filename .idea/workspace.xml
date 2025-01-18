@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding new cloud run function check" />
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="zone is not region, region is region">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -59,7 +61,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250117_0001",
+    "com.google.cloudcode.ide_session_index": "20250118_0001",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
@@ -91,7 +93,8 @@
     <MESSAGE value="adding Unauthorized error" />
     <MESSAGE value="replacing interface removed by accident" />
     <MESSAGE value="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const" />
+    <MESSAGE value="zone is not region, region is region" />
+    <option name="LAST_COMMIT_MESSAGE" value="zone is not region, region is region" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
