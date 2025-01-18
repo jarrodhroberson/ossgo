@@ -1,24 +1,51 @@
 package gcp
 
 import (
+	"os"
 	"sync"
 )
 
 var environment *Environment
 var once sync.Once
 
+func NewEnvironment() *Environment {
+	once.Do(func() {
+
+		environment = &Environment{
+			is_cloud_run_function: os.Getenv("K_SERVICE") != "",
+			gin_mode:              os.Getenv("GIN_MODE"),
+			gae_application:       os.Getenv("GAE_APPLICATION"),
+			gae_deployment_id:     os.Getenv("GAE_DEPLOYMENT_ID"),
+			gae_env:               os.Getenv("GAE_ENV"),
+			gae_instance:          os.Getenv("GAE_INSTANCE"),
+			gae_memory_mb:         os.Getenv("GAE_MEMORY_MD"),
+			gae_runtime:           os.Getenv("GAE_RUNTIME"),
+			gae_service:           os.Getenv("GAE_SERVICE"),
+			gae_version:           os.Getenv("GAE_VERSION"),
+			google_cloud_project:  os.Getenv("GOOGLE_CLOUD_PROJECT"),
+			port:                  os.Getenv("PORT"),
+		}
+	})
+	return environment
+}
+
 type Environment struct {
-	gin_mode             string
-	gae_application      string
-	gae_deployment_id    string
-	gae_env              string
-	gae_instance         string
-	gae_memory_mb        string
-	gae_runtime          string
-	gae_service          string
-	gae_version          string
-	google_cloud_project string
-	port                 string
+	is_cloud_run_function bool
+	gin_mode              string
+	gae_application       string
+	gae_deployment_id     string
+	gae_env               string
+	gae_instance          string
+	gae_memory_mb         string
+	gae_runtime           string
+	gae_service           string
+	gae_version           string
+	google_cloud_project  string
+	port                  string
+}
+
+func (e *Environment) IsCloudRunFunction() bool {
+	return e.is_cloud_run_function
 }
 
 func (e *Environment) Application() string {

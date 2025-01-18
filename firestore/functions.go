@@ -8,8 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"cloud.google.com/go/compute/metadata"
 	fs "cloud.google.com/go/firestore"
 	fspb "cloud.google.com/go/firestore/apiv1/firestorepb"
+	"github.com/jarrodhroberson/ossgo/functions"
+	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
@@ -94,7 +97,8 @@ func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 	if strings.Trim(string(database), " ") == "" {
 		return nil, errorx.IllegalArgument.New("DatabaseName can not be an empty string")
 	}
-	client, err := fs.NewClientWithDatabase(ctx, os.Getenv("GOOGLE_CLOUD_PROJECT"), string(database))
+	projectId := functions.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(metadata.ProjectIDWithContext(ctx)))
+	client, err := fs.NewClientWithDatabase(ctx, projectId, string(database))
 	if err != nil {
 		log.Fatal().Err(err).Msgf("error creating firestore client %s", err)
 		return nil, err
