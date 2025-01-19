@@ -10,6 +10,11 @@ type DatabaseName string
 
 const DEFAULT DatabaseName = firestore.DefaultDatabaseID
 
+const DocumentCreated = "google.cloud.firestore.v1.created"
+const DocumentUpdated = "google.cloud.firestore.v1.updated"
+const DocumentDeleted = "google.cloud.firestore.v1.deleted"
+const DocumentWritten = "google.cloud.firestore.v1.written"
+
 // The op argument must be one of "==", "!=", "<", "<=", ">", ">=",
 // "array-contains", "array-contains-any", "in" or "not-in"
 type QueryOp string
