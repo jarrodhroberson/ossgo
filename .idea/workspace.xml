@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="zone is not region, region is region">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/containers/maps.go" beforeDir="false" afterPath="$PROJECT_DIR$/containers/maps.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/structs/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/structs/functions.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/structs/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/structs/types.go" afterDir="false" />
-    </list>
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -97,7 +92,8 @@
     <MESSAGE value="replacing interface removed by accident" />
     <MESSAGE value="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const" />
     <MESSAGE value="zone is not region, region is region" />
-    <option name="LAST_COMMIT_MESSAGE" value="zone is not region, region is region" />
+    <MESSAGE value="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
