@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="zone is not region, region is region">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/firestore/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/firestore/types.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/containers/maps.go" beforeDir="false" afterPath="$PROJECT_DIR$/containers/maps.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/structs/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/structs/functions.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/structs/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/structs/types.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +64,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250119_0002",
+    "com.google.cloudcode.ide_session_index": "20250119_0004",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
