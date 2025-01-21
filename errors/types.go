@@ -18,6 +18,8 @@ var UnableToDeleteTrait = errorx.RegisterTrait("Unable to Delete")
 var UnableToWriteTrait = errorx.RegisterTrait("Unable to Write")
 var UnableToReadTrait = errorx.RegisterTrait("Unable to Read")
 var MultipleErrorTrait = errorx.RegisterTrait("Multiple Errors")
+var MutuallyExclusiveTrait = errorx.RegisterTrait("Mutually Exclusive")
+var InvalidSizeTrait = errorx.RegisterTrait("Invalid Size")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
@@ -41,3 +43,7 @@ var UnMarshalError = MustNeverError.NewSubtype("Unable To UnMarshal", UnableToUn
 // searching errors
 var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
 var CookieNotFoundError = NotFoundError.NewSubtype("CookieNotFoundError")
+
+// constraint/validation errors
+var MinSizeExceededError = MustNeverError.NewSubtype("Min Required Size", InvalidSizeTrait)
+var MaxSizeExceededError = MustNeverError.NewSubtype("Max Size Exceeded", InvalidSizeTrait)
