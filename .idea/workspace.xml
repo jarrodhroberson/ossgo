@@ -4,11 +4,16 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding method to parse youtube v3 api specific format" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+    </option>
   </component>
   <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../usr/local/go" />
   <component name="Git.Settings">
@@ -59,12 +64,12 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250119_0006",
+    "com.google.cloudcode.ide_session_index": "20250122_0002",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "//wsl$/Ubuntu/home/jhr/git/ossgo",
+    "last_opened_file_path": "//wsl$/Ubuntu/home/jhr/git/clicklikegive/stripe",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -93,7 +98,9 @@
     <MESSAGE value="refactoring ProjectId so that it is looked up dynamically instead of hard coded as a const" />
     <MESSAGE value="zone is not region, region is region" />
     <MESSAGE value="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
+    <MESSAGE value="adding contraint/validation errors" />
+    <MESSAGE value="adding Stringifier definition" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding Stringifier definition" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
