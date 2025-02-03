@@ -2,6 +2,7 @@ package timestamp
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 )
@@ -9,6 +10,7 @@ import (
 type Timestamps interface {
 	BeginningOfTime() Timestamp
 	EndOfTime() Timestamp
+	ZeroValue() Timestamp
 }
 
 type tsenums struct {
@@ -19,6 +21,10 @@ func (i tsenums) BeginningOfTime() Timestamp {
 }
 func (i tsenums) EndOfTime() Timestamp {
 	return Timestamp{time.Date(9999, 12, 31, 23, 59, 59, 0, time.UTC)}
+}
+
+func (i tsenums) ZeroValue() Timestamp {
+	return From(time.UnixMilli(math.MinInt64))
 }
 
 type Timestamp struct {
