@@ -24,7 +24,7 @@ func (i tsenums) EndOfTime() Timestamp {
 }
 
 func (i tsenums) ZeroValue() Timestamp {
-	return From(time.UnixMilli(math.MinInt64))
+	return From(time.UnixMilli(math.MinInt64).UTC())
 }
 
 type Timestamp struct {

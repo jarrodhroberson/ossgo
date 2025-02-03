@@ -42,6 +42,10 @@ func ParseYouTubeTimestamp(s string) Timestamp {
 	return MustParse("2006-01-02T15:04:05.999999Z", s)
 }
 
+func IsZero(t Timestamp) bool {
+	return Enums().ZeroValue().Compare(t) == 0
+}
+
 func MonthToPeriod(ts Timestamp) Period {
 	firstDayOfMonth := From(time.Date(ts.Year(), ts.Month(), 1, 0, 0, 0, 0, time.UTC))
 	duration := time.Duration(24 * 7 * daysIn(ts.Month(), ts.Year()))
