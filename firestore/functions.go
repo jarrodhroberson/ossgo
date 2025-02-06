@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iter"
 	"os"
 	"strconv"
 	"strings"
@@ -190,4 +191,60 @@ func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]i
 	}
 
 	return tree, nil
+}
+
+// DocumentIteratorToSeq2 converts a firestore.Iterator to an iter.Seq2.
+// doc.Ref.ID is used as the "key" or first value, second value is a pointer to the type V
+func DocumentIteratorToSeq2[V any](dsi *fs.DocumentIterator) iter.Seq2[string, *V] {
+	return func(yield func(string, *V) bool) {
+		for {
+			doc, err := dsi.Next()
+			if errors.Is(err, iterator.Done) {
+				return
+			}
+			if err != nil {
+				log.Error().Err(err).Msg("error iterating through Firestore documents")
+				return
+			}
+
+			var b V
+			err = doc.DataTo(&b)
+			if err != nil {
+				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", doc.Ref.ID)
+				continue
+			}
+
+			if !yield(doc.Ref.ID, &b) {
+				return
+			}
+		}
+	}
+}
+
+// DocumentIteratorToSeq converts a firestore.Iterator to an iter.Seq.
+// value is a pointer to the type V
+func DocumentIteratorToSeq[V any](dsi *fs.DocumentIterator) iter.Seq[*V] {
+	return func(yield func(*V) bool) {
+		for {
+			doc, err := dsi.Next()
+			if errors.Is(err, iterator.Done) {
+				return
+			}
+			if err != nil {
+				log.Error().Err(err).Msg("error iterating through Firestore documents")
+				return
+			}
+
+			var b V
+			err = doc.DataTo(&b)
+			if err != nil {
+				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", doc.Ref.ID)
+				return
+			}
+
+			if !yield(&b) {
+				return
+			}
+		}
+	}
 }
