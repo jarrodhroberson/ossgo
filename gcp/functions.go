@@ -2,42 +2,53 @@ package gcp
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	"cloud.google.com/go/compute/metadata"
-	"github.com/joomcode/errorx"
-	"github.com/rs/zerolog/log"
+
+	errs "github.com/jarrodhroberson/ossgo/errors"
+	fstrings "github.com/jarrodhroberson/ossgo/strings"
 )
 
-var namespace = errorx.NewNamespace("gcp")
-var EnvVariableNotFound = errorx.NewType(namespace, "Env Variable Not Found", errorx.NotFound())
-
-func Must(s string, err error) string {
-	if err != nil {
-		log.Error().Err(err).Msg(err.Error())
-		panic(err)
-	} else {
-		return s
-	}
-}
-
+// Region retrieves the current region of the Cloud Run instance from metadata
 func Region() (string, error) {
-	region, err := metadata.GetWithContext(context.Background(), "instance/region")
-	if region == "" {
-		return "", errors.Join(err, EnvVariableNotFound.New("environment variable %s not found", "REGION"))
-	} else {
-		parts := strings.Split(region, "/")
-		region = parts[len(parts)-1]
-		return region, nil
+	// Check if running on a GCE or Cloud Run environment
+	if !metadata.OnGCE() {
+		return "", errs.MustNeverError.New("not running on a GCE/GAE or Cloud Run environment")
 	}
+	ctx := context.Background()
+	// Fetch the zone from the metadata server
+	// This fetches a string like "us-central1-f"
+	zone, err := metadata.GetWithContext(ctx, "instance/zone")
+	if err != nil {
+		return fstrings.NO_DATA, errs.NotFoundError.New("failed to retrieve zone from metadata: %v", err)
+	}
+
+	// Extract the region from the zone
+	// Metadata provides the zone in the format "projects/<project-number>/zones/<zone-name>"
+	parts := strings.Split(zone, "/")
+	if len(parts) < 4 {
+		return "", errs.ParseError.New("unexpected format for zone: %s", zone)
+	}
+	zoneName := parts[len(parts)-1]
+	region := zoneName[:strings.LastIndex(zoneName, "-")]
+
+	return region, nil
 }
 
 func ProjectId() (string, error) {
-	projectId, err := metadata.ProjectIDWithContext(context.Background())
-	if err != nil {
-		return "", errors.Join(err, EnvVariableNotFound.New("env variable %s not found", "GOOGLE_CLOUD_PROJECT"))
-	} else {
-		return projectId, nil
+	// Check if the code is running within a Google Cloud environment.
+	if !metadata.OnGCE() {
+		return fstrings.NO_DATA, errs.MustNeverError.New("not running on Google Compute Engine, Google App Engine, or Cloud Run environment")
 	}
+
+	ctx := context.Background()
+	// Retrieve the project ID from the metadata server.
+	projectID, err := metadata.GetWithContext(ctx, "project/project-id")
+	if err != nil {
+		return fstrings.NO_DATA, errs.NotFoundError.New("failed to retrieve project ID from metadata: %w", err)
+	}
+
+	return projectID, nil
+
 }

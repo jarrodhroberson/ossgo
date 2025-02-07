@@ -1,4 +1,4 @@
-package strings
+package crypt
 
 import (
 	"context"
@@ -11,12 +11,13 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
-	"github.com/jarrodhroberson/ossgo/gcp"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
+
+	"github.com/jarrodhroberson/ossgo/gcp"
 )
 
-var malformed_cypher_text_error = errorx.NewErrorBuilder(errorx.IllegalFormat).WithCause(fmt.Errorf("malformed cypher text")).Create()
+var malformedCypherTextError = errorx.NewErrorBuilder(errorx.IllegalFormat).WithCause(fmt.Errorf("malformed cypher text")).Create()
 
 // generateRandomBytes generates random bytes with entropy sourced from the
 // current location.
@@ -85,7 +86,7 @@ func Decrypt(ciphertext []byte, key []byte) (plaintext []byte, err error) {
 	}
 
 	if len(ciphertext) < gcm.NonceSize() {
-		return nil, malformed_cypher_text_error
+		return nil, malformedCypherTextError
 	}
 
 	return gcm.Open(nil,
