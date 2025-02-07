@@ -1,27 +1,18 @@
 package slices
 
 import (
-	"errors"
+	"iter"
 	"slices"
 	"strings"
 
 	"github.com/joomcode/errorx"
-	"github.com/rs/zerolog/log"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
 const NOT_FOUND = -1
 
-func Must(result int, err error) int {
-	if err != nil {
-		err = errors.Join(errs.MustNeverError.New("the wrapped function is expected to never fail; it failed with error:%s", err.Error()), err)
-		log.Error().Stack().Err(err).Msg(err.Error())
-		panic(err)
-	}
-	return result
-}
-
+// Deprecated: use slices.Chunk instead
 func Partition[T any](s []T, size int) [][]T {
 	chunks := make([][]T, 0, len(s)/size+1)
 	for i := 0; i < len(s); i += size {
@@ -34,6 +25,22 @@ func Partition[T any](s []T, size int) [][]T {
 	return chunks
 }
 
+// Transform applies a transformation function to each element in a sequence and
+// returns a new sequence of transformed elements.
+func Transform[F any, T any](seq iter.Seq[F], transform func(F) T) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for f := range seq {
+			if !yield(transform(f)) {
+				return
+			}
+		}
+	}
+}
+
+// Map applies a transformation function `f` to each element of the input slice `in` and
+// returns a new slice of results.
+//
+// Deprecated: prefer Transform instead
 func Map[F any, T any](in []F, f func(F) T) []T {
 	m := make([]T, len(in))
 	for i, el := range in {

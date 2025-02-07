@@ -4,15 +4,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding Stringifier definition">
-      <change beforePath="$PROJECT_DIR$/timestamp/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/timestamp/functions.go" afterDir="false" />
-    </list>
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="refactoring and clean up" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../usr/local/go" />
+  <component name="GOROOT" url="file://$USER_HOME$/.asdf/installs/golang/1.23.4/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -31,7 +29,7 @@
   <component name="GoLibraries">
     <option name="urls">
       <list>
-        <option value="file://$PROJECT_DIR$/../../go/" />
+        <option value="file://$USER_HOME$/go/" />
       </list>
     </option>
     <option name="useGoPathFromSystemEnvironment" value="false" />
@@ -67,7 +65,7 @@
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "//wsl$/Ubuntu/home/jhr/git/ossgo",
+    "last_opened_file_path": "/home/jhr/git/ossgo/crypt",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -75,6 +73,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/crypt" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="go build scratch_2.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="ossgo" />
@@ -114,7 +117,8 @@
     <MESSAGE value="adding a way to decorate a map with zerolog.LogObjectMarshaller" />
     <MESSAGE value="adding contraint/validation errors" />
     <MESSAGE value="adding Stringifier definition" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding Stringifier definition" />
+    <MESSAGE value="refactoring and clean up" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactoring and clean up" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
