@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/sha3"
@@ -78,9 +79,10 @@ func createEntropy(length int) string {
 	return entropy
 }
 
-func computeHash(content string, saltLength int) string {
-	salt := createEntropy(saltLength)
-	bytes := []byte(sha3.New256().Sum([]byte(content + salt)))
+func computeHash(content string) string {
+	// Drop the first character because it will bias the histogram
+	// to the left.
+	bytes := sha3.New256().Sum([]byte(content[1 : len(content)-1]))
 	bi := big.Int{}
 	return bi.SetBytes(bytes).Text(36)
 }
@@ -100,7 +102,12 @@ func (c CUID2) String() string {
 func New(l int) CUID2 {
 	t := strconv.FormatInt(time.Now().UnixMilli(), 36)
 	firstLetter := alphabet_array[int(math.Abs(float64(nextIntValue()%len(alphabet_array))))]
-	content := fmt.Sprintf("%s%s%d%s", t, createEntropy(l), nextCounterValue(), machineFingerprint)
-	hash := computeHash(content, l)
+	var contentBuilder strings.Builder
+	contentBuilder.WriteString(t)                                // time
+	contentBuilder.WriteString(createEntropy(l))                 // salt
+	contentBuilder.WriteString(strconv.Itoa(nextCounterValue())) // count
+	contentBuilder.WriteString(machineFingerprint)               // fingerprint
+	content := contentBuilder.String()
+	hash := computeHash(content)
 	return CUID2(string(firstLetter) + hash[1:l])
 }
