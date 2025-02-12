@@ -248,3 +248,7 @@ func DocumentIteratorToSeq[V any](dsi *fs.DocumentIterator) iter.Seq[*V] {
 		}
 	}
 }
+
+func NewFirestoreRepository[T any](client *fs.Client) *FirestoreRepository[T] {
+	return &FirestoreRepository[T]{client: client}
+}
