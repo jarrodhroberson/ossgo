@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="managing redis memory store in gcp">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/events/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/events/types.go" afterDir="false" />
-    </list>
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="undoing over engineering" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -70,7 +67,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250212_0001",
+    "com.google.cloudcode.ide_session_index": "20250212_0003",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
@@ -116,6 +113,17 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
@@ -129,7 +137,8 @@
     <MESSAGE value="adding Stringifier definition" />
     <MESSAGE value="refactoring and clean up" />
     <MESSAGE value="managing redis memory store in gcp" />
-    <option name="LAST_COMMIT_MESSAGE" value="managing redis memory store in gcp" />
+    <MESSAGE value="undoing over engineering" />
+    <option name="LAST_COMMIT_MESSAGE" value="undoing over engineering" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
