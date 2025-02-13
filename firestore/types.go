@@ -1,8 +1,6 @@
 package firestore
 
 import (
-	"context"
-
 	fs "cloud.google.com/go/firestore"
 )
 
@@ -50,31 +48,3 @@ var QueryOps = struct {
 }
 
 type WherePredicate func(q fs.Query) fs.Query
-
-type FirestoreRepository[T any] struct {
-	client *fs.Client
-}
-
-func (f FirestoreRepository[T]) Load(ctx context.Context, key string) (*T, error) {
-	docSnapshot, err := f.client.Collection("account").Doc(key).Get(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var data T
-	err = docSnapshot.DataTo(data)
-	return &data, err
-}
-
-func (f FirestoreRepository[T]) Store(ctx context.Context, key string, value *T) (*T, error) {
-	_, err := f.client.Collection("account").Doc(key).Set(ctx, value)
-	if err != nil {
-		return nil, err
-	}
-	return f.Load(ctx, key)
-
-}
-
-func (f FirestoreRepository[T]) Remove(ctx context.Context, key string) error {
-	_, err := f.client.Collection("account").Doc(key).Delete(ctx)
-	return err
-}
