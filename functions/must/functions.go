@@ -18,6 +18,15 @@ func init() {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 }
 
+// MustErrFunc if err != nil use custom errFunc to handle the error and panic(), else return T
+func MustErrFunc[T any](result T, err error, errFunc func(err error) error) T {
+	if err != nil {
+		panic(errors.Join(errFunc(err), err))
+	} else {
+		return result
+	}
+}
+
 func Must[T any](result T, err error) T {
 	if err != nil {
 		err = errs.MustNeverError.New("the wrapped function is expected to never fail; it failed with error:%s", err.Error())
