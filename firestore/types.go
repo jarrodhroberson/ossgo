@@ -1,7 +1,18 @@
 package firestore
 
 import (
+	"context"
+	"iter"
+	"strings"
+
+	"cloud.google.com/go/firestore"
 	fs "cloud.google.com/go/firestore"
+	"github.com/jarrodhroberson/ossgo/containers"
+	errs "github.com/jarrodhroberson/ossgo/errors"
+	"github.com/jarrodhroberson/ossgo/functions"
+	"github.com/jarrodhroberson/ossgo/functions/must"
+	"github.com/jarrodhroberson/ossgo/timestamp"
+	"github.com/rs/zerolog/log"
 )
 
 const MAX_BULK_WRITE_SIZE = 20
@@ -48,3 +59,111 @@ var QueryOps = struct {
 }
 
 type WherePredicate func(q fs.Query) fs.Query
+
+type Projection string
+
+func (proj Projection) String() string {
+	return string(proj)
+}
+
+const (
+	OnlyId              Projection = "id_only"
+	OnlyIdLastUpdatedAt Projection = "id_last_updated_at"
+	All                 Projection = "all"
+)
+
+type CollectionRepository[T any] struct {
+	clientProvider functions.Provider[*firestore.Client]
+	collection     string
+	keyer          containers.Keyer[T]
+}
+
+func (c CollectionRepository[T]) All(projection Projection) iter.Seq[*T] {
+	ctx := context.Background()
+	client := c.clientProvider()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Err(err).Msg(err.Error())
+		}
+	}(client)
+
+	if projection == "" {
+		projection = All
+	}
+	var docIter *firestore.DocumentIterator
+	switch projection {
+	case OnlyId:
+		// An empty Select call will produce a query that returns only document IDs.
+		docIter = client.Collection(c.collection).Select().Documents(ctx)
+	case OnlyIdLastUpdatedAt:
+		docIter = client.Collection(c.collection).Select("id", "last_updated_at").Documents(ctx)
+	case All:
+		docIter = client.Collection(c.collection).Documents(ctx)
+	default:
+		// this allows custom comma-delimited projections
+		fields := strings.Split(projection.String(), ",")
+		docIter = client.Collection(c.collection).Select(fields...).Documents(ctx)
+	}
+	return DocumentIteratorToSeq[T](docIter)
+}
+
+func (c CollectionRepository[T]) Get(id string) (*T, error) {
+	ctx := context.Background()
+	client := c.clientProvider()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Err(err).Msg(err.Error())
+		}
+	}(client)
+
+	docSnapshot, err := client.Collection(c.collection).Doc(id).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var t T
+	err = docSnapshot.DataTo(&t)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+func (c CollectionRepository[T]) Store(v *T) (*T, error) {
+	client := c.clientProvider()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Err(err).Msg(err.Error())
+		}
+	}(client)
+
+	docRef := client.Collection(c.collection).Doc(c.keyer(v))
+	m := must.MarshallMap(v)
+	containers.RemoveKeys(m, "created_at")
+	m["last_updated_at"] = timestamp.Now()
+	ctx := context.Background()
+	_, err := docRef.Set(ctx, m)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (c CollectionRepository[T]) Remove(id string) error {
+	ctx := context.Background()
+	client := c.clientProvider()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Err(err).Msg(err.Error())
+		}
+	}(client)
+
+	_, err := client.Collection(c.collection).Doc(id).Delete(ctx)
+	if err != nil {
+		err = errs.NotDeletedError.Wrap(err, "failed to delete %s/%s", c.collection, id)
+	}
+	return err
+}
