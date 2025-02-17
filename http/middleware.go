@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func AntiHackingMiddleware(blackhole map[string]interface{}) gin.HandlerFunc {
+func AntiHackingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientIp := c.ClientIP()
 		if blackHole.Get(clientIp) != nil {

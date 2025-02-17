@@ -6,14 +6,17 @@ import (
 	"fmt"
 	"iter"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/compute/metadata"
 	fs "cloud.google.com/go/firestore"
 	fspb "cloud.google.com/go/firestore/apiv1/firestorepb"
 	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/jarrodhroberson/ossgo/functions/must"
+	"github.com/jarrodhroberson/ossgo/timestamp"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
@@ -141,7 +144,24 @@ func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T)
 func MapToUpdates(m map[string]interface{}) []fs.Update {
 	updates := make([]fs.Update, 0, len(m))
 	for k, v := range m {
-		updates = append(updates, fs.Update{Path: k, Value: v})
+		switch v.(type) {
+		case string:
+			updates = append(updates, fs.Update{Path: k, Value: v.(string)})
+		case int, int8, int16, int32, int64:
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatInt(reflect.ValueOf(v).Int(), 10)})
+		case uint, uint8, uint16, uint32, uint64:
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatUint(reflect.ValueOf(v).Uint(), 10)})
+		case float32, float64:
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatFloat(reflect.ValueOf(v).Float(), 'f', -1, 64)})
+		case bool:
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatBool(v.(bool))})
+		case time.Time:
+			updates = append(updates, fs.Update{Path: k, Value: timestamp.From(v.(time.Time)).String()})
+		case timestamp.Timestamp:
+			updates = append(updates, fs.Update{Path: k, Value: v.(timestamp.Timestamp).String()})
+		default:
+			updates = append(updates, fs.Update{Path: k, Value: string(must.MarshalJson(v))})
+		}
 	}
 	return updates
 }

@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="undoing over engineering">
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="moving gin.HandlerFunc to middleware.go">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions/must/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/functions/must/functions.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/firestore/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/firestore/functions.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/firestore/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/firestore/types.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/http/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/http/middleware.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +67,7 @@
     "ACTIVE_CLOUD_PROJECT_NUMBER": "565142929747",
     "DefaultGoTemplateProperty": "Go File",
     "Go Build.go build scratch_2.go.executor": "Run",
+    "Go Build.go build scratch_4.go.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
@@ -102,6 +105,11 @@
     "timeTracker.timeInMills": "0",
     "timeTracker.type": "Development",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "go"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -109,7 +117,7 @@
       <recent name="$PROJECT_DIR$/crypt" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Go Build.go build scratch_4.go">
     <configuration name="go build scratch_2.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="ossgo" />
       <working_directory value="$PROJECT_DIR$" />
@@ -119,8 +127,18 @@
       <filePath value="$APPLICATION_CONFIG_DIR$/scratches/scratch_2.go" />
       <method v="2" />
     </configuration>
+    <configuration name="go build scratch_4.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="ossgo" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="github.com/jarrodhroberson/ossgo" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$APPLICATION_CONFIG_DIR$/scratches/scratch_4.go" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Build.go build scratch_4.go" />
         <item itemvalue="Go Build.go build scratch_2.go" />
       </list>
     </recent_temporary>
@@ -142,6 +160,15 @@
       <option name="presentableId" value="Default" />
       <updated>1739462081905</updated>
     </task>
+    <task id="LOCAL-00001" summary="moving gin.HandlerFunc to middleware.go">
+      <option name="closed" value="true" />
+      <created>1739747792747</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1739747792747</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers>
       <YouTrack url="https://clicklikegive.youtrack.cloud">
         <username>random</username>
@@ -176,7 +203,8 @@
     <MESSAGE value="refactoring and clean up" />
     <MESSAGE value="managing redis memory store in gcp" />
     <MESSAGE value="undoing over engineering" />
-    <option name="LAST_COMMIT_MESSAGE" value="undoing over engineering" />
+    <MESSAGE value="moving gin.HandlerFunc to middleware.go" />
+    <option name="LAST_COMMIT_MESSAGE" value="moving gin.HandlerFunc to middleware.go" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
