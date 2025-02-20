@@ -37,6 +37,10 @@ func SeqToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V
 	})
 }
 
+func SkipLimit[V any](it iter.Seq[V], skip int, limit int) iter.Seq[V] {
+	return FirstN[V](SkipFirstN[V](it, skip), limit)
+}
+
 // FirstN takes an iter.Seq[int] and returns a new iter.Seq[int] that
 // yields only the first 'limit' items without creating intermediate slices.
 func FirstN[T any](original iter.Seq[T], limit int) iter.Seq[T] {

@@ -63,7 +63,6 @@ func CollectionExists(ctx context.Context, client *firestore.Client, path string
 }
 
 func DeleteCollection(ctx context.Context, client *firestore.Client, path string) error {
-	colRef := client.Collection(path)
 	if !CollectionExists(ctx, client, path) {
 		return errs.NotFoundError.New("collection \"%s\" does not exist", path)
 	}
@@ -76,7 +75,7 @@ func DeleteCollection(ctx context.Context, client *firestore.Client, path string
 	type idOnly struct {
 		Id string `json:"id"`
 	}
-	for record := range DocumentIteratorToSeq[idOnly] {
+	for record := range DocumentIteratorToSeq[idOnly](docIter) {
 		errgp.Go(func() error {
 			numDeleted := 0
 			for {
@@ -89,7 +88,7 @@ func DeleteCollection(ctx context.Context, client *firestore.Client, path string
 					}
 				}
 
-				_, err = bulkwriter.Delete(doc.Ref)
+				_, err = bulkwriter.Delete(client.Collection(path).Doc(record.Id))
 				if err != nil {
 					return BulkWriterError.New("error deleting document \"%s\" in collection \"%s\"", doc.Ref.ID, path)
 				}
