@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
-	"cloud.google.com/go/firestore"
+	fs "cloud.google.com/go/firestore"
 	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/timestamp"
@@ -30,7 +30,7 @@ import (
 
 func NewCollectionRepository[T any](database DatabaseName, collection string, keyer func(t *T) string) *CollectionRepository[T] {
 	return &CollectionRepository[T]{
-		clientProvider: func() *firestore.Client {
+		clientProvider: func() *fs.Client {
 			return Must(Client(context.Background(), database))
 		},
 		collection: collection,
@@ -46,7 +46,7 @@ func Exists(err error) bool {
 	return !IsNotFound(err)
 }
 
-func CollectionExists(ctx context.Context, client *firestore.Client, path string) bool {
+func CollectionExists(ctx context.Context, client *fs.Client, path string) bool {
 	iter := client.Collections(ctx)
 	for {
 		colRef, err := iter.Next()
@@ -62,7 +62,7 @@ func CollectionExists(ctx context.Context, client *firestore.Client, path string
 	}
 }
 
-func DeleteCollection(ctx context.Context, client *firestore.Client, path string) error {
+func DeleteCollection(ctx context.Context, client *fs.Client, path string) error {
 	if !CollectionExists(ctx, client, path) {
 		return errs.NotFoundError.New("collection \"%s\" does not exist", path)
 	}
@@ -71,11 +71,11 @@ func DeleteCollection(ctx context.Context, client *firestore.Client, path string
 	defer bulkwriter.End()
 
 	errgp, ctx := errgroup.WithContext(context.Background())
-	docIter := client.Collection(path).Select().OrderBy("id", firestore.Asc).Documents(ctx)
+	docIter := client.Collection(path).Select().OrderBy("id", fs.Asc).Documents(ctx)
 	type idOnly struct {
 		Id string `json:"id"`
 	}
-	for record := range DocumentIteratorToSeq[idOnly](docIter) {
+	for docSS := range DocumentIteratorToSeq(docIter) {
 		errgp.Go(func() error {
 			numDeleted := 0
 			for {
@@ -88,7 +88,7 @@ func DeleteCollection(ctx context.Context, client *firestore.Client, path string
 					}
 				}
 
-				_, err = bulkwriter.Delete(client.Collection(path).Doc(record.Id))
+				_, err = bulkwriter.Delete(docSS.Ref)
 				if err != nil {
 					return BulkWriterError.New("error deleting document \"%s\" in collection \"%s\"", doc.Ref.ID, path)
 				}
@@ -108,7 +108,7 @@ func DeleteCollection(ctx context.Context, client *firestore.Client, path string
 	return nil
 }
 
-func Must(client *firestore.Client, err error) *firestore.Client {
+func Must(client *fs.Client, err error) *fs.Client {
 	if err != nil {
 		log.Error().Err(err).Msgf("error creating firestore client %s", err)
 		panic(err)
@@ -117,12 +117,12 @@ func Must(client *firestore.Client, err error) *firestore.Client {
 	}
 }
 
-func Client(ctx context.Context, database DatabaseName) (*firestore.Client, error) {
+func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 	if strings.Trim(string(database), " ") == "" {
 		return nil, errorx.IllegalArgument.New("DatabaseName can not be an empty string")
 	}
 	projectId := functions.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(metadata.ProjectIDWithContext(ctx)))
-	client, err := firestore.NewClientWithDatabase(ctx, projectId, string(database))
+	client, err := fs.NewClientWithDatabase(ctx, projectId, string(database))
 	if err != nil {
 		log.Fatal().Err(err).Msgf("error creating firestore client %s", err)
 		return nil, err
@@ -130,7 +130,7 @@ func Client(ctx context.Context, database DatabaseName) (*firestore.Client, erro
 	return client, nil
 }
 
-func Count(ctx context.Context, query firestore.Query) int64 {
+func Count(ctx context.Context, query fs.Query) int64 {
 	cq := query.NewAggregationQuery().WithCount("count")
 	cqr, err := cq.Get(ctx)
 	if err != nil {
@@ -154,7 +154,7 @@ func Count(ctx context.Context, query firestore.Query) int64 {
 
 func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T) error {
 	client := Must(Client(ctx, database))
-	defer func(client *firestore.Client) {
+	defer func(client *fs.Client) {
 		err := client.Close()
 		if err != nil {
 			log.Error().Err(err).Msgf("error closing firestore client %s", err)
@@ -168,32 +168,32 @@ func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T)
 	return doc.DataTo(t)
 }
 
-func MapToUpdates(m map[string]interface{}) []firestore.Update {
-	updates := make([]firestore.Update, 0, len(m))
+func MapToUpdates(m map[string]interface{}) []fs.Update {
+	updates := make([]fs.Update, 0, len(m))
 	for k, v := range m {
 		switch v.(type) {
 		case string:
-			updates = append(updates, firestore.Update{Path: k, Value: v.(string)})
+			updates = append(updates, fs.Update{Path: k, Value: v.(string)})
 		case int, int8, int16, int32, int64:
-			updates = append(updates, firestore.Update{Path: k, Value: strconv.FormatInt(reflect.ValueOf(v).Int(), 10)})
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatInt(reflect.ValueOf(v).Int(), 10)})
 		case uint, uint8, uint16, uint32, uint64:
-			updates = append(updates, firestore.Update{Path: k, Value: strconv.FormatUint(reflect.ValueOf(v).Uint(), 10)})
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatUint(reflect.ValueOf(v).Uint(), 10)})
 		case float32, float64:
-			updates = append(updates, firestore.Update{Path: k, Value: strconv.FormatFloat(reflect.ValueOf(v).Float(), 'f', -1, 64)})
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatFloat(reflect.ValueOf(v).Float(), 'f', -1, 64)})
 		case bool:
-			updates = append(updates, firestore.Update{Path: k, Value: strconv.FormatBool(v.(bool))})
+			updates = append(updates, fs.Update{Path: k, Value: strconv.FormatBool(v.(bool))})
 		case time.Time:
-			updates = append(updates, firestore.Update{Path: k, Value: timestamp.From(v.(time.Time)).String()})
+			updates = append(updates, fs.Update{Path: k, Value: timestamp.From(v.(time.Time)).String()})
 		case timestamp.Timestamp:
-			updates = append(updates, firestore.Update{Path: k, Value: v.(timestamp.Timestamp).String()})
+			updates = append(updates, fs.Update{Path: k, Value: v.(timestamp.Timestamp).String()})
 		default:
-			updates = append(updates, firestore.Update{Path: k, Value: string(must.MarshalJson(v))})
+			updates = append(updates, fs.Update{Path: k, Value: string(must.MarshalJson(v))})
 		}
 	}
 	return updates
 }
 
-func traverseFirestore(ctx context.Context, docRef firestore.DocumentRef) (map[string]interface{}, error) {
+func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]interface{}, error) {
 	var tree map[string]interface{}
 
 	// Get the document snapshot
@@ -240,39 +240,44 @@ func traverseFirestore(ctx context.Context, docRef firestore.DocumentRef) (map[s
 	return tree, nil
 }
 
-// DocumentIteratorToSeq2 converts a firestore.Iterator to an iter.Seq2.
-// doc.Ref.ID is used as the "key" or first value, second value is a pointer to the type V
-func DocumentIteratorToSeq2[V any](dsi *firestore.DocumentIterator) iter.Seq2[string, *V] {
+func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) iter.Seq2[string, *V] {
 	return func(yield func(string, *V) bool) {
-		defer dsi.Stop()
-		for {
-			doc, err := dsi.Next()
-			if errors.Is(err, iterator.Done) {
-				return
-			}
+		for k, v := range it {
+			var d V
+			err := v.DataTo(&d)
 			if err != nil {
-				log.Error().Err(err).Msg("error iterating through Firestore documents")
+				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", v.Ref.ID)
 				return
 			}
 
-			var b V
-			err = doc.DataTo(&b)
-			if err != nil {
-				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", doc.Ref.ID)
-				continue
-			}
-
-			if !yield(doc.Ref.ID, &b) {
+			if !yield(k, &d) {
 				return
 			}
 		}
 	}
 }
 
+func DocSnapShotSeqToType[T any](it iter.Seq[fs.DocumentSnapshot]) iter.Seq[*T] {
+	return iter.Seq[*T](func(yield func(*T) bool) {
+		for doc := range it {
+			var t T
+			err := doc.DataTo(&t)
+			if err != nil {
+				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", doc.Ref.ID)
+				return
+			}
+
+			if !yield(&t) {
+				return
+			}
+		}
+	})
+}
+
 // DocumentIteratorToSeq converts a firestore.Iterator to an iter.Seq.
 // value is a pointer to the type V
-func DocumentIteratorToSeq[V any](dsi *firestore.DocumentIterator) iter.Seq[*V] {
-	return func(yield func(*V) bool) {
+func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapshot] {
+	return func(yield func(ref *fs.DocumentSnapshot) bool) {
 		defer dsi.Stop()
 		for {
 			doc, err := dsi.Next()
@@ -283,15 +288,30 @@ func DocumentIteratorToSeq[V any](dsi *firestore.DocumentIterator) iter.Seq[*V] 
 				log.Error().Err(err).Msg("error iterating through Firestore documents")
 				return
 			}
+			if !yield(doc) {
+				return
+			}
+		}
+	}
+}
 
-			var b V
-			err = doc.DataTo(&b)
+// DocumentIteratorToSeq2 converts a firestore.Iterator to an iter.Seq2.
+// doc.Ref.ID is used as the "key" or first value, second value is a pointer to the type V
+func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.DocumentSnapshot] {
+	return func(yield func(string, *fs.DocumentSnapshot) bool) {
+		defer dsi.Stop()
+		for {
+
+			doc, err := dsi.Next()
+			if errors.Is(err, iterator.Done) {
+				return
+			}
 			if err != nil {
-				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", doc.Ref.ID)
+				log.Error().Err(err).Msg("error iterating through Firestore documents")
 				return
 			}
 
-			if !yield(&b) {
+			if !yield(doc.Ref.ID, doc) {
 				return
 			}
 		}

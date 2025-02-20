@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="moving gin.HandlerFunc to middleware.go" />
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="iter.Seq package">
+      <change beforePath="$PROJECT_DIR$/firestore/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/firestore/functions.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slices/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/slices/functions.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,7 +20,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../usr/local/go" />
+  <component name="GOROOT" url="file:///nix/store/kaajk63cgb8yrqvqvlmbss31b6nia854-go-1.23.5/share/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -61,6 +64,8 @@
     "ACTIVE_CLOUD_PROJECT_NAME": "www-clicklikegive-com",
     "ACTIVE_CLOUD_PROJECT_NUMBER": "565142929747",
     "DefaultGoTemplateProperty": "Go File",
+    "Go Build.go build github.com/jarrodhroberson/ossgo.executor": "Run",
+    "Go Build.go build scratch.go.executor": "Run",
     "Go Build.go build scratch_2.go.executor": "Run",
     "Go Build.go build scratch_4.go.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -68,16 +73,17 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250216_0000",
+    "com.google.cloudcode.ide_session_index": "20250218_0001",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "//wsl$/Ubuntu/home/jhr/git/account",
+    "last_opened_file_path": "/home/jhr/git/ossgo",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
     "timeTracker.activityTracker": "null",
     "timeTracker.comment": "",
     "timeTracker.inactivityPeriodInMills": "600000",
@@ -112,7 +118,23 @@
       <recent name="$PROJECT_DIR$/crypt" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Build.go build scratch_4.go">
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="GoApplicationRunConfiguration" />
+      </set>
+    </option>
+  </component>
+  <component name="RunManager" selected="Go Build.go build github.com/jarrodhroberson/ossgo">
+    <configuration name="go build github.com/jarrodhroberson/ossgo" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="ossgo" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/jarrodhroberson/ossgo" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
     <configuration name="go build scratch_2.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="ossgo" />
       <working_directory value="$PROJECT_DIR$" />
@@ -131,8 +153,19 @@
       <filePath value="$APPLICATION_CONFIG_DIR$/scratches/scratch_4.go" />
       <method v="2" />
     </configuration>
+    <configuration name="go build scratch.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="ossgo" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="github.com/jarrodhroberson/ossgo" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$APPLICATION_CONFIG_DIR$/scratches/scratch.go" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Build.go build github.com/jarrodhroberson/ossgo" />
+        <item itemvalue="Go Build.go build scratch.go" />
         <item itemvalue="Go Build.go build scratch_4.go" />
         <item itemvalue="Go Build.go build scratch_2.go" />
       </list>
@@ -207,7 +240,8 @@
     <MESSAGE value="managing redis memory store in gcp" />
     <MESSAGE value="undoing over engineering" />
     <MESSAGE value="moving gin.HandlerFunc to middleware.go" />
-    <option name="LAST_COMMIT_MESSAGE" value="moving gin.HandlerFunc to middleware.go" />
+    <MESSAGE value="iter.Seq package" />
+    <option name="LAST_COMMIT_MESSAGE" value="iter.Seq package" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">
