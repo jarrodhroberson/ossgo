@@ -105,7 +105,7 @@ func (c CollectionRepository[T]) All(projection Projection) iter.Seq[*T] {
 		fields := strings.Split(projection.String(), ",")
 		docIter = client.Collection(c.collection).Select(fields...).Documents(ctx)
 	}
-	return DocumentIteratorToSeq[T](docIter)
+	return DocSnapShotSeqToType[T](DocumentIteratorToSeq(docIter))
 }
 
 func (c CollectionRepository[T]) Get(id string) (*T, error) {

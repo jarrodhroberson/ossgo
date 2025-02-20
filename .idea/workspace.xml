@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="iter.Seq package">
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="refactoring the firestore  documentiter seq stuff to make it more composible">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/firestore/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/firestore/functions.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slices/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/slices/functions.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +73,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "com.google.cloudcode.ide_session_index": "20250218_0001",
+    "com.google.cloudcode.ide_session_index": "20250220_0001",
     "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
@@ -83,7 +83,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default",
     "timeTracker.activityTracker": "null",
     "timeTracker.comment": "",
     "timeTracker.inactivityPeriodInMills": "600000",
@@ -241,7 +241,8 @@
     <MESSAGE value="undoing over engineering" />
     <MESSAGE value="moving gin.HandlerFunc to middleware.go" />
     <MESSAGE value="iter.Seq package" />
-    <option name="LAST_COMMIT_MESSAGE" value="iter.Seq package" />
+    <MESSAGE value="refactoring the firestore  documentiter seq stuff to make it more composible" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactoring the firestore  documentiter seq stuff to make it more composible" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">

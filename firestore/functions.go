@@ -17,6 +17,7 @@ import (
 	fs "cloud.google.com/go/firestore"
 	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/jarrodhroberson/ossgo/functions/must"
+	"github.com/jarrodhroberson/ossgo/seq"
 	"github.com/jarrodhroberson/ossgo/timestamp"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
@@ -72,9 +73,7 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 
 	errgp, ctx := errgroup.WithContext(context.Background())
 	docIter := client.Collection(path).Select().OrderBy("id", fs.Asc).Documents(ctx)
-	type idOnly struct {
-		Id string `json:"id"`
-	}
+
 	for docSS := range DocumentIteratorToSeq(docIter) {
 		errgp.Go(func() error {
 			numDeleted := 0
@@ -257,7 +256,7 @@ func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) it
 	}
 }
 
-func DocSnapShotSeqToType[T any](it iter.Seq[fs.DocumentSnapshot]) iter.Seq[*T] {
+func DocSnapShotSeqToType[T any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*T] {
 	return iter.Seq[*T](func(yield func(*T) bool) {
 		for doc := range it {
 			var t T
@@ -297,23 +296,8 @@ func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapsh
 
 // DocumentIteratorToSeq2 converts a firestore.Iterator to an iter.Seq2.
 // doc.Ref.ID is used as the "key" or first value, second value is a pointer to the type V
-func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.DocumentSnapshot] {
-	return func(yield func(string, *fs.DocumentSnapshot) bool) {
-		defer dsi.Stop()
-		for {
-
-			doc, err := dsi.Next()
-			if errors.Is(err, iterator.Done) {
-				return
-			}
-			if err != nil {
-				log.Error().Err(err).Msg("error iterating through Firestore documents")
-				return
-			}
-
-			if !yield(doc.Ref.ID, doc) {
-				return
-			}
-		}
-	}
+func DocumentIteratorToSeq2(dsi iter.Seq[*fs.DocumentSnapshot]) iter.Seq2[*fs.DocumentRef, *fs.DocumentSnapshot] {
+	return seq.SeqToSeq2[*fs.DocumentRef,*fs.DocumentSnapshot](dsi, func(v *fs.DocumentSnapshot) *fs.DocumentRef {
+		return v.Ref
+	})
 }
