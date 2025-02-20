@@ -1,8 +1,9 @@
 package seq
 
 import (
-	"fmt"
 	"iter"
+
+	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
 func IntRange(start int, end int) iter.Seq[int] {
@@ -13,6 +14,27 @@ func IntRange(start int, end int) iter.Seq[int] {
 			}
 		}
 	}
+}
+
+func Map[T any, R any](it iter.Seq[T], mapFunc func(t T) R) iter.Seq[R] {
+	return func(yield func(R) bool) {
+		for i := range it {
+			if !yield(mapFunc(i)) {
+				return
+			}
+		}
+	}
+}
+
+func SeqToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V] {
+	return iter.Seq2[K, V](func(yield func(K, V) bool) {
+		for v := range is {
+			k := keyFunc(v)
+			if !yield(k, v) {
+				return
+			}
+		}
+	})
 }
 
 // FirstN takes an iter.Seq[int] and returns a new iter.Seq[int] that
@@ -57,20 +79,93 @@ func SkipFirstN[T any](seq iter.Seq[T], skip int) iter.Seq[T] {
 }
 
 // Chunk returns an iterator over consecutive sub-slices of up to n elements of s.
-// All but the last sub-slice will have size n.
-// All sub-slices are clipped to have no capacity beyond the length.
-// If s is empty, the sequence is empty: there is no empty slice in the sequence.
+// All but the last iter.Seq chunk will have size n.
 // Chunk panics if n is less than 1.
-func Chunk[E any](s1 iter.Seq[E], n int) iter.Seq[iter.Seq[E]] {
-	start := 0
-	return func(yield func(s iter.Seq[E]) bool) {
-		for i := start; i < n; i++ {
-			fmt.Printf("start: %d\n", i)
-			s2 := FirstN(SkipFirstN(s1, n), n)
-			if !yield(s2) {
+func Chunk[T any](sq iter.Seq[T], size int) iter.Seq[iter.Seq[T]] {
+	if size < 0 {
+		panic(errs.MinSizeExceededError.New("size %d must be >= 0", size))
+	}
+
+	return func(yield func(s iter.Seq[T]) bool) {
+		next, stop := iter.Pull[T](sq)
+		defer stop()
+		endOfSeq := false
+		for !endOfSeq {
+			// get the first item for the chunk
+			v, ok := next()
+			// there are no more items !ok then exit loop
+			// this prevents returning an extra empty iter.Seq at end of Seq
+			if !ok {
+				break
+			}
+			// create the next sequence chunk
+			iterSeqChunk := func(yield func(T) bool) {
+				i := 0
+				for ; i < size-1; i++ {
+					if ok {
+						if !ok {
+							// end of original sequence
+							// this sequence may be <= size
+							endOfSeq = true
+							break
+						}
+
+						if !yield(v) {
+							return
+						}
+						v, ok = next()
+					}
+				}
+			}
+			if !yield(iterSeqChunk) {
 				return
 			}
 		}
-		start = start + n
+	}
+}
+
+// Chunk2 returns an iterator over consecutive sub-slices of up to n elements of s.
+// All but the last iter.Seq chunk will have size n.
+// Chunk2 panics if n is less than 1.
+func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]] {
+	if size < 0 {
+		panic(errs.MinSizeExceededError.New("size %d must be >= 0", size))
+	}
+
+	return func(yield func(s iter.Seq2[K, V]) bool) {
+		next, stop := iter.Pull2[K, V](sq)
+		defer stop()
+		endOfSeq := false
+		for !endOfSeq {
+			// get the first item for the chunk
+			k, v, ok := next()
+			// there are no more items !ok then exit loop
+			// this prevents returning an extra empty iter.Seq at end of Seq
+			if !ok {
+				break
+			}
+			// create the next sequence chunk
+			iterSeqChunk := func(yield func(K, V) bool) {
+				i := 0
+				for ; i < size-1; i++ {
+					if ok {
+						if !ok {
+							// end of original sequence
+							// this sequence may be <= size
+							endOfSeq = true
+							break
+						}
+
+						if !yield(k, v) {
+							return
+						}
+						k, v, ok = next()
+					}
+				}
+			}
+			if !yield(iterSeqChunk) {
+				return
+			}
+		}
 	}
 }
