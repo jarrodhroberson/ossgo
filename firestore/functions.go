@@ -239,37 +239,31 @@ func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]i
 	return tree, nil
 }
 
-func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) iter.Seq2[string, *V] {
-	return func(yield func(string, *V) bool) {
-		for k, v := range it {
-			var d V
-			err := v.DataTo(&d)
-			if err != nil {
-				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", v.Ref.ID)
-				return
-			}
-
-			if !yield(k, &d) {
-				return
-			}
-		}
+func DocSnapShotToType[T any](dss *fs.DocumentSnapshot) (*T, error) {
+	var d T
+	err := dss.DataTo(&d)
+	if err != nil {
+		err = errs.MarshalError.Wrap(err, "error unmarshalling Firestore document with ID %s", dss.Ref.ID)
+		return nil, err
 	}
+	return &d, nil
 }
 
-func DocSnapShotSeqToType[T any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*T] {
-	return iter.Seq[*T](func(yield func(*T) bool) {
-		for doc := range it {
-			var t T
-			err := doc.DataTo(&t)
-			if err != nil {
-				log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", doc.Ref.ID)
-				return
-			}
+func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) iter.Seq2[string, *V] {
+	return seq.Map2[string, *fs.DocumentSnapshot, string, *V](it, seq.PassThruFunc[string], func(v *fs.DocumentSnapshot) *V {
+		return must.Must(DocSnapShotToType[V](v))
+	})
+}
 
-			if !yield(&t) {
-				return
-			}
+func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R] {
+	return seq.Map[*fs.DocumentSnapshot, *R](it, func(dss *fs.DocumentSnapshot) *R {
+		var t R
+		err := dss.DataTo(&t)
+		if err != nil {
+			log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", dss.Ref.ID)
+			panic(err)
 		}
+		return &t
 	})
 }
 
@@ -296,8 +290,8 @@ func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapsh
 
 // DocumentIteratorToSeq2 converts a firestore.Iterator to an iter.Seq2.
 // doc.Ref.ID is used as the "key" or first value, second value is a pointer to the type V
-func DocumentIteratorToSeq2(dsi iter.Seq[*fs.DocumentSnapshot]) iter.Seq2[*fs.DocumentRef, *fs.DocumentSnapshot] {
-	return seq.SeqToSeq2[*fs.DocumentRef,*fs.DocumentSnapshot](dsi, func(v *fs.DocumentSnapshot) *fs.DocumentRef {
-		return v.Ref
+func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.DocumentSnapshot] {
+	return seq.SeqToSeq2[string, *fs.DocumentSnapshot](DocumentIteratorToSeq(dsi), func(v *fs.DocumentSnapshot) string {
+		return v.Ref.ID
 	})
 }
