@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="refactoring the firestore  documentiter seq stuff to make it more composible">
+    <list default="true" id="91daff69-7c12-4ee4-b01a-bf63e775f33c" name="Changes" comment="adding documentation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/firestore/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/firestore/functions.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/seq/functions.go" beforeDir="false" afterPath="$PROJECT_DIR$/seq/functions.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -244,7 +241,8 @@
     <MESSAGE value="moving gin.HandlerFunc to middleware.go" />
     <MESSAGE value="iter.Seq package" />
     <MESSAGE value="refactoring the firestore  documentiter seq stuff to make it more composible" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring the firestore  documentiter seq stuff to make it more composible" />
+    <MESSAGE value="adding documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding documentation" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
   <component name="VgoProject">

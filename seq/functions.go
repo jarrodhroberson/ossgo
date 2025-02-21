@@ -59,18 +59,23 @@ func SeqToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V
 }
 
 // SkipAndLimit combines SkipFirstN and FirstN in a way that allows accessing sub sequences without any overhead.
-// it first SkipFirstN items using skip and then returns the next FirstN items in limit.
+// it first SkipFirstN items using skip and then returns the next FirstN or less items in limit.
 // using this instead of inlining it shows more intent because of the semantic of the name.
+// if skip is greater than the number of items in the sequence then an empty sequence is returned.
+// if limit is greater than the number of items remaining in the sequence then the sequence will
+// contain less than limit number of items in it.
 func SkipAndLimit[V any](it iter.Seq[V], skip int, limit int) iter.Seq[V] {
 	return FirstN[V](SkipFirstN[V](it, skip), limit)
 }
 
 // FirstN takes an iter.Seq[int] and returns a new iter.Seq[int] that
-// yields only the first 'limit' items without creating intermediate slices.
-func FirstN[T any](original iter.Seq[T], limit int) iter.Seq[T] {
+// yields only the first 'limit' or less items without creating intermediate slices.
+// if there are less than limit items in the sequence then the sequence ends
+// when the sequence end is reached.
+func FirstN[T any](it iter.Seq[T], limit int) iter.Seq[T] {
 	return iter.Seq[T](func(yield func(T) bool) {
 		count := 0
-		for item := range original {
+		for item := range it {
 			if count < limit {
 				if !yield(item) {
 					return
@@ -84,7 +89,7 @@ func FirstN[T any](original iter.Seq[T], limit int) iter.Seq[T] {
 }
 
 // SkipFirstN skips the first N items in the sequence and then iterates over the rest of them normally.
-// SkipAndLimit combines this and FirstN to provide arbitrary sub sequencing zero cost abstraction.
+// if skip is greater than the number of items in the sequence then an empty sequence is returned.
 func SkipFirstN[T any](seq iter.Seq[T], skip int) iter.Seq[T] {
 	return iter.Seq[T](func(yield func(T) bool) {
 		next, stop := iter.Pull[T](seq)
