@@ -12,7 +12,7 @@ func main() {
 }
 
 func testSeq() {
-	ints := seq.IntRange(100, 199)
+	ints := seq.IntRange[int64](100, 199)
 	//next, _ := iter.Pull(seq.Sum(ints))
 	//sum, _ := next()
 	//fmt.Println(sum)

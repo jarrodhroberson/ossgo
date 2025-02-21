@@ -134,7 +134,7 @@ func markSent(ctx context.Context, eventID string) error {
 
 //func shouldSendWithLease(ctx context.Context, db *firestore.Client, emailRef string) error {
 //	return db.RunTransaction(ctx, func(tx *firestore.Transaction) error {
-//		docSnapshot, err := tx.Get(emailRef)
+//		docSnapshot, err := tx.Load(emailRef)
 //		if err != nil {
 //			return false, fmt.Errorf("failed to get email document: %v", err)
 //		}

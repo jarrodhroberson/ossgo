@@ -6,10 +6,20 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
-func IntRange(start int, end int) iter.Seq[int] {
-	return func(yield func(int) bool) {
+func IntRange[N Integer](start N, end N) iter.Seq[N] {
+	return func(yield func(N) bool) {
 		for i := start; i <= end; i++ {
 			if !yield(i) {
+				return
+			}
+		}
+	}
+}
+
+func BuildSeq[T any](seq ...T) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for i := range seq {
+			if !yield(seq[i]) {
 				return
 			}
 		}

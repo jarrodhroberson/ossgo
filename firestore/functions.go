@@ -29,8 +29,12 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
-func NewCollectionRepository[T any](database DatabaseName, collection string, keyer func(t *T) string) *CollectionRepository[T] {
-	return &CollectionRepository[T]{
+func NewQuery(collection *fs.CollectionRef) *newQuery {
+	return &newQuery{collection: collection}
+}
+
+func NewCollectionStore[T any](database DatabaseName, collection *fs.CollectionRef, keyer func(t *T) string) *collectionStore[T] {
+	return &collectionStore[T]{
 		clientProvider: func() *fs.Client {
 			return Must(Client(context.Background(), database))
 		},
@@ -72,30 +76,15 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 	defer bulkwriter.End()
 
 	errgp, ctx := errgroup.WithContext(context.Background())
-	docIter := client.Collection(path).Select().OrderBy("id", fs.Asc).Documents(ctx)
+	docIter := client.Collection(path).Select().OrderBy("created_at", fs.Asc).Documents(ctx)
 
-	for docSS := range DocumentIteratorToSeq(docIter) {
+	for docSSIter := range seq.Chunk(DocumentIteratorToSeq(docIter), 500) {
 		errgp.Go(func() error {
-			numDeleted := 0
-			for {
-				doc, err := docIter.Next()
+			for docSS := range docSSIter {
+				_, err := bulkwriter.Delete(docSS.Ref)
 				if err != nil {
-					if errors.Is(err, iterator.Done) {
-						break
-					} else {
-						return BulkWriterError.New("error deleting collection at \"%s\"", path)
-					}
+					return BulkWriterError.New("error deleting document \"%s\" in collection \"%s\"", docSS.Ref.ID, path)
 				}
-
-				_, err = bulkwriter.Delete(docSS.Ref)
-				if err != nil {
-					return BulkWriterError.New("error deleting document \"%s\" in collection \"%s\"", doc.Ref.ID, path)
-				}
-				numDeleted++
-			}
-
-			if numDeleted == 0 {
-				return nil
 			}
 			bulkwriter.Flush()
 			return nil
@@ -195,7 +184,7 @@ func MapToUpdates(m map[string]interface{}) []fs.Update {
 func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]interface{}, error) {
 	var tree map[string]interface{}
 
-	// Get the document snapshot
+	// Load the document snapshot
 	colIter := docRef.Collections(ctx)
 	for {
 		colRef, err := colIter.Next()

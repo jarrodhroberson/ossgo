@@ -18,7 +18,7 @@ import (
 const MAX_BULK_WRITE_SIZE = 20
 
 type DatabaseName string
-
+type CollectionName string
 const DEFAULT DatabaseName = fs.DefaultDatabaseID
 
 const DocumentCreated = "google.cloud.firestore.v1.created"
@@ -72,13 +72,15 @@ const (
 	All                 Projection = "all"
 )
 
-type CollectionRepository[T any] struct {
+type CollectionStore[T any] containers.Store[string, T]
+
+type collectionStore[T any] struct {
 	clientProvider functions.Provider[*firestore.Client]
-	collection     string
+	collection     *fs.CollectionRef
 	keyer          containers.Keyer[T]
 }
 
-func (c CollectionRepository[T]) All(projection Projection) iter.Seq[*T] {
+func (c collectionStore[T]) All(projection Projection) iter.Seq[*T] {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
@@ -95,20 +97,20 @@ func (c CollectionRepository[T]) All(projection Projection) iter.Seq[*T] {
 	switch projection {
 	case OnlyId:
 		// An empty Select call will produce a query that returns only document IDs.
-		docIter = client.Collection(c.collection).Select().Documents(ctx)
+		docIter = c.collection.Select().Documents(ctx)
 	case OnlyIdLastUpdatedAt:
-		docIter = client.Collection(c.collection).Select("id", "last_updated_at").Documents(ctx)
+		docIter = c.collection.Select("id", "last_updated_at").Documents(ctx)
 	case All:
-		docIter = client.Collection(c.collection).Documents(ctx)
+		docIter = c.collection.Documents(ctx)
 	default:
 		// this allows custom comma-delimited projections
 		fields := strings.Split(projection.String(), ",")
-		docIter = client.Collection(c.collection).Select(fields...).Documents(ctx)
+		docIter = c.collection.Select(fields...).Documents(ctx)
 	}
 	return DocSnapShotSeqToType[T](DocumentIteratorToSeq(docIter))
 }
 
-func (c CollectionRepository[T]) Get(id string) (*T, error) {
+func (c collectionStore[T]) Get(id string) (*T, error) {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
@@ -118,7 +120,7 @@ func (c CollectionRepository[T]) Get(id string) (*T, error) {
 		}
 	}(client)
 
-	docSnapshot, err := client.Collection(c.collection).Doc(id).Get(ctx)
+	docSnapshot, err := c.collection.Doc(id).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +132,7 @@ func (c CollectionRepository[T]) Get(id string) (*T, error) {
 	return &t, nil
 }
 
-func (c CollectionRepository[T]) Store(v *T) (*T, error) {
+func (c collectionStore[T]) Store(v *T) (*T, error) {
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
 		err := client.Close()
@@ -139,7 +141,7 @@ func (c CollectionRepository[T]) Store(v *T) (*T, error) {
 		}
 	}(client)
 
-	docRef := client.Collection(c.collection).Doc(c.keyer(v))
+	docRef := c.collection.Doc(c.keyer(v))
 	m := must.MarshallMap(v)
 	containers.RemoveKeys(m, "created_at")
 	m["last_updated_at"] = timestamp.Now()
@@ -151,7 +153,7 @@ func (c CollectionRepository[T]) Store(v *T) (*T, error) {
 	return v, nil
 }
 
-func (c CollectionRepository[T]) Remove(id string) error {
+func (c collectionStore[T]) Remove(id string) error {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
@@ -161,9 +163,14 @@ func (c CollectionRepository[T]) Remove(id string) error {
 		}
 	}(client)
 
-	_, err := client.Collection(c.collection).Doc(id).Delete(ctx)
+	_, err := c.collection.Doc(id).Delete(ctx)
 	if err != nil {
 		err = errs.NotDeletedError.Wrap(err, "failed to delete %s/%s", c.collection, id)
 	}
 	return err
+}
+
+func (c collectionStore[T]) ExecuteQuery(q Query) (*fs.DocumentIterator, error) {
+	ctx := context.Background()
+	return q.Execute(ctx)
 }
