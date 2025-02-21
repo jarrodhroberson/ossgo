@@ -136,7 +136,7 @@ func Chunk[T any](sq iter.Seq[T], size int) iter.Seq[iter.Seq[T]] {
 			// create the next sequence chunk
 			iterSeqChunk := func(yield func(T) bool) {
 				i := 0
-				for ; i < size-1; i++ {
+				for ; i < size; i++ {
 					if ok {
 						if !ok {
 							// end of original sequence
@@ -182,7 +182,7 @@ func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]
 			// create the next sequence chunk
 			iterSeqChunk := func(yield func(K, V) bool) {
 				i := 0
-				for ; i < size-1; i++ {
+				for ; i < size; i++ {
 					if ok {
 						if !ok {
 							// end of original sequence

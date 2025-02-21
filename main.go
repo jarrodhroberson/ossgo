@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"iter"
 
 	"github.com/jarrodhroberson/ossgo/seq"
 )
@@ -14,19 +13,19 @@ func main() {
 
 func testSeq() {
 	ints := seq.IntRange(100, 199)
-	next, _ := iter.Pull(seq.Sum(ints))
-	sum, _ := next()
-	fmt.Println(sum)
+	//next, _ := iter.Pull(seq.Sum(ints))
+	//sum, _ := next()
+	//fmt.Println(sum)
 
-	//count := 0
-	//for cis := range seq.Chunk(ints, 10) {
-	//	fmt.Printf("%d:", count)
-	//	for i := range cis {
-	//		fmt.Printf("%02d,", i)
-	//	}
-	//	fmt.Println()
-	//	count++
-	//}
+	count := 0
+	for cis := range seq.Chunk(ints, 10) {
+		fmt.Printf("%d:", count)
+		for i := range cis {
+			fmt.Printf("%02d,", i)
+		}
+		fmt.Println()
+		count++
+	}
 
 	//next, stop := iter.Pull(func(start int) iter.Seq[int] {
 	//	index := start
