@@ -125,6 +125,11 @@ type newQuery struct {
 	collection *fs.CollectionRef // Firestore collection name
 }
 
+func (nq newQuery) Execute(ctx context.Context) (*fs.DocumentIterator, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // ByKey creates a new ByKeyQuery instance.
 func (nq newQuery) ByKey(key string) *byKeyQuery {
 	return &byKeyQuery{collection: nq.collection, key: key}

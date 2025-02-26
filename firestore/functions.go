@@ -29,7 +29,7 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
-func NewQuery(collection *fs.CollectionRef) *newQuery {
+func NewQuery(collection *fs.CollectionRef) Query {
 	return &newQuery{collection: collection}
 }
 

@@ -74,6 +74,7 @@ const (
 type CollectionStore[T any] containers.Store[string, T]
 
 type collectionStore[T any] struct {
+	CollectionStore[T]
 	clientProvider functions.Provider[*firestore.Client]
 	collection     string
 	keyer          containers.Keyer[T]
