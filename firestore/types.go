@@ -73,13 +73,13 @@ const (
 
 type CollectionStore[T any] containers.Store[string, T]
 
-type collectiIonStore[T any] struct {
+type collectionStore[T any] struct {
 	clientProvider functions.Provider[*firestore.Client]
 	collection     string
 	keyer          containers.Keyer[T]
 }
 
-func (c collectiIonStore[T]) All() (iter.Seq2[string, *T], error) {
+func (c collectionStore[T]) All() (iter.Seq2[string, *T], error) {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
@@ -92,7 +92,7 @@ func (c collectiIonStore[T]) All() (iter.Seq2[string, *T], error) {
 	return DocSnapShotSeq2ToType[T](DocumentIteratorToSeq2(docIter)), nil
 }
 
-func (c collectiIonStore[T]) Load(id string) (*T, error) {
+func (c collectionStore[T]) Load(id string) (*T, error) {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
@@ -114,7 +114,7 @@ func (c collectiIonStore[T]) Load(id string) (*T, error) {
 	return &t, nil
 }
 
-func (c collectiIonStore[T]) Store(v *T) (*T, error) {
+func (c collectionStore[T]) Store(v *T) (*T, error) {
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
 		err := client.Close()
@@ -135,7 +135,7 @@ func (c collectiIonStore[T]) Store(v *T) (*T, error) {
 	return v, nil
 }
 
-func (c collectiIonStore[T]) Remove(id string) error {
+func (c collectionStore[T]) Remove(id string) error {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
