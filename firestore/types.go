@@ -81,7 +81,7 @@ type collectionStore[T any] struct {
 	keyer          containers.Keyer[T]
 }
 
-func (c collectionStore[T]) All() iter.Seq2[string, *T] {
+func (c collectionStore[T]) All() (iter.Seq2[string, *T], error) {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
@@ -91,7 +91,7 @@ func (c collectionStore[T]) All() iter.Seq2[string, *T] {
 		}
 	}(client)
 	docIter := client.Collection(c.collection).Documents(ctx)
-	return DocSnapShotSeq2ToType[T](DocumentIteratorToSeq2(docIter))
+	return DocSnapShotSeq2ToType[T](DocumentIteratorToSeq2(docIter)), nil
 }
 
 func (c collectionStore[T]) AllProjection(projection Projection) iter.Seq[*T] {
