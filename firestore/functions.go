@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jarrodhroberson/ossgo/containers"
 	"iter"
 	"maps"
 	"os"
@@ -33,13 +34,25 @@ func NewQuery(collection *fs.CollectionRef) Query {
 	return &newQuery{collection: collection}
 }
 
-func NewCollectionStore[T any](database DatabaseName, collection string, keyer func(t *T) string) *CollectionStore[T] {
+func DocRefIDKeyer() containers.Keyer[fs.DocumentRef] {
+	return func(docRef *fs.DocumentRef) string {
+		return docRef.ID
+	}
+}
+
+func DocSnapShotKeyer() containers.Keyer[fs.DocumentSnapshot] {
+	return func(dss *fs.DocumentSnapshot) string {
+		return dss.Ref.ID
+	}
+}
+
+func NewCollectionStore[T any](database DatabaseName, collection string, keyerFunc containers.Keyer[T]) *CollectionStore[T] {
 	return &CollectionStore[T]{
 		clientProvider: func() *fs.Client {
 			return Must(Client(context.Background(), database))
 		},
 		collection: collection,
-		keyer:      keyer,
+		keyer: keyerFunc,
 	}
 }
 
