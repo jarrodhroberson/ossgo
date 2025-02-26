@@ -19,6 +19,7 @@ const MAX_BULK_WRITE_SIZE = 20
 
 type DatabaseName string
 type CollectionName string
+
 const DEFAULT DatabaseName = fs.DefaultDatabaseID
 
 const DocumentCreated = "google.cloud.firestore.v1.created"
@@ -76,7 +77,7 @@ type CollectionStore[T any] containers.Store[string, T]
 
 type collectionStore[T any] struct {
 	clientProvider functions.Provider[*firestore.Client]
-	collection     *fs.CollectionRef
+	collection     string
 	keyer          containers.Keyer[T]
 }
 
@@ -97,15 +98,15 @@ func (c collectionStore[T]) All(projection Projection) iter.Seq[*T] {
 	switch projection {
 	case OnlyId:
 		// An empty Select call will produce a query that returns only document IDs.
-		docIter = c.collection.Select().Documents(ctx)
+		docIter = client.Collection(c.collection).Select().Documents(ctx)
 	case OnlyIdLastUpdatedAt:
-		docIter = c.collection.Select("id", "last_updated_at").Documents(ctx)
+		docIter = client.Collection(c.collection).Select("id", "last_updated_at").Documents(ctx)
 	case All:
-		docIter = c.collection.Documents(ctx)
+		docIter = client.Collection(c.collection).Documents(ctx)
 	default:
 		// this allows custom comma-delimited projections
 		fields := strings.Split(projection.String(), ",")
-		docIter = c.collection.Select(fields...).Documents(ctx)
+		docIter = client.Collection(c.collection).Select(fields...).Documents(ctx)
 	}
 	return DocSnapShotSeqToType[T](DocumentIteratorToSeq(docIter))
 }
@@ -120,7 +121,7 @@ func (c collectionStore[T]) Get(id string) (*T, error) {
 		}
 	}(client)
 
-	docSnapshot, err := c.collection.Doc(id).Get(ctx)
+	docSnapshot, err := client.Collection(c.collection).Doc(id).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +142,7 @@ func (c collectionStore[T]) Store(v *T) (*T, error) {
 		}
 	}(client)
 
-	docRef := c.collection.Doc(c.keyer(v))
+	docRef := client.Collection(c.collection).Doc(c.keyer(v))
 	m := must.MarshallMap(v)
 	containers.RemoveKeys(m, "created_at")
 	m["last_updated_at"] = timestamp.Now()
@@ -163,7 +164,7 @@ func (c collectionStore[T]) Remove(id string) error {
 		}
 	}(client)
 
-	_, err := c.collection.Doc(id).Delete(ctx)
+	_, err := client.Collection(c.collection).Doc(id).Delete(ctx)
 	if err != nil {
 		err = errs.NotDeletedError.Wrap(err, "failed to delete %s/%s", c.collection, id)
 	}

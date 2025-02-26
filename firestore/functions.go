@@ -33,7 +33,7 @@ func NewQuery(collection *fs.CollectionRef) *newQuery {
 	return &newQuery{collection: collection}
 }
 
-func NewCollectionStore[T any](database DatabaseName, collection *fs.CollectionRef, keyer func(t *T) string) *collectionStore[T] {
+func NewCollectionStore[T any](database DatabaseName, collection string, keyer func(t *T) string) *collectionStore[T] {
 	return &collectionStore[T]{
 		clientProvider: func() *fs.Client {
 			return Must(Client(context.Background(), database))
