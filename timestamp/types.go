@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var CompactFormat = "20060102t150405Z"
+
 type Timestamps interface {
 	BeginningOfTime() Timestamp
 	EndOfTime() Timestamp

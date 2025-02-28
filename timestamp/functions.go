@@ -90,6 +90,14 @@ func Now() Timestamp {
 	return Timestamp{t: time.Now().UTC()}
 }
 
+func FormatCompact(ts Timestamp) string {
+	return ts.t.Format(CompactFormat)
+}
+
+func ParseCompact(s string) Timestamp {
+	return MustParse(CompactFormat, s)
+}
+
 func Enums() Timestamps {
 	once.Do(func() {
 		instances = tsenums{}
