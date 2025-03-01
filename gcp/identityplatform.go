@@ -121,3 +121,22 @@ func (ipc *Client) GetByEmailAddress(ctx context.Context, emailAddress string) (
 	}
 	return u, err
 }
+
+func (ipc *Client) GetByLocalId(ctx context.Context, localId string) (*auth.UserRecord, error) {
+	app, err := fb.NewApp(context.Background(), nil)
+	if err != nil {
+		err = errorx.InitializationFailed.Wrap(err, "error initialising firebase app")
+		log.Fatal().Err(err).Msg(err.Error())
+	}
+	authClient, err := app.Auth(ctx)
+	if err != nil {
+		err = errorx.InitializationFailed.Wrap(err, "error initialising firebase auth client")
+		log.Fatal().Err(err).Msg(err.Error())
+		return nil, err
+	}
+	u, err := authClient.GetUser(ctx, localId)
+	if err != nil {
+		return nil, err
+	}
+	return u, err
+}
