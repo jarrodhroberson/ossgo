@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"sync/atomic"
 	"time"
@@ -65,5 +66,22 @@ func logSwitch(data *ginHands) {
 			level = zerolog.InfoLevel
 		}
 		log.WithLevel(level).Str("ser_name", data.SerName).Str("method", data.Method).Str("path", data.Path).Dur("resp_time", data.Latency).Int("status", data.StatusCode).Str("client_ip", data.ClientIP).Msg(data.MsgStr)
+	}
+}
+
+func NewDebugCookie(c http.Cookie) DebugCookie {
+	return DebugCookie{
+		Name:       c.Name,
+		Value:      c.Value,
+		Path:       c.Path,
+		Domain:     c.Domain,
+		Expires:    c.Expires,
+		RawExpires: c.RawExpires,
+		MaxAge:     c.MaxAge,
+		Secure:     c.Secure,
+		HttpOnly:   c.HttpOnly,
+		SameSite:   c.SameSite,
+		Raw:        c.Raw,
+		Unparsed:   c.Unparsed,
 	}
 }
