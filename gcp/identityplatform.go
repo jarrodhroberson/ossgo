@@ -63,6 +63,9 @@ type Client struct {
 	apiKey string
 }
 
+/*
+VerifyIdToken
+ */
 func (ipc *Client) VerifyIdToken(ctx context.Context, token string) (*auth.Token, error) {
 	app, err := fb.NewApp(context.Background(), nil)
 	if err != nil {
