@@ -69,7 +69,7 @@ func logSwitch(data *ginHands) {
 	}
 }
 
-func NewDebugCookie(c http.Cookie) DebugCookie {
+func NewDebugCookie(c *http.Cookie) DebugCookie {
 	return DebugCookie{
 		Name:       c.Name,
 		Value:      c.Value,
