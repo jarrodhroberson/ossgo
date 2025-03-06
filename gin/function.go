@@ -42,3 +42,12 @@ func GetCurrentUserIdToken(c *g.Context) (*auth.Token, error) {
 	}
 	return idToken.(*auth.Token), nil
 }
+
+func HasHeader(c *g.Context, name string) bool {
+	return c.GetHeader(name) != ""
+}
+
+func HasCookie(c *g.Context, name string) bool {
+	_, err := c.Cookie(name)
+	return err == nil
+}
