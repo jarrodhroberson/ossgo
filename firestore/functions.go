@@ -52,7 +52,7 @@ func NewCollectionStore[T any](database DatabaseName, collection string, keyerFu
 			return Must(Client(context.Background(), database))
 		},
 		collection: collection,
-		keyer: keyerFunc,
+		keyer:      keyerFunc,
 	}
 }
 
@@ -123,6 +123,9 @@ func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 		return nil, errorx.IllegalArgument.New("DatabaseName can not be an empty string")
 	}
 	projectId := functions.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(metadata.ProjectIDWithContext(ctx)))
+	if projectId == "" {
+		return nil, errorx.IllegalArgument.New("projectId can not be an empty string")
+	}
 	client, err := fs.NewClientWithDatabase(ctx, projectId, string(database))
 	if err != nil {
 		log.Fatal().Err(err).Msgf("error creating firestore client %s", err)
