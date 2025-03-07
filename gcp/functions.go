@@ -7,7 +7,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
-	fstrings "github.com/jarrodhroberson/ossgo/strings"
+	strs "github.com/jarrodhroberson/ossgo/strings"
 )
 
 // Region retrieves the current region of the Cloud Run instance from metadata
@@ -21,7 +21,7 @@ func Region() (string, error) {
 	// This fetches a string like "us-central1-f"
 	zone, err := metadata.GetWithContext(ctx, "instance/zone")
 	if err != nil {
-		return fstrings.NO_DATA, errs.NotFoundError.New("failed to retrieve zone from metadata: %v", err)
+		return strs.NO_DATA, errs.NotFoundError.New("failed to retrieve zone from metadata: %v", err)
 	}
 
 	// Extract the region from the zone
@@ -39,14 +39,14 @@ func Region() (string, error) {
 func ProjectId() (string, error) {
 	// Check if the code is running within a Google Cloud environment.
 	if !metadata.OnGCE() {
-		return fstrings.NO_DATA, errs.MustNeverError.New("not running on Google Compute Engine, Google App Engine, or Cloud Run environment")
+		return strs.NO_DATA, errs.MustNeverError.New("not running on Google Compute Engine, Google App Engine, or Cloud Run environment")
 	}
 
 	ctx := context.Background()
 	// Retrieve the project ID from the metadata server.
 	projectID, err := metadata.GetWithContext(ctx, "project/project-id")
 	if err != nil {
-		return fstrings.NO_DATA, errs.NotFoundError.New("failed to retrieve project ID from metadata: %w", err)
+		return strs.NO_DATA, errs.NotFoundError.New("failed to retrieve project ID from metadata: %w", err)
 	}
 
 	return projectID, nil

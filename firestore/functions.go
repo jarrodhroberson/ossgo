@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jarrodhroberson/ossgo/containers"
+	"github.com/jarrodhroberson/ossgo/gcp"
 	"iter"
 	"maps"
 	"os"
@@ -122,7 +123,7 @@ func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 	if strings.Trim(string(database), " ") == "" {
 		return nil, errorx.IllegalArgument.New("DatabaseName can not be an empty string")
 	}
-	projectId := functions.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(metadata.ProjectIDWithContext(ctx)))
+	projectId := functions.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(gcp.ProjectId()), must.Must(metadata.ProjectIDWithContext(ctx)))
 	if projectId == "" {
 		return nil, errorx.IllegalArgument.New("projectId can not be an empty string")
 	}
