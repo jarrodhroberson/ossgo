@@ -31,40 +31,48 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
+// NewQuery creates a new Query instance for the specified Firestore collection.
 func NewQuery(collection *fs.CollectionRef) Query {
 	return &newQuery{collection: collection}
 }
 
+// DocRefIDKeyer returns a Keyer function that extracts the ID of a DocumentRef as a string.
+// This is useful for creating maps or sets keyed by DocumentRef IDs.
 func DocRefIDKeyer() containers.Keyer[fs.DocumentRef] {
 	return func(docRef *fs.DocumentRef) string {
 		return docRef.ID
 	}
 }
 
+// DocSnapShotKeyer returns a Keyer function that extracts the ID of a DocumentSnapshot as a string.
 func DocSnapShotKeyer() containers.Keyer[fs.DocumentSnapshot] {
 	return func(dss *fs.DocumentSnapshot) string {
 		return dss.Ref.ID
 	}
 }
 
+// NewCollectionStore creates a new CollectionStore for a given database, collection, and keyer function.
 func NewCollectionStore[T any](database DatabaseName, collection string, keyerFunc containers.Keyer[T]) *CollectionStore[T] {
 	return &CollectionStore[T]{
 		clientProvider: func() *fs.Client {
-			return Must(Client(context.Background(), database))
+			return must.Must(Client(context.Background(), database))
 		},
 		collection: collection,
 		keyer:      keyerFunc,
 	}
 }
 
+// IsNotFound checks if the given error is a Firestore "not found" error.
 func IsNotFound(err error) bool {
 	return status.Code(err) == codes.NotFound
 }
 
+// Exists checks if the given error is not a Firestore "not found" error.
 func Exists(err error) bool {
 	return !IsNotFound(err)
 }
 
+// CollectionExists checks if a collection exists at the specified path in Firestore.
 func CollectionExists(ctx context.Context, client *fs.Client, path string) bool {
 	iter := client.Collections(ctx)
 	for {
@@ -81,6 +89,7 @@ func CollectionExists(ctx context.Context, client *fs.Client, path string) bool 
 	}
 }
 
+// DeleteCollection deletes all documents in a specified Firestore collection.
 func DeleteCollection(ctx context.Context, client *fs.Client, path string) error {
 	if !CollectionExists(ctx, client, path) {
 		return errs.NotFoundError.New("collection \"%s\" does not exist", path)
@@ -110,6 +119,8 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 	return nil
 }
 
+// Deprecated: Use must.Must(Client(ctx, database)) instead.
+// Must is a helper function that panics if the error is not nil, otherwise returns the client.
 func Must(client *fs.Client, err error) *fs.Client {
 	if err != nil {
 		log.Error().Err(err).Msgf("error creating firestore client %s", err)
@@ -119,6 +130,7 @@ func Must(client *fs.Client, err error) *fs.Client {
 	}
 }
 
+// Client creates a new Firestore client for the specified database.
 func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 	if strings.Trim(string(database), " ") == "" {
 		return nil, errorx.IllegalArgument.New("DatabaseName can not be an empty string")
@@ -135,6 +147,7 @@ func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 	return client, nil
 }
 
+// Count returns the number of documents that match the given query.
 func Count(ctx context.Context, query fs.Query) int64 {
 	cq := query.NewAggregationQuery().WithCount("count")
 	cqr, err := cq.Get(ctx)
@@ -157,8 +170,9 @@ func Count(ctx context.Context, query fs.Query) int64 {
 	return count
 }
 
+// GetAs retrieves a document from Firestore and unmarshals it into the provided struct.
 func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T) error {
-	client := Must(Client(ctx, database))
+	client := must.Must(Client(ctx, database))
 	defer func(client *fs.Client) {
 		err := client.Close()
 		if err != nil {
@@ -173,6 +187,7 @@ func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T)
 	return doc.DataTo(t)
 }
 
+// MapToUpdates converts a map to a slice of Firestore Update structs.
 func MapToUpdates(m map[string]interface{}) []fs.Update {
 	updates := make([]fs.Update, 0, len(m))
 	for k, v := range m {
@@ -198,6 +213,7 @@ func MapToUpdates(m map[string]interface{}) []fs.Update {
 	return updates
 }
 
+// traverseFirestore recursively traverses a Firestore document and its subcollections.
 func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]interface{}, error) {
 	var tree map[string]interface{}
 
@@ -245,6 +261,7 @@ func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]i
 	return tree, nil
 }
 
+// DocSnapShotToType unmarshals a Firestore DocumentSnapshot into a struct of type T.
 func DocSnapShotToType[T any](dss *fs.DocumentSnapshot) (*T, error) {
 	var d T
 	err := dss.DataTo(&d)
@@ -255,12 +272,14 @@ func DocSnapShotToType[T any](dss *fs.DocumentSnapshot) (*T, error) {
 	return &d, nil
 }
 
+// DocSnapShotSeq2ToType converts a Seq2 of DocumentSnapshots to a Seq2 of type V.
 func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) iter.Seq2[string, *V] {
 	return seq.Map2[string, *fs.DocumentSnapshot, string, *V](it, seq.PassThruFunc[string], func(v *fs.DocumentSnapshot) *V {
 		return must.Must(DocSnapShotToType[V](v))
 	})
 }
 
+// DocSnapShotSeqToType converts a Seq of DocumentSnapshots to a Seq of type R.
 func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R] {
 	return seq.Map[*fs.DocumentSnapshot, *R](it, func(dss *fs.DocumentSnapshot) *R {
 		var t R

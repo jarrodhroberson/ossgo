@@ -3,6 +3,7 @@ package sendgrid
 import (
 	"context"
 	"fmt"
+	"github.com/jarrodhroberson/ossgo/functions/must"
 	"os"
 	"time"
 
@@ -42,7 +43,7 @@ func initFirebaseApp(ctx context.Context, database string) *firestore.Client {
 // shouldSend checks if the email should be sent based on the existence of a
 // document in Firestore and a lease mechanism to prevent duplicates.
 func shouldSend(ctx context.Context, eventID string) error {
-	client := fs.Must(fs.Client(ctx, "sendgrid"))
+	client := must.Must(fs.Client(ctx, "sendgrid"))
 	defer func(db *firestore.Client) {
 		err := db.Close()
 		if err != nil {
@@ -77,7 +78,7 @@ func shouldSend(ctx context.Context, eventID string) error {
 
 // markSent marks the email as sent in Firestore.
 func markSent(ctx context.Context, eventID string) error {
-	client := fs.Must(fs.Client(ctx, "sendgrid"))
+	client := must.Must(fs.Client(ctx, "sendgrid"))
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
