@@ -264,11 +264,13 @@ func traverseFirestore(ctx context.Context, docRef fs.DocumentRef) (map[string]i
 // DocSnapShotToType unmarshals a Firestore DocumentSnapshot into a struct of type T.
 func DocSnapShotToType[T any](dss *fs.DocumentSnapshot) (*T, error) {
 	var d T
-	err := dss.DataTo(&d)
+	m := make(map[string]interface{})
+	err := dss.DataTo(&m)
 	if err != nil {
 		err = errs.MarshalError.Wrap(err, "error unmarshalling Firestore document with ID %s", dss.Ref.ID)
 		return nil, err
 	}
+	must.UnmarshallMap(m, &d)
 	return &d, nil
 }
 
@@ -283,11 +285,13 @@ func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) it
 func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R] {
 	return seq.Map[*fs.DocumentSnapshot, *R](it, func(dss *fs.DocumentSnapshot) *R {
 		var t R
-		err := dss.DataTo(&t)
+		m := make(map[string]interface{})
+		err := dss.DataTo(&m)
 		if err != nil {
 			log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", dss.Ref.ID)
 			panic(err)
 		}
+		must.UnmarshallMap(m, &t)
 		return &t
 	})
 }
