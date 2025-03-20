@@ -11,10 +11,10 @@ require (
 	cloud.google.com/go/storage v1.50.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
+	resty.dev/v3 v3.0.0-beta.2
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
-	resty.dev/v3 v3.0.0-beta.2
 	github.com/googleapis/google-cloudevents-go v0.9.0
 	github.com/jarrodhroberson/destruct v1.0.1
 	github.com/jellydator/ttlcache/v3 v3.3.0
