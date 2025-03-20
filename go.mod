@@ -1,6 +1,6 @@
 module github.com/jarrodhroberson/ossgo
 
-go 1.23.4
+go 1.23.5
 
 require (
 	cloud.google.com/go/compute/metadata v0.6.0
@@ -14,6 +14,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
+	resty.dev/v3 v3.0.0-beta.2
 	github.com/googleapis/google-cloudevents-go v0.9.0
 	github.com/jarrodhroberson/destruct v1.0.1
 	github.com/jellydator/ttlcache/v3 v3.3.0

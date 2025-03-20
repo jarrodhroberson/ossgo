@@ -11,7 +11,7 @@ import (
 )
 
 /*
-IdentityToolkitAccountSignUpError
+IdentityToolkitError
 This is an example of the payload when there is an error from the IdentityToolkit
 
 		<code>
@@ -30,7 +30,7 @@ This is an example of the payload when there is an error from the IdentityToolki
 		}
 	    </code>
 */
-type IdentityToolkitAccountSignUpError struct {
+type IdentityToolkitError struct {
 	Error struct {
 		Code   int `json:"code"`
 		Errors []struct {
@@ -43,30 +43,30 @@ type IdentityToolkitAccountSignUpError struct {
 }
 
 type SignUpWithEmailPasswordResponse struct {
-	IdToken      string                            `json:"idToken"`
-	Email        string                            `json:"email"`
-	RefreshToken string                            `json:"refreshToken"`
-	ExpiresIn    string                            `json:"expiresIn"`
-	LocalId      string                            `json:"localId"`
-	Error        IdentityToolkitAccountSignUpError `json:"error"`
+	IdToken      string               `json:"idToken"`
+	Email        string               `json:"email"`
+	RefreshToken string               `json:"refreshToken"`
+	ExpiresIn    string               `json:"expiresIn"`
+	LocalId      string               `json:"localId"`
+	Error        IdentityToolkitError `json:"error"`
 }
 
-func NewIdentityPlatformClient() *Client {
-	return &Client{
+func NewIdentityPlatformClient() Client {
+	return &client{
 		host:   "identitytoolkit.googleapis.com",
 		apiKey: secrets.GetSecretValueAsString(context.Background(), "IDENTITY_PLATFORM_API_KEY"), //TODO: make this dynamic otherwise it will require server restarts to change it.
 	}
 }
 
-type Client struct {
+type client struct {
 	host   string
 	apiKey string
 }
 
 /*
 VerifyIdToken
- */
-func (ipc *Client) VerifyIdToken(ctx context.Context, token string) (*auth.Token, error) {
+*/
+func (ipc *client) VerifyIdToken(ctx context.Context, token string) (*auth.Token, error) {
 	app, err := fb.NewApp(context.Background(), nil)
 	if err != nil {
 		err = errorx.InitializationFailed.Wrap(err, "error initialising firebase app")
@@ -87,7 +87,7 @@ endpoint https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=[API_KEY]
 documentation https://cloud.google.com/identity-platform/docs/use-rest-api#section-get-account-info
 common error codes: INVALID_ID_TOKEN, USER_NOT_FOUND
 */
-func (ipc *Client) GetUserData(ctx context.Context, idToken string) (*auth.UserRecord, error) {
+func (ipc *client) GetUserData(ctx context.Context, idToken string) (*auth.UserRecord, error) {
 	app, err := fb.NewApp(context.Background(), nil)
 	if err != nil {
 		err = errorx.InitializationFailed.Wrap(err, "error initialising firebase app")
@@ -106,7 +106,7 @@ func (ipc *Client) GetUserData(ctx context.Context, idToken string) (*auth.UserR
 	return authClient.GetUser(ctx, token.UID)
 }
 
-func (ipc *Client) GetByEmailAddress(ctx context.Context, emailAddress string) (*auth.UserRecord, error) {
+func (ipc *client) GetByEmailAddress(ctx context.Context, emailAddress string) (*auth.UserRecord, error) {
 	app, err := fb.NewApp(context.Background(), nil)
 	if err != nil {
 		err = errorx.InitializationFailed.Wrap(err, "error initialising firebase app")
@@ -125,7 +125,7 @@ func (ipc *Client) GetByEmailAddress(ctx context.Context, emailAddress string) (
 	return u, err
 }
 
-func (ipc *Client) GetByLocalId(ctx context.Context, localId string) (*auth.UserRecord, error) {
+func (ipc *client) GetByLocalId(ctx context.Context, localId string) (*auth.UserRecord, error) {
 	app, err := fb.NewApp(context.Background(), nil)
 	if err != nil {
 		err = errorx.InitializationFailed.Wrap(err, "error initialising firebase app")
@@ -142,4 +142,11 @@ func (ipc *Client) GetByLocalId(ctx context.Context, localId string) (*auth.User
 		return nil, err
 	}
 	return u, err
+}
+
+type Client interface {
+	VerifyIdToken(ctx context.Context, token string) (*auth.Token, error)
+	GetUserData(ctx context.Context, idToken string) (*auth.UserRecord, error)
+	GetByEmailAddress(ctx context.Context, emailAddress string) (*auth.UserRecord, error)
+	GetByLocalId(ctx context.Context, localId string) (*auth.UserRecord, error)
 }

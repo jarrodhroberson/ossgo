@@ -25,6 +25,7 @@ var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverE
 
 // security (authentication, authorization)
 var Unauthorized = MustNeverError.NewSubtype("Unauthorized")
+var Invalid = errorx.AssertionFailed.NewSubtype("Invalid")
 
 // create, read, write errors
 var StructNotInitialized = MustNeverError.NewSubtype("Struct Not Initialized", UnableToCreateTrait)
@@ -47,3 +48,7 @@ var CookieNotFoundError = NotFoundError.NewSubtype("CookieNotFoundError")
 // constraint/validation errors
 var MinSizeExceededError = MustNeverError.NewSubtype("Min Required Size", InvalidSizeTrait)
 var MaxSizeExceededError = MustNeverError.NewSubtype("Max Size Exceeded", InvalidSizeTrait)
+var ExpiredError = errorx.TimeoutElapsed.NewSubtype("Expired", errorx.Timeout())
+var DisabledError = errorx.IllegalState.NewSubtype("Disabled", errorx.Temporary())
+var InvalidJsonPayloadReceived = Invalid.NewSubtype("invalid json payload received.")
+var CanNotBindQueryParameter = UnMarshalError.NewSubtype("can not bind query parameter.")
