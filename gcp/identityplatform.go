@@ -357,6 +357,7 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 	var errorBody IdentityToolkitError
 
 	httpClient := resty.New()
+	httpClient.SetLogger(&ZerologResty{log: log.Logger})
 	defer httpClient.Close()
 
 	res, err := httpClient.R().
@@ -394,6 +395,7 @@ func (ipc *client) SignInWithEmailPassword(ctx context.Context, email string, pa
 	var errorBody IdentityToolkitError
 
 	httpClient := resty.New()
+	httpClient.SetLogger(&ZerologResty{log: log.Logger})
 	defer httpClient.Close()
 
 	res, err := httpClient.R().
