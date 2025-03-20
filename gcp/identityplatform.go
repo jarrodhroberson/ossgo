@@ -363,6 +363,7 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 	res, err := httpClient.R().
 		EnableTrace().
 		SetContentType("application/json").
+		SetMethod("POST").
 		SetURL("https://identitytoolkit.googleapis.com/v1/accounts:signUp").
 		SetQueryParam("key", ipc.apiKey).
 		SetBody(requestBody).
@@ -401,6 +402,7 @@ func (ipc *client) SignInWithEmailPassword(ctx context.Context, email string, pa
 	res, err := httpClient.R().
 		EnableTrace().
 		SetContentType("application/json").
+		SetMethod("POST").
 		SetURL("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword\")").
 		SetQueryParam("key", ipc.apiKey).
 		SetBody(requestBody).
