@@ -2,8 +2,8 @@ package gcp
 
 import (
 	"context"
-	fb "firebase.google.com/go"
-	"firebase.google.com/go/auth"
+	fb "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/auth"
 	"fmt"
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/secrets"
@@ -403,7 +403,7 @@ func (ipc *client) SignInWithEmailPassword(ctx context.Context, email string, pa
 		EnableTrace().
 		SetContentType("application/json").
 		SetMethod("POST").
-		SetURL("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword\")").
+		SetURL("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword").
 		SetQueryParam("key", ipc.apiKey).
 		SetBody(requestBody).
 		SetResult(&responseBody).
