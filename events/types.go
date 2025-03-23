@@ -13,14 +13,14 @@ type Events[T any] struct {
 type Event[T any] interface {
 	Id() string
 	MessageType() string
-	Message() T
+	Message() *T
 	ReceivedAt() timestamp.Timestamp
 }
 
 type event[T any] struct {
 	id              string
 	messageMimeType string
-	message         T
+	message         *T
 	receivedAt      timestamp.Timestamp
 }
 
@@ -32,7 +32,7 @@ func (e event[T]) MessageType() string {
 	return e.messageMimeType
 }
 
-func (e event[T]) Message() T {
+func (e event[T]) Message() *T {
 	return e.message
 }
 

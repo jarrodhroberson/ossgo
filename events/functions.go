@@ -5,11 +5,11 @@ import (
 	"github.com/jarrodhroberson/ossgo/timestamp"
 )
 
-func New(mimeType string, message string, received timestamp.Timestamp) Event {
-	return event{
-		Id:              cuid2.New(16),
-		MessageMimeType: mimeType,
-		Message:         message,
-		ReceivedAt:      received,
+func New[T any](mimeType string, message *T, received timestamp.Timestamp) Event[T] {
+	return event[T]{
+		id: cuid2.New(16).String(),
+		messageMimeType: mimeType,
+		message:         message,
+		receivedAt:      received,
 	}
 }
