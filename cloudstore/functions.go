@@ -3,6 +3,7 @@ package cloudstore
 import (
 	"context"
 	"fmt"
+	"github.com/joomcode/errorx"
 	"io"
 	"os"
 	"regexp"
@@ -32,7 +33,7 @@ func newClient(ctx context.Context) *gcs.Client {
 
 func Must[T any](r T, err error) T {
 	if err != nil {
-		panic(err)
+		panic(errorx.Panic(err))
 	} else {
 		return r
 	}

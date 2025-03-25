@@ -17,9 +17,9 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	fs "cloud.google.com/go/firestore"
-	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/seq"
+	strs "github.com/jarrodhroberson/ossgo/strings"
 	"github.com/jarrodhroberson/ossgo/timestamp"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
@@ -81,7 +81,7 @@ func CollectionExists(ctx context.Context, client *fs.Client, path string) bool 
 			return false
 		}
 		if err != nil {
-			panic(err)
+			panic(errorx.Panic(err))
 		}
 		if colRef.Path == path {
 			return true
@@ -124,7 +124,7 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 func Must(client *fs.Client, err error) *fs.Client {
 	if err != nil {
 		log.Error().Err(err).Msgf("error creating firestore client %s", err)
-		panic(err)
+		panic(errorx.Panic(err))
 	} else {
 		return client
 	}
@@ -135,7 +135,7 @@ func Client(ctx context.Context, database DatabaseName) (*fs.Client, error) {
 	if strings.Trim(string(database), " ") == "" {
 		return nil, errorx.IllegalArgument.New("DatabaseName can not be an empty string")
 	}
-	projectId := functions.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(gcp.ProjectId()), must.Must(metadata.ProjectIDWithContext(ctx)))
+	projectId := strs.FirstNonEmpty(os.Getenv("GOOGLE_CLOUD_PROJECT"), must.Must(gcp.ProjectId()), must.Must(metadata.ProjectIDWithContext(ctx)))
 	if projectId == "" {
 		return nil, errorx.IllegalArgument.New("projectId can not be an empty string")
 	}
@@ -159,13 +159,15 @@ func Count(ctx context.Context, query fs.Query) int64 {
 	if !ok {
 		err = errs.MustNeverError.New("could not get \"count\" from results %s", strings.Join(slices.Collect(maps.Keys(cqr)), ","))
 		log.Error().Err(err).Msg(err.Error())
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	count, ok := value.(int64)
 	if !ok {
 		err := errs.MustNeverError.New("could not assert that \"%s\" was of type int64", "count")
 		log.Error().Err(err).Msg(err.Error())
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	return count
 }
@@ -289,7 +291,8 @@ func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R]
 		err := dss.DataTo(&m)
 		if err != nil {
 			log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", dss.Ref.ID)
-			panic(err)
+
+			panic(errorx.Panic(err))
 		}
 		must.UnmarshallMap(m, &t)
 		return &t

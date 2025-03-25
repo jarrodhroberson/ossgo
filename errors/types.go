@@ -20,12 +20,13 @@ var UnableToReadTrait = errorx.RegisterTrait("Unable to Read")
 var MultipleErrorTrait = errorx.RegisterTrait("Multiple Errors")
 var MutuallyExclusiveTrait = errorx.RegisterTrait("Mutually Exclusive")
 var InvalidSizeTrait = errorx.RegisterTrait("Invalid Size")
+var InvalidTrait = errorx.RegisterTrait("Invalid")
+var NilTrait = errorx.RegisterTrait("Nil Reference")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
 // security (authentication, authorization)
 var Unauthorized = MustNeverError.NewSubtype("Unauthorized")
-var Invalid = errorx.AssertionFailed.NewSubtype("Invalid")
 
 // create, read, write errors
 var StructNotInitialized = MustNeverError.NewSubtype("Struct Not Initialized", UnableToCreateTrait)
@@ -46,9 +47,12 @@ var NotFoundError = MustNeverError.NewSubtype("Not Found", errorx.NotFound())
 var CookieNotFoundError = NotFoundError.NewSubtype("CookieNotFoundError")
 
 // constraint/validation errors
+var InvalidData = errorx.NewType(errorx.CommonErrors, "Invalid Data", InvalidTrait)
+var InvalidState = errorx.NewType(errorx.CommonErrors, "Invalid State", InvalidTrait)
+var MustNotBeNil = MustNeverError.NewSubtype("Must Not Be Nil", NilTrait)
 var MinSizeExceededError = MustNeverError.NewSubtype("Min Required Size", InvalidSizeTrait)
 var MaxSizeExceededError = MustNeverError.NewSubtype("Max Size Exceeded", InvalidSizeTrait)
 var ExpiredError = errorx.TimeoutElapsed.NewSubtype("Expired", errorx.Timeout())
 var DisabledError = errorx.IllegalState.NewSubtype("Disabled", errorx.Temporary())
-var InvalidJsonPayloadReceived = Invalid.NewSubtype("invalid json payload received.")
+var InvalidJsonPayloadReceived = InvalidData.NewSubtype("invalid json payload received.")
 var CanNotBindQueryParameter = UnMarshalError.NewSubtype("can not bind query parameter.")

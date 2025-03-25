@@ -44,7 +44,8 @@ func getRedisInstance(ctx context.Context, name string) (*redispb.Instance, erro
 func createRedisInstance(ctx context.Context, name string, tier redispb.Instance_Tier, memorySizeGb int32, location string) {
 	c, err := newCloudRedisClient(ctx)
 	if err != nil {
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	defer func(c *redis.CloudRedisClient) {
 		err := c.Close()
@@ -63,12 +64,14 @@ func createRedisInstance(ctx context.Context, name string, tier redispb.Instance
 	}
 	op, err := c.CreateInstance(ctx, req)
 	if err != nil {
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 
 	resp, err := op.Wait(ctx)
 	if err != nil {
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 
 	log.Info().Msgf("Redis Instance Endpoing: %s", resp.GetReadEndpoint())
@@ -77,7 +80,8 @@ func createRedisInstance(ctx context.Context, name string, tier redispb.Instance
 func deleteRedisInstance(ctx context.Context, name string) {
 	c, err := newCloudRedisClient(ctx)
 	if err != nil {
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	defer func(c *redis.CloudRedisClient) {
 		err := c.Close()
@@ -92,12 +96,14 @@ func deleteRedisInstance(ctx context.Context, name string) {
 
 	op, err := c.DeleteInstance(ctx, req)
 	if err != nil {
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 
 	err = op.Wait(ctx)
 	if err != nil {
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 
 	log.Info().Msgf("Redis Instance %s deleted successfully", name)

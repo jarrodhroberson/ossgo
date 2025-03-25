@@ -2,6 +2,7 @@ package cuid2
 
 import (
 	"fmt"
+	"github.com/joomcode/errorx"
 	"math"
 	"math/big"
 	"math/rand"
@@ -52,7 +53,8 @@ func nextIntValue() int {
 	if random_buffer_index == random_buffer_size {
 		_, err := rand.Read(random_buffer)
 		if err != nil {
-			panic(err)
+
+			panic(errorx.Panic(err))
 		}
 		random_buffer_index = 0
 	}

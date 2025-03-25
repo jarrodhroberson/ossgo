@@ -3,6 +3,7 @@ package must
 import (
 	"encoding/json"
 	"errors"
+	"github.com/joomcode/errorx"
 	"math"
 	"strconv"
 	"time"
@@ -31,7 +32,7 @@ func Must[T any](result T, err error) T {
 	if err != nil {
 		err = errs.MustNeverError.New("the wrapped function is expected to never fail; it failed with error:%s", err.Error())
 		log.Error().Stack().Err(err).Msg(err.Error())
-		panic(err)
+		panic(errorx.Panic(err))
 	}
 	return result
 }
@@ -41,7 +42,8 @@ func ParseTime(format string, s string) time.Time {
 	if err != nil {
 		err = errors.Join(err, errs.ParseError.New("Could not parse %s as time %s", s, format))
 		log.Error().Err(err).Msgf(err.Error())
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	return t
 }
@@ -51,7 +53,8 @@ func ParseInt(s string) int {
 	if err != nil {
 		err = errors.Join(err, errs.ParseError.New("Could not parse %s as int", s))
 		log.Error().Err(err).Str("arg", s).Msg(err.Error())
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	return i
 }
@@ -61,17 +64,26 @@ func UnMarshalJson(bytes []byte, o any) {
 	if err != nil {
 		err = errors.Join(err, errs.UnMarshalError.New("could not unmarshal %s", string(bytes)))
 		log.Error().Err(err).Msg(err.Error())
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	return
 }
 
 func MarshalJson(o any) []byte {
+	if o == nil {
+		err := errors.Join(errs.MustNotBeNil.New("cannot marshal nil"), errs.MarshalError.New("could not marshal %v", o))
+		log.Error().Stack().Err(err).Msg(err.Error())
+
+		panic(errorx.Panic(err))
+	}
+
 	bytes, err := json.Marshal(o)
 	if err != nil {
 		err = errors.Join(err, errs.MarshalError.New("could not marshal %v", o))
 		log.Error().Stack().Err(err).Msg(err.Error())
-		panic(err)
+
+		panic(errorx.Panic(err))
 	}
 	return bytes
 }

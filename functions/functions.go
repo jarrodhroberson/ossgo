@@ -15,6 +15,7 @@ func InsteadOfNil[T any](a *T, b *T) *T {
 	return a
 }
 
+// Deprecated: use strings.FirstNonEmpty instead
 func FirstNonEmpty(data ...string) string {
 	idx, err := slices.FindFirst[string](data, func(t string) bool {
 		return t != ""
