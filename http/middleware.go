@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/rs/zerolog"
@@ -72,20 +71,4 @@ func RequestMetricsLogger(serName string) gin.HandlerFunc {
 
 		logSwitch(cData)
 	}
-}
-
-func CORS(allowOrigins ...string) gin.HandlerFunc {
-	clientURL := os.Getenv("CLIENT_URL")
-	if clientURL != "" {
-		allowOrigins = append(allowOrigins, clientURL)
-	}
-
-	return cors.New(cors.Config{
-		AllowOrigins:     allowOrigins,
-		AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"*"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	})
 }
