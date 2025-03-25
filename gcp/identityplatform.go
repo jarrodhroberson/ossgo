@@ -2,17 +2,19 @@ package gcp
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"time"
+
 	fb "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
-	"fmt"
-	"github.com/jarrodhroberson/ossgo/functions/must"
-	"github.com/jarrodhroberson/ossgo/secrets"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"resty.dev/v3"
-	"strconv"
-	"time"
+
+	"github.com/jarrodhroberson/ossgo/functions/must"
+	"github.com/jarrodhroberson/ossgo/secrets"
 )
 
 type NestedError struct {
@@ -54,14 +56,14 @@ This is an example of the payload when there is an error from the IdentityToolki
 	    </code>
 */
 type IdentityToolkitError struct {
-	Code   int `json:"code"`
-	Errors []NestedError `json:"errors"`
-	Message string `json:"message"`
+	Code    int           `json:"code"`
+	Errors  []NestedError `json:"errors"`
+	Message string        `json:"message"`
 }
 
 func (i IdentityToolkitError) MarshalZerologObject(e *zerolog.Event) {
 	e.Str("code", strconv.Itoa(i.Code)).
-	  Str("message", i.Message)
+		Str("message", i.Message)
 }
 
 func (i IdentityToolkitError) Error() string {
@@ -403,9 +405,11 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 		SetError(&errorBody).
 		Send()
 	if err != nil {
+		log.Error().Err(err).Msgf("http.Client error %s", err.Error())
 		return nil, err
 	}
 	if res.IsError() {
+		log.Error().Err(err).Msgf("http.Client.Response.IsError %s", res.Err.Error())
 		return nil, errorBody
 	}
 	return &responseBody, nil
