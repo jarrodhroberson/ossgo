@@ -386,8 +386,9 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 		ReturnSecureToken: true,
 		TenantId:          "",
 	}
-	log.Debug().Msgf("SignUpWithEmailPassword: %s:%s", requestBody.Email, requestBody.Password)
+	log.Debug().Msgf("SignUpWithEmailPassword(%s,%s)", requestBody.Email, requestBody.Password)
 	var responseBody SignUpWithEmailPasswordResponse
+	rbm := make(map[string]interface{})
 	var errorBody IdentityToolkitError
 
 	httpClient := resty.New()
@@ -400,7 +401,7 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 		SetMethod("POST").
 		SetURL("https://identitytoolkit.googleapis.com/v1/accounts:signUp").
 		SetQueryParam("key", ipc.apiKey).
-		SetBody(requestBody).
+		SetBody(&rbm).
 		SetResult(&responseBody).
 		SetError(&errorBody).
 		Send()
@@ -408,9 +409,11 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 		log.Error().Err(err).Msgf("http.Client error %s", err.Error())
 		return nil, err
 	}
+	must.UnmarshallMap(rbm, &responseBody)
+
 	if res.IsError() {
 		log.Error().Err(err).Msgf("http.Client.Response.IsError %s", res.Err.Error())
-		return nil, errorBody
+		return &responseBody, errorBody
 	}
 	return &responseBody, nil
 }
