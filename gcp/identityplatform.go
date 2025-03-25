@@ -8,10 +8,30 @@ import (
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/secrets"
 	"github.com/joomcode/errorx"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"resty.dev/v3"
+	"strconv"
 	"time"
 )
+
+type NestedError struct {
+	Domain  string `json:"domain"`
+	Message string `json:"message"`
+	Reason  string `json:"reason"`
+}
+
+func (n NestedError) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("domain", n.Domain).Str("message", n.Message).Str("reason", n.Reason)
+}
+
+type NestedErrors []NestedError
+
+func (n NestedErrors) MarshalZerologArray(e *zerolog.Array) {
+	for _, ne := range n {
+		e.Object(ne)
+	}
+}
 
 /*
 IdentityToolkitError
@@ -35,12 +55,13 @@ This is an example of the payload when there is an error from the IdentityToolki
 */
 type IdentityToolkitError struct {
 	Code   int `json:"code"`
-	Errors []struct {
-		Domain  string `json:"domain"`
-		Message string `json:"message"`
-		Reason  string `json:"reason"`
-	} `json:"errors"`
+	Errors []NestedError `json:"errors"`
 	Message string `json:"message"`
+}
+
+func (i IdentityToolkitError) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("code", strconv.Itoa(i.Code)).
+	  Str("message", i.Message)
 }
 
 func (i IdentityToolkitError) Error() string {
@@ -64,6 +85,17 @@ type SignInWithEmailPasswordResponse struct {
 	LocalId      string               `json:"localId"`
 	Registered   bool                 `json:"registered"`
 	Error        IdentityToolkitError `json:"error"`
+}
+
+func (s SignInWithEmailPasswordResponse) MarshalZerologObject(e *zerolog.Event) {
+	e.Stack().
+		Str("idToken", s.IdToken).
+		Str("email", s.Email).
+		Str("refreshToken", s.RefreshToken).
+		Str("expiresIn", s.ExpiresIn).
+		Str("localId", s.LocalId).
+		Bool("registered", s.Registered).
+		Err(s.Error)
 }
 
 type authRequestBody struct {
