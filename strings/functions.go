@@ -4,10 +4,10 @@ import "github.com/jarrodhroberson/ossgo/slices"
 
 func FirstNonEmpty(data ...string) string {
 	idx, err := slices.FindFirst[string](data, func(t string) bool {
-		return t != ""
+		return t != "" && t != NO_DATA
 	})
 	if err != nil {
-		return ""
+		return NO_DATA
 	}
 	return data[idx]
 }
