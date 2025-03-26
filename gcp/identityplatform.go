@@ -10,7 +10,7 @@ import (
 	"firebase.google.com/go/v4/auth"
 	"resty.dev/v3"
 
-	olog "github.com/jarrodhroberson/ossgo/log"
+	olog "github.com/jarrodhroberson/ossgo/logs"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
