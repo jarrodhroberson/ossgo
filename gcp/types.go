@@ -1,7 +1,6 @@
 package gcp
 
 import (
-	"github.com/rs/zerolog"
 	"os"
 	"sync"
 )
@@ -91,32 +90,4 @@ func (e *Environment) CloudProject() string {
 
 func (e *Environment) Port() string {
 	return e.port
-}
-
-type ZerologResty struct {
-	log zerolog.Logger
-}
-
-func (l *ZerologResty) Printf(format string, v ...interface{}) {
-	l.log.Printf(format, v...)
-}
-
-func (l *ZerologResty) Println(v ...interface{}) {
-	l.log.Print(v...)
-}
-
-func (l *ZerologResty) Debugf(format string, v ...interface{}) {
-	l.log.Debug().Msgf(format, v...)
-}
-
-func (l *ZerologResty) Warnf(format string, v ...interface{}) {
-	l.log.Warn().Msgf(format, v...)
-}
-
-func (l *ZerologResty) Errorf(format string, v ...interface{}) {
-	l.log.Error().Msgf(format, v...)
-}
-
-func (l *ZerologResty) Infof(format string, v ...interface{}) {
-	l.log.Info().Msgf(format, v...)
 }

@@ -8,10 +8,12 @@ import (
 
 	fb "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
+	"resty.dev/v3"
+
+	olog "github.com/jarrodhroberson/ossgo/log"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"resty.dev/v3"
 
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/secrets"
@@ -392,7 +394,7 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 	var errorBody IdentityToolkitError
 
 	httpClient := resty.New()
-	httpClient.SetLogger(&ZerologResty{log: log.Logger})
+	httpClient.SetLogger(olog.ZerologToResty(log.Logger))
 	defer httpClient.Close()
 
 	res, err := httpClient.R().
@@ -435,7 +437,7 @@ func (ipc *client) SignInWithEmailPassword(ctx context.Context, email string, pa
 	var errorBody IdentityToolkitError
 
 	httpClient := resty.New()
-	httpClient.SetLogger(&ZerologResty{log: log.Logger})
+	httpClient.SetLogger(olog.ZerologToResty(log.Logger))
 	defer httpClient.Close()
 
 	res, err := httpClient.R().
