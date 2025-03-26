@@ -6,8 +6,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-
-
 func ZerologToResty(log zerolog.Logger) resty.Logger {
 	return restyLogger{
 		log: log,
