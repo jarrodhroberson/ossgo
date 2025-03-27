@@ -2,8 +2,10 @@ package gin
 
 import (
 	"fmt"
+	"strings"
 
 	"firebase.google.com/go/auth"
+
 	g "github.com/gin-gonic/gin"
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
@@ -50,4 +52,12 @@ func HasHeader(c *g.Context, name string) bool {
 func HasCookie(c *g.Context, name string) bool {
 	_, err := c.Cookie(name)
 	return err == nil
+}
+
+// NewAcceptHandlerRegistry creates a new AcceptHandlerRegistry for a specific content type.
+func NewAcceptHandlerRegistry(contentType string) *AcceptHandlerRegistry {
+	return &AcceptHandlerRegistry{
+		contentType:            strings.TrimSpace(strings.ToLower(contentType)), // Store the base content type
+		acceptHeaderHandlerMap: make(map[string]g.HandlerFunc),                  // Initialize the map
+	}
 }
