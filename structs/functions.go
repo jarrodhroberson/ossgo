@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/jarrodhroberson/destruct/destruct"
-	"github.com/rs/zerolog"
 )
 
 func parseTags(tag reflect.StructTag) []Tag {
@@ -35,8 +34,4 @@ func Tags[T any](t T) map[string][]Tag {
 
 func Hash[T any](t T) string {
 	return destruct.MustHashIdentity(t)
-}
-
-func DecorateWithLogObjectMarshaller[T any](s any) zerolog.LogObjectMarshaler {
-
 }

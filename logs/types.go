@@ -1,7 +1,13 @@
 package logs
 
 import (
+	"fmt"
+	"reflect"
+
+	"github.com/jarrodhroberson/ossgo/containers"
+	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type restyLogger struct {
@@ -26,4 +32,26 @@ func (l restyLogger) Tracef(format string, v ...interface{}) {
 
 func (l restyLogger) Info(args ...interface{}) {
 	l.log.Info().Msg(args[0].(string))
+}
+
+type lom[T any] struct {
+	delegate T
+}
+
+func (l lom[T]) MarshalZerologObject(e *zerolog.Event) {
+	containers.WalkMap(must.MarshallMap(l.delegate), "", func(k string, v interface{}) {
+		switch v.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			e.Int64(k, v.(int64))
+		case float32, float64:
+			e.Float64(k, v.(float64))
+		case string:
+			e.Str(k, v.(string))
+		case bool:
+			e.Bool(k, v.(bool))
+		default:
+			log.Warn().Msgf("unknown type %s:", reflect.TypeOf(v))
+			e.Str(k, fmt.Sprintf("%s", v))
+		}
+	})
 }

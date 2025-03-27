@@ -11,3 +11,9 @@ func ZerologToResty(log zerolog.Logger) resty.Logger {
 		log: log,
 	}
 }
+
+func DecorateWithLogObjectMarshaller[T any](s T) zerolog.LogObjectMarshaler {
+	return lom[T]{
+		delegate: s,
+	}
+}
