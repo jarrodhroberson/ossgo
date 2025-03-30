@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iter"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,13 +12,13 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"google.golang.org/api/iterator"
+
 	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions/must"
-	"github.com/jarrodhroberson/ossgo/gcp"
 	"github.com/jarrodhroberson/ossgo/slices"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/api/iterator"
 )
 
 const (
@@ -30,15 +31,15 @@ const (
 	validPathWithVersionPattern     = "^projects/(?P<projectid>\\d+)/secrets/(?P<name>[\\w-]+)(?:/versions/(?P<version>\\d+|latest))?$"
 )
 
-var project_number, _ = gcp.ProjectId()
+var projectNumber = must.Must(strconv.Atoi(must.Must(metadata.NumericProjectIDWithContext(context.Background()))))
 var validSecretPathRegex *regexp.Regexp = nil
 var validSecretNameRegex *regexp.Regexp = nil
 var validSecretPathWithVersionRegex *regexp.Regexp = nil
 var validSecretAnnotationKeyRegex *regexp.Regexp = nil
 
 var ValueOutOfRange = errorx.RegisterTrait("value out of range")
-var secret_version_not_in_valid_range = errorx.NewType(errorx.NewNamespace("SECRET_MANAGER"), "SECRET VERSION NOT IN VALID RANGE", ValueOutOfRange)
-var secret_version_not_found = errorx.NewType(errorx.NewNamespace("SECRET_MANAGER"), "SECRET VERSION NOT FOUND", errorx.NotFound())
+var secretVersionNotInValidRange = errorx.NewType(errorx.NewNamespace("SECRET_MANAGER"), "SECRET VERSION NOT IN VALID RANGE", ValueOutOfRange)
+var secretVersionNotFound = errorx.NewType(errorx.NewNamespace("SECRET_MANAGER"), "SECRET VERSION NOT FOUND", errorx.NotFound())
 
 func init() {
 	var err error
@@ -90,12 +91,47 @@ func WithLatestVersion() NewPathVersionOption {
 
 func NewPath(name string, version NewPathVersionOption) Path {
 	p := Path{
-		ProjectNumber: project_number,
+		ProjectNumber: projectNumber,
 		Name:          name,
 		Version:       0,
 	}
 	version(&p)
 	return p
+}
+
+type Iterable[I secretmanagerpb.SecretVersion | secretmanagerpb.Secret] interface {
+	Next() (*I, error)
+}
+
+type SecretVersionIterable struct{}
+
+func (svi SecretVersionIterable) Next() (*secretmanagerpb.SecretVersion, error) {
+	return svi.Next()
+}
+
+type SecretIterable struct{}
+
+func (si SecretIterable) Next() (*secretmanagerpb.Secret, error) {
+	return si.Next()
+}
+
+func toSeq2[I secretmanagerpb.SecretVersion | secretmanagerpb.Secret](it Iterable[I]) iter.Seq2[*I, error] {
+	return func(yield func(*I, error) bool) {
+		for {
+			resp, err := it.Next()
+			if errors.Is(err, iterator.Done) {
+				break
+			}
+			if err != nil {
+				if !yield(nil, errs.IterationError.NewWithNoMessage()) {
+					return
+				}
+			}
+			if !yield(resp, nil) {
+				return
+			}
+		}
+	}
 }
 
 func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
@@ -109,15 +145,15 @@ func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
 }
 
 func buildPathToSecretWithVersion(name string, version int) string {
-	return fmt.Sprintf(pathToNumericVersion, project_number, name, version)
+	return fmt.Sprintf(pathToNumericVersion, projectNumber, name, version)
 }
 
 func buildPathToSecretWithLatest(name string) string {
-	return fmt.Sprintf(pathToLatestVersion, project_number, name)
+	return fmt.Sprintf(pathToLatestVersion, projectNumber, name)
 }
 
 func buildPathToSecretWithoutVersion(name string) string {
-	return fmt.Sprintf(pathToSecret, project_number, name)
+	return fmt.Sprintf(pathToSecret, projectNumber, name)
 }
 
 func GetSecretValueAsString(ctx context.Context, name string) string {
@@ -232,7 +268,7 @@ func CreateSecret(ctx context.Context, id string) (*secretmanagerpb.Secret, erro
 		}
 	}(client)
 	log.Info().Msgf("attempting to create secret %s", buildPathToSecretWithoutVersion(id))
-	path := fmt.Sprintf("projects/%d", project_number)
+	path := fmt.Sprintf("projects/%d", projectNumber)
 	req := &secretmanagerpb.CreateSecretRequest{
 		Parent:   path,
 		SecretId: id,
@@ -294,7 +330,7 @@ func AddSecretVersion(ctx context.Context, name string, value []byte) (*secretma
 
 func EnableSecretVersion(ctx context.Context, name string, version int) error {
 	if version <= 0 {
-		return secret_version_not_found.New("version %d out of range, must be >= 1", version)
+		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
 	}
 	// path := "projects/my-project/secrets/my-secret/versions/5"
 	path := buildPathToSecretWithVersion(name, version)
@@ -326,7 +362,7 @@ func EnableSecretVersion(ctx context.Context, name string, version int) error {
 
 func DisableSecretVersion(ctx context.Context, name string, version int) error {
 	if version <= 0 {
-		return secret_version_not_found.New("version %d out of range, must be >= 1", version)
+		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
 	}
 	// path := "projects/my-project/secrets/my-secret/versions/5"
 	path := buildPathToSecretWithVersion(name, version)
@@ -358,7 +394,7 @@ func DisableSecretVersion(ctx context.Context, name string, version int) error {
 
 func DestroySecretVersion(ctx context.Context, name string, version int) error {
 	if version <= 0 {
-		return secret_version_not_found.New("version %d out of range, must be >= 1", version)
+		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
 	}
 	// path := "projects/my-project/secrets/my-secret/versions/5"
 	path := buildPathToSecretWithVersion(name, version)
@@ -400,7 +436,7 @@ func DestroyAllButLatestVersion(ctx context.Context, name string) error {
 }
 
 func DestroyAllPreviousVersions(ctx context.Context, name string, version int) error {
-	// path := "projects/my-project/secrets/my-secret/versions/5"
+	// path := "projects/${project-number}/secrets/${name}/versions/${version}"
 	path := buildPathToSecretWithoutVersion(name)
 	if !validSecretPathWithVersionRegex.MatchString(path) {
 		return fmt.Errorf("%s does not match the required pattern %s", name, validPathWithVersionPattern)
@@ -410,7 +446,7 @@ func DestroyAllPreviousVersions(ctx context.Context, name string, version int) e
 		return errorx.InitializationFailed.Wrap(err, "failed to create secretmanager client")
 	}
 	defer func(client *secretmanager.Client) {
-		err := client.Close()
+		err = client.Close()
 		if err != nil {
 			log.Error().Err(err).Msg(err.Error())
 		}
@@ -425,26 +461,23 @@ func DestroyAllPreviousVersions(ctx context.Context, name string, version int) e
 			return err
 		}
 	}
-	sviter := client.ListSecretVersions(ctx, req)
+	sviter := toSeq2[secretmanagerpb.SecretVersion](client.ListSecretVersions(ctx, req))
 	//log.Debug().Msgf("Secret Version Iterator.PageInfo(): %s", sviter.PageInfo())
-	for {
-		resp, err := sviter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
-			return err
-		}
-		p := parsePathFrom(resp)
-		if p.Version < version && version > 0 {
-			err = DestroySecretVersion(ctx, name, p.Version)
-			if err != nil {
-				return err
+	for sv, iterr := range sviter {
+		if iterr != nil {
+			log.Error().Err(iterr).Msg(iterr.Error())
+			err = errors.Join(err, iterr)
+		} else {
+			p := parsePathFrom(sv)
+			if p.Version < version && version > 0 {
+				err = DestroySecretVersion(ctx, name, p.Version)
+				if err != nil {
+					return errs.NotDeletedError.WrapWithNoMessage(iterr)
+				}
 			}
 		}
 	}
-	return nil
+	return err
 }
 
 func UpdateSecretWithNewVersion(ctx context.Context, name string, value []byte) error {

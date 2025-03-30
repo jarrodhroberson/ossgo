@@ -22,6 +22,7 @@ var MutuallyExclusiveTrait = errorx.RegisterTrait("Mutually Exclusive")
 var InvalidSizeTrait = errorx.RegisterTrait("Invalid Size")
 var InvalidTrait = errorx.RegisterTrait("Invalid")
 var NilTrait = errorx.RegisterTrait("Nil Reference")
+var IterationTrait = errorx.RegisterTrait("iteration failed")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 
@@ -56,3 +57,4 @@ var ExpiredError = errorx.TimeoutElapsed.NewSubtype("Expired", errorx.Timeout())
 var DisabledError = errorx.IllegalState.NewSubtype("Disabled", errorx.Temporary())
 var InvalidJsonPayloadReceived = InvalidData.NewSubtype("invalid json payload received.")
 var CanNotBindQueryParameter = UnMarshalError.NewSubtype("can not bind query parameter.")
+var IterationError = MustNeverError.NewSubtype("iteration error", IterationTrait)
