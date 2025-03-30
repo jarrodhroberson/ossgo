@@ -3,14 +3,103 @@ package sendgrid
 import (
 	"context"
 	"fmt"
-	"github.com/jarrodhroberson/ossgo/functions/must"
+	"net"
+	"net/mail"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
+	"github.com/jarrodhroberson/ossgo/functions/must"
+
 	"cloud.google.com/go/firestore"
+
 	fs "github.com/jarrodhroberson/ossgo/firestore"
 	"github.com/rs/zerolog/log"
 )
+
+// IsEmailAddressFormatValid checks if a string is a valid RFC 822 email address, with caveats.
+// Returns nil error if valid, and an error with a reason if invalid.
+// RFC 822 is a very old standard. This attempts to cover the core requirements, but is not a perfect implementation.
+// For complete validation, use a dedicated email validation library/package, or a more thorough approach
+// such as parsing the email using the `mail` package and validating parts.
+//
+// This uses `net/mail.ParseAddress`, which is a more robust base, and then applies a regex
+// and checks length and content.
+func IsEmailAddressFormatValid(emailAddress string) (bool, error) {
+	// Quick check to ensure input is a string and not empty.
+	if len(strings.TrimSpace(emailAddress)) == 0 {
+		return false, fmt.Errorf("emailAddress is empty: %s", emailAddress)
+	}
+
+	// Use net/mail.ParseAddress for basic validation of the address structure.
+	// This handles the quoting and other complexities, and is the most important part.
+	_, err := mail.ParseAddress(emailAddress)
+	if err != nil {
+		return false, fmt.Errorf("invalid address structure for emailAddress '%s': %w", emailAddress, err)
+	}
+
+	// Further checks (some are redundant but provide extra validation)
+
+	// Regular expression to enforce basic format (very basic, covers most common issues)
+	// Covers the "user@domain.tld" format generally.
+	// This is a SIMPLIFIED regex. Full RFC 822 validation is EXTREMELY complex.
+	// Using more advanced package and library solutions is *always* the right answer if it's important.
+	re := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`) // common format
+
+	if !re.MatchString(emailAddress) {
+		return false, fmt.Errorf("invalid emailAddress format (regex) for emailAddress '%s': regex: %s", emailAddress, re.String())
+	}
+
+	// Additional content and length checks (more defensive/redundant)
+	if len(emailAddress) > 254 { // RFC 5321 allows a maximum of 256 characters for an emailAddress address
+		return false, fmt.Errorf("emailAddress length exceeds maximum allowed (254 characters) for emailAddress '%s'", emailAddress)
+	}
+
+	parts := strings.Split(emailAddress, "@")
+	if len(parts) != 2 {
+		return false, fmt.Errorf("emailAddress must contain exactly one @ symbol for emailAddress '%s'", emailAddress)
+	}
+
+	localPart := parts[0]
+	domainPart := parts[1]
+
+	if len(localPart) > 64 { // RFC 5321 allows a maximum of 64 characters for the local-part
+		return false, fmt.Errorf("local part '%s' exceeds maximum length (64 characters) for emailAddress '%s'", localPart, emailAddress)
+	}
+
+	if len(domainPart) > 255 { //  RFC 5321 allows a maximum of 255 characters for the domain part
+		return false, fmt.Errorf("domain part '%s' exceeds maximum length (255 characters) for emailAddress '%s'", domainPart, emailAddress)
+	}
+
+	//  Additional domain-specific validation (can be significantly more involved)
+	// This checks that the domain is either a valid hostname OR an IP address
+	isValid, err := isValidDomain(domainPart)
+	if !isValid {
+		return false, fmt.Errorf("invalid domain for emailAddress '%s': %w", emailAddress, err) // Wrap the error
+	}
+
+	return true, nil // If all checks pass, it is considered valid (with the noted caveats)
+}
+
+// isValidDomain checks if a domain is valid either as a hostname or an IP address
+func isValidDomain(domain string) (bool, error) {
+	// Check for a valid IP address first.  net.ParseIP is a good check.
+	if net.ParseIP(domain) != nil {
+		return true, nil // It's a valid IP address.
+	}
+
+	// Check if it's a valid hostname using net.LookupHost (less reliable, but a basic check)
+	if len(domain) > 0 && domain[len(domain)-1] == '.' {
+		domain = domain[:len(domain)-1] // Remove trailing dot, if present
+	}
+	_, err := net.LookupHost(domain)
+	if err == nil {
+		return true, nil // Hostname lookup successful (basic indication it *could* be valid)
+	} else {
+		return false, fmt.Errorf("invalid domain '%s': %w", domain, err) // Return the specific domain and the lookup error.
+	}
+}
 
 // Region is the region where your Cloud Functions are deployed.
 const Region string = "your-region"

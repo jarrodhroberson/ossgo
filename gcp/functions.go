@@ -12,9 +12,9 @@ import (
 
 // Region retrieves the current region of the Cloud Run instance from metadata
 func Region() (string, error) {
-	// Check if running on a GCE or Cloud Run environment
+	// Check if running on a GCE or Cloud Run env
 	if !metadata.OnGCE() {
-		return "", errs.MustNeverError.New("not running on a GCE/GAE or Cloud Run environment")
+		return "", errs.MustNeverError.New("not running on a GCE/GAE or Cloud Run env")
 	}
 	ctx := context.Background()
 	// Fetch the zone from the metadata server
@@ -37,9 +37,9 @@ func Region() (string, error) {
 }
 
 func ProjectId() (string, error) {
-	// Check if the code is running within a Google Cloud environment.
+	// Check if the code is running within a Google Cloud env.
 	if !metadata.OnGCE() {
-		return strs.NO_DATA, errs.MustNeverError.New("not running on Google Compute Engine, Google App Engine, or Cloud Run environment")
+		return strs.NO_DATA, errs.MustNeverError.New("not running on Google Compute Engine, Google App Engine, or Cloud Run env")
 	}
 
 	ctx := context.Background()
@@ -50,5 +50,4 @@ func ProjectId() (string, error) {
 	}
 
 	return projectID, nil
-
 }

@@ -1,7 +1,9 @@
 package seq
 
 import (
+	"cmp"
 	"iter"
+	"slices"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
@@ -27,13 +29,13 @@ func BuildSeq[T any](seq ...T) iter.Seq[T] {
 }
 
 // PassThruFunc passes thru the value unchanged
-// this is just a convience function for times when you do not want to transform the key or value in Map2
+// this is just a convenience function for times when you do not want to transform the key or value in Map2
 // so you do not have to write an inline function and clutter up the code more than it needs to be.
 func PassThruFunc[K any](k K) K {
 	return k
 }
 
-// Map also know as transform function, list comprehension, visitor pattern whatever.
+// Map also known as transform function, list comprehension, visitor pattern whatever.
 // this takes an iter.Seq and a function to apply to each item in the sequence
 // returning a new iter.Seq with the results.
 func Map[T any, R any](it iter.Seq[T], mapFunc func(t T) R) iter.Seq[R] {
@@ -97,6 +99,22 @@ func FirstN[T any](it iter.Seq[T], limit int) iter.Seq[T] {
 		}
 	})
 }
+
+// First returns the first item in the sequence that matches the predicate.
+// if no item matches the predicate then the sequence is empty.
+func First[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for i := range it {
+			if predicate(i) {
+				if !yield(i) {
+					return
+				}
+				return
+			}
+		}
+	}
+}
+
 
 // SkipFirstN skips the first N items in the sequence and then iterates over the rest of them normally.
 // if skip is greater than the number of items in the sequence then an empty sequence is returned.
@@ -213,4 +231,12 @@ func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]
 			}
 		}
 	}
+}
+
+func Min[T cmp.Ordered](it iter.Seq[T]) T {
+	minV := slices.Collect(FirstN[T](it,1))[0]
+	for v := range it {
+		minV = min(minV, v)
+	}
+	return minV
 }

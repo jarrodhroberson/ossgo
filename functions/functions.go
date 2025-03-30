@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/jarrodhroberson/ossgo/slices"
+	sls "github.com/jarrodhroberson/ossgo/slices"
 	"github.com/joomcode/errorx"
 )
 
@@ -17,7 +17,7 @@ func InsteadOfNil[T any](a *T, b *T) *T {
 
 // Deprecated: use strings.FirstNonEmpty instead
 func FirstNonEmpty(data ...string) string {
-	idx, err := slices.FindFirst[string](data, func(t string) bool {
+	idx, err := sls.FindFirst[string](data, func(t string) bool {
 		return t != ""
 	})
 	if err != nil {
@@ -25,3 +25,4 @@ func FirstNonEmpty(data ...string) string {
 	}
 	return data[idx]
 }
+

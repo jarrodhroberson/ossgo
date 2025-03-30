@@ -3,10 +3,13 @@ package must
 import (
 	"encoding/json"
 	"errors"
-	"github.com/joomcode/errorx"
 	"math"
+	"slices"
 	"strconv"
 	"time"
+
+	"github.com/jarrodhroberson/ossgo/seq"
+	"github.com/joomcode/errorx"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -19,10 +22,10 @@ func init() {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 }
 
-// MustErrFunc if err != nil use custom errFunc to handle the error and panic(), else return T
-func MustErrFunc[T any](result T, err error, errFunc func(err error) error) T {
+// MustWithErrFunc if err != nil use custom errFunc to handle the error and panic(), else return T
+func MustWithErrFunc[T any](result T, err error, errFunc func(err error) error) T {
 	if err != nil {
-		panic(errors.Join(errFunc(err), err))
+		panic(errorx.Panic(errorx.EnsureStackTrace(errs.MustNeverError.WrapWithNoMessage(errFunc(err)))))
 	} else {
 		return result
 	}
@@ -30,28 +33,25 @@ func MustErrFunc[T any](result T, err error, errFunc func(err error) error) T {
 
 func Must[T any](result T, err error) T {
 	if err != nil {
-		err = errs.MustNeverError.New("the wrapped function is expected to never fail; it failed with error:%s", err.Error())
-		log.Error().Stack().Err(err).Msg(err.Error())
+		err = errs.MustNeverError.Wrap(err, "the wrapped function is expected to never fail, it failed %s", err.Error())
 		panic(errorx.Panic(err))
 	}
 	return result
 }
 
-func ParseTime(format string, s string) time.Time {
+func ParseTime(format string, s string) (time.Time, error) {
 	t, err := time.Parse(format, s)
 	if err != nil {
-		err = errors.Join(err, errs.ParseError.New("Could not parse %s as time %s", s, format))
-		log.Error().Err(err).Msgf(err.Error())
-
-		panic(errorx.Panic(err))
+		err = errs.MustNeverError.WrapWithNoMessage(errs.ParseError.Wrap(err, "could not parse %s as time %s", s, format))
+		return time.Time{}, err
 	}
-	return t
+	return t, nil
 }
 
 func ParseInt(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		err = errors.Join(err, errs.ParseError.New("Could not parse %s as int", s))
+		err = errs.MustNeverError.WrapWithNoMessage(errs.ParseError.Wrap(err, "could not parse %s as int", s))
 		log.Error().Err(err).Str("arg", s).Msg(err.Error())
 
 		panic(errorx.Panic(err))
@@ -98,6 +98,11 @@ func UnmarshallMap[T any](m map[string]interface{}, o T) {
 	UnMarshalJson(MarshalJson(m), o)
 }
 
-func MinInt(first int, second int) int {
-	return int(math.Min(float64(first), float64(second)))
+func MinInt(ints ...int) int {
+	min := math.MaxInt
+	return seq.First[int](slices.All(ints), func(i int) bool {
+		if i < min {
+			min == i
+		}
+	})
 }
