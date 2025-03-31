@@ -1,8 +1,8 @@
 package structs
 
 import (
-	"github.com/jarrodhroberson/ossgo/functions/must"
-	"github.com/rs/zerolog"
+	"fmt"
+	"strings"
 )
 
 const ReadOnly = "readonly"
@@ -14,14 +14,10 @@ type Tag struct {
 	Values []string `json:"values"`
 }
 
+func (t Tag) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("{\"%s\": [%s]}", t.Name, strings.Join(t.Values, ","))), nil
+}
+
 func (t Tag) String() string {
-	return string(must.MarshalJson(must.MarshallMap(t)))
-}
-
-type logObjectMarshaller[T any] struct {
-	delegate T
-}
-
-func (l logObjectMarshaller[T]) MarshalZerologObject(e *zerolog.Event) {
-
+	return fmt.Sprintf("{\"%s\": [%s]}", t.Name, strings.Join(t.Values, ","))
 }

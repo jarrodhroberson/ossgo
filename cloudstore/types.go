@@ -8,8 +8,8 @@ import (
 )
 
 type Location struct {
-	Bucket string
-	Name   string
+	Bucket string `json:"bucket"`
+	Name   string `json:"name"`
 }
 
 func (l Location) String() string {
@@ -17,21 +17,21 @@ func (l Location) String() string {
 }
 
 type ReadResult struct {
-	BytesRead int64
-	Error     error
+	BytesRead int64 `json:"bytes_read"`
+	Error     error `json:"error"`
 }
 
 type WriteResult struct {
-	BytesWritten int64
-	Error        error
+	BytesWritten int64 `json:"bytes_written"`
+	Error        error `json:"error"`
 }
 
 type Metadata struct {
-	Path          string              `json:"path"`
-	Size          int64               `json:"size"`
-	ContentType   string              `json:"content_type"`
-	CreatedAt     timestamp.Timestamp `json:"created_at"`
-	LastUpdatedAt timestamp.Timestamp `json:"last_updated_at"`
+	Path          string               `json:"path"`
+	Size          int64                `json:"size"`
+	ContentType   string               `json:"content_type"`
+	CreatedAt     *timestamp.Timestamp `json:"created_at"`
+	LastUpdatedAt *timestamp.Timestamp `json:"last_updated_at"`
 }
 
 func (o Metadata) Name() string {

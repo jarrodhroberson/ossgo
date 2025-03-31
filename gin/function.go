@@ -12,6 +12,10 @@ import (
 
 const CURRENT_USER_ID_TOKEN = "CURRENT_USER_ID_TOKEN"
 
+// GetValue retrieves a value from the Gin context with the specified key.
+// It returns the value as type T and an error if the key is not found.
+// If the key is not found, it returns a NotFoundError.
+// It panics if the value is not of type T.
 func GetValue[T any](c *g.Context, key string) (T, error) {
 	value, exists := c.Get(key)
 	if !exists {
@@ -20,6 +24,11 @@ func GetValue[T any](c *g.Context, key string) (T, error) {
 	return value.(T), nil
 }
 
+// MustGetValue retrieves a value from the Gin context with the specified key.
+// It returns the value as type T.
+// If the key is not found, it panics with a NotFoundError.
+// It panics if the value is not of type T.
+// Deprecated: use must.Must(GetValue[T](c, key)) instead
 func MustGetValue[T any](c *g.Context, key string) T {
 	value, exists := c.Get(key)
 	if !exists {
@@ -28,6 +37,10 @@ func MustGetValue[T any](c *g.Context, key string) T {
 	return value.(T)
 }
 
+// MustGetCurrentUserIdToken retrieves the current user's ID token from the Gin context.
+// It returns the ID token as a *auth.Token.
+// If the ID token is not found, it returns nil.
+// Deprecated: use must.Must(GetCurrentUserIdToken(c)) instead
 func MustGetCurrentUserIdToken(c *g.Context) *auth.Token {
 	idToken, err := GetCurrentUserIdToken(c)
 	if err != nil {
@@ -37,6 +50,9 @@ func MustGetCurrentUserIdToken(c *g.Context) *auth.Token {
 	return idToken
 }
 
+// GetCurrentUserIdToken retrieves the current user's ID token from the Gin context.
+// It returns the ID token as a *auth.Token and an error if the ID token is not found.
+// If the ID token is not found, it returns a COOKIE_NOT_FOUND error.
 func GetCurrentUserIdToken(c *g.Context) (*auth.Token, error) {
 	idToken, ok := c.Get(CURRENT_USER_ID_TOKEN)
 	if !ok {
@@ -45,10 +61,14 @@ func GetCurrentUserIdToken(c *g.Context) (*auth.Token, error) {
 	return idToken.(*auth.Token), nil
 }
 
+// HasHeader checks if a header with the specified name exists in the Gin context.
+// It returns true if the header exists, false otherwise.
 func HasHeader(c *g.Context, name string) bool {
 	return c.GetHeader(name) != ""
 }
 
+// HasCookie checks if a cookie with the specified name exists in the Gin context.
+// It returns true if the cookie exists, false otherwise.
 func HasCookie(c *g.Context, name string) bool {
 	_, err := c.Cookie(name)
 	return err == nil

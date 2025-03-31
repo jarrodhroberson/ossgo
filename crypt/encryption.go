@@ -11,6 +11,8 @@ import (
 
 	kms "cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
+
+	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 
@@ -35,7 +37,7 @@ func GenerateRandomBytes(w io.Writer, numBytes int32) ([]byte, error) {
 	}(client)
 
 	req := &kmspb.GenerateRandomBytesRequest{
-		Location:        gcp.Must(gcp.Region()),
+		Location:        must.Must(gcp.Region()),
 		LengthBytes:     numBytes,
 		ProtectionLevel: kmspb.ProtectionLevel_HSM,
 	}

@@ -39,7 +39,7 @@ func testSeq() {
 	//	})
 	//}(0))
 	//
-	//intMap := seq.SeqToSeq2[int, int](ints, func(v int) int {
+	//intMap := seq.ToSeq2[int, int](ints, func(v int) int {
 	//	k, ok := next()
 	//	if !ok {
 	//		stop()

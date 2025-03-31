@@ -13,10 +13,13 @@ type Decimal interface {
 	float32 | float64
 }
 
+// Number is a union of Integer and Decimal.
 type Number interface {
 	Integer | Decimal
 }
 
+// CountingSeq is a wraps an iter.Seq and counts the number of elements that have been
+// iterated over.
 type CountingSeq[T any] struct {
 	Seq     iter.Seq[T]
 	counter *atomic.Int64

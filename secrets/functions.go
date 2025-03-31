@@ -99,6 +99,7 @@ func NewPath(name string, version NewPathVersionOption) Path {
 	return p
 }
 
+// Iterable is an interface for iterating over secret versions or secrets.
 type Iterable[I secretmanagerpb.SecretVersion | secretmanagerpb.Secret] interface {
 	Next() (*I, error)
 }
@@ -115,6 +116,7 @@ func (si SecretIterable) Next() (*secretmanagerpb.Secret, error) {
 	return si.Next()
 }
 
+// toSeq2 converts an Iterable to an iter.Seq2.
 func toSeq2[I secretmanagerpb.SecretVersion | secretmanagerpb.Secret](it Iterable[I]) iter.Seq2[*I, error] {
 	return func(yield func(*I, error) bool) {
 		for {
@@ -134,6 +136,7 @@ func toSeq2[I secretmanagerpb.SecretVersion | secretmanagerpb.Secret](it Iterabl
 	}
 }
 
+// parsePathFrom parses a Path from a SecretVersion.
 func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
 	matches := validSecretPathWithVersionRegex.FindStringSubmatch(sv.GetName())
 	p := Path{
@@ -144,18 +147,22 @@ func parsePathFrom(sv *secretmanagerpb.SecretVersion) Path {
 	return p
 }
 
+// buildPathToSecretWithVersion builds a path to a secret with a specific version.
 func buildPathToSecretWithVersion(name string, version int) string {
 	return fmt.Sprintf(pathToNumericVersion, projectNumber, name, version)
 }
 
+// buildPathToSecretWithLatest builds a path to the latest version of a secret.
 func buildPathToSecretWithLatest(name string) string {
 	return fmt.Sprintf(pathToLatestVersion, projectNumber, name)
 }
 
+// buildPathToSecretWithoutVersion builds a path to a secret without a version.
 func buildPathToSecretWithoutVersion(name string) string {
 	return fmt.Sprintf(pathToSecret, projectNumber, name)
 }
 
+// GetSecretValueAsString gets the secret value as a string.
 func GetSecretValueAsString(ctx context.Context, name string) string {
 	value := MustGetSecretValue(ctx, name, GetSecretValue)
 	return string(value)
@@ -184,6 +191,7 @@ func getSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, error
 	return client.GetSecret(ctx, req)
 }
 
+// getSecretLatestVersion gets the latest version of a secret.
 func getSecretLatestVersion(ctx context.Context, name string) (int, error) {
 	path := buildPathToSecretWithLatest(name)
 	if !validSecretPathWithVersionRegex.MatchString(path) {
@@ -243,6 +251,7 @@ func GetSecretValue(ctx context.Context, name string) ([]byte, error) {
 	return result.Payload.Data, nil
 }
 
+// MustGetSecretValue gets the secret value or panics if an error occurs.
 func MustGetSecretValue(ctx context.Context, name string, f func(ctx context.Context, name string) ([]byte, error)) []byte {
 	if value, err := f(ctx, name); err != nil {
 		err = errors.Join(errs.NotFoundError.New("Error trying to retrieve secret: %s", name), err)
@@ -253,6 +262,7 @@ func MustGetSecretValue(ctx context.Context, name string, f func(ctx context.Con
 	}
 }
 
+// CreateSecret creates a new secret.
 func CreateSecret(ctx context.Context, id string) (*secretmanagerpb.Secret, error) {
 	if !validSecretNameRegex.MatchString(id) {
 		return nil, fmt.Errorf("%s does not match the validSecretNamePattern pattern %s", id, validSecretNamePattern)
@@ -328,6 +338,7 @@ func AddSecretVersion(ctx context.Context, name string, value []byte) (*secretma
 	return secretVersion, nil
 }
 
+// EnableSecretVersion enables a specific version of a secret.
 func EnableSecretVersion(ctx context.Context, name string, version int) error {
 	if version <= 0 {
 		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
@@ -360,6 +371,7 @@ func EnableSecretVersion(ctx context.Context, name string, version int) error {
 	return nil
 }
 
+// DisableSecretVersion disables a specific version of a secret.
 func DisableSecretVersion(ctx context.Context, name string, version int) error {
 	if version <= 0 {
 		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
@@ -392,6 +404,7 @@ func DisableSecretVersion(ctx context.Context, name string, version int) error {
 	return nil
 }
 
+// DestroySecretVersion destroys a specific version of a secret.
 func DestroySecretVersion(ctx context.Context, name string, version int) error {
 	if version <= 0 {
 		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
@@ -427,6 +440,7 @@ func DestroySecretVersion(ctx context.Context, name string, version int) error {
 	return nil
 }
 
+// DestroyAllButLatestVersion destroys all versions of a secret except the latest.
 func DestroyAllButLatestVersion(ctx context.Context, name string) error {
 	version, err := getSecretLatestVersion(ctx, name)
 	if err != nil {
@@ -435,6 +449,10 @@ func DestroyAllButLatestVersion(ctx context.Context, name string) error {
 	return DestroyAllPreviousVersions(ctx, name, version)
 }
 
+// DestroyAllPreviousVersions destroys all versions of a secret except the
+// specified version. If the version is 0, it will destroy all versions except
+// the latest. If the version is > 0, it will destroy all versions less than
+// the specified version.
 func DestroyAllPreviousVersions(ctx context.Context, name string, version int) error {
 	// path := "projects/${project-number}/secrets/${name}/versions/${version}"
 	path := buildPathToSecretWithoutVersion(name)
@@ -480,6 +498,7 @@ func DestroyAllPreviousVersions(ctx context.Context, name string, version int) e
 	return err
 }
 
+// UpdateSecretWithNewVersion updates a secret with a new version and enables it.
 func UpdateSecretWithNewVersion(ctx context.Context, name string, value []byte) error {
 	newSecretVersion, err := AddSecretVersion(ctx, name, value)
 	if err != nil {
@@ -490,6 +509,7 @@ func UpdateSecretWithNewVersion(ctx context.Context, name string, value []byte) 
 	return EnableSecretVersion(ctx, name, path.Version)
 }
 
+// ReplaceSecretWithNewVersion replaces a secret with a new version and destroys the previous version.
 func ReplaceSecretWithNewVersion(ctx context.Context, name string, value []byte) error {
 	newSecretVersion, err := AddSecretVersion(ctx, name, value)
 	if err != nil {
@@ -503,6 +523,7 @@ func ReplaceSecretWithNewVersion(ctx context.Context, name string, value []byte)
 	return nil
 }
 
+// CreateSecretWithValue creates a secret with a value and enables it.
 func CreateSecretWithValue(ctx context.Context, name string, value []byte) error {
 	log.Info().Msgf("creating secret with value and enabling at %s", buildPathToSecretWithoutVersion(name))
 	_, err := CreateSecret(ctx, name)
@@ -512,6 +533,7 @@ func CreateSecretWithValue(ctx context.Context, name string, value []byte) error
 	return UpdateSecretWithNewVersion(ctx, name, value)
 }
 
+// RemoveSecret removes a secret.
 func RemoveSecret(ctx context.Context, name string) error {
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {

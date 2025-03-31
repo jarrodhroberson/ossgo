@@ -12,7 +12,7 @@ func TestTimestamp_After(t *testing.T) {
 		t time.Time
 	}
 	type args struct {
-		ots Timestamp
+		ots *Timestamp
 	}
 	tests := []struct {
 		name   string
@@ -24,7 +24,7 @@ func TestTimestamp_After(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := Timestamp{
+			ts := &Timestamp{
 				t: tt.fields.t,
 			}
 			if got := ts.After(tt.args.ots); got != tt.want {
@@ -39,7 +39,7 @@ func TestTimestamp_Before(t *testing.T) {
 		t time.Time
 	}
 	type args struct {
-		ots Timestamp
+		ots *Timestamp
 	}
 	tests := []struct {
 		name   string
@@ -51,7 +51,7 @@ func TestTimestamp_Before(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := Timestamp{
+			ts := &Timestamp{
 				t: tt.fields.t,
 			}
 			if got := ts.Before(tt.args.ots); got != tt.want {
@@ -291,7 +291,7 @@ func Test_tsenums_BeginningOfTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i := tsenums{}
+			i := enums{}
 			if got := i.BeginningOfTime(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("BeginningOfTime() = %v, want %v", got, tt.want)
 			}
@@ -308,7 +308,7 @@ func Test_tsenums_EndOfTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i := tsenums{}
+			i := enums{}
 			if got := i.EndOfTime(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("EndOfTime() = %v, want %v", got, tt.want)
 			}

@@ -19,19 +19,26 @@ var InvalidCheckSum = errorx.IllegalState.NewSubtype("InvalidCheckSum", InvalidL
 var InvalidLength = errorx.IllegalFormat.NewSubtype("invalid_length", InvalidLeiCodeTrait)
 
 type LeiCode string
-
+// LocalOperatingUnit returns the Local Operating Unit (LOU) part of the LEI code.
 func (l LeiCode) LocalOperatingUnit() string {
 	return string(l[0:4])
 }
 
+// EntityIdentifier returns the Entity Identifier part of the LEI code.
 func (l LeiCode) EntityIdentifier() string {
 	return string(l[6:18])
 }
 
+// String returns the string representation of the LEI code.
 func (l LeiCode) String() string {
 	return string(l)
 }
 
+// NewLeiCode creates a new LEI code from a Local Operating Unit (LOU) and an Entity Identifier.
+//
+// It takes a 4-character LOU and a 12-character Entity Identifier as input.
+// It calculates the checksum and returns the complete 20-character LEI code.
+// Returns an error if the LOU or Entity Identifier is not of the correct length or contains invalid characters.
 func NewLeiCode(lou string, identifier string) (LeiCode, error) {
 	if len(lou) != 4 {
 		return INVALID_VALUE, errors.Join(InvalidLeiCode.NewWithNoMessage(), InvalidLength.New("lou must be 4 characters long; len(%s) = %d", lou, len(lou)))
@@ -50,6 +57,11 @@ func NewLeiCode(lou string, identifier string) (LeiCode, error) {
 	return LeiCode(fmt.Sprintf("%s%s%s%s", lou, reservedCharPadding, identifier, checksum)), nil
 }
 
+// LeiCodeFrom creates a LeiCode from a string.
+//
+// It takes a 20-character string as input.
+// It validates the format and checksum of the LEI code.
+// Returns an error if the LEI code is not of the correct length, contains invalid characters, or has an invalid checksum.
 func LeiCodeFrom(code string) (LeiCode, error) {
 	leiCode := LeiCode(code)
 	if err := isValidLeiCode(leiCode); err != nil {
@@ -59,6 +71,10 @@ func LeiCodeFrom(code string) (LeiCode, error) {
 	}
 }
 
+// calculateChecksum calculates the checksum for a given string.
+//
+// It takes a string as input and calculates the checksum according to the LEI standard.
+// It returns the two-digit checksum as a string.
 func calculateChecksum(lei string) string {
 	mods := ""
 	for _, char := range lei {
@@ -81,7 +97,11 @@ func calculateChecksum(lei string) string {
 	return ninetyEight.Sub(ninetyEight, mod).String()
 }
 
-// IsValid checks if the format of the LEI code is valid
+// isValidLeiCode checks if the format and checksum of the LEI code are valid.
+//
+// It takes a LeiCode as input.
+// It checks if the LEI code is 20 characters long, contains only uppercase alphanumeric characters, and has a valid checksum.
+// Returns an error if any of these conditions are not met.
 func isValidLeiCode(leiCode LeiCode) error {
 	if len(leiCode) != 20 {
 		return errors.Join(InvalidLeiCode.NewWithNoMessage(), InvalidLength.New("leiCode must be exactly 20 characters; %d", len(leiCode)))
@@ -94,7 +114,11 @@ func isValidLeiCode(leiCode LeiCode) error {
 	return isChecksumValid(leiCode)
 }
 
-// isFormatValid checks if a string contains only uppercase letters or digits
+// isFormatValid checks if the format of the LEI code is valid.
+//
+// It takes a LeiCode as input.
+// It checks if the first 18 characters of the LEI code contain only uppercase alphanumeric characters.
+// Returns an error if any of these conditions are not met.
 func isFormatValid(leiCode LeiCode) error {
 	if err := isUppercaseAlphaNumeric(string(leiCode[:18])); err != nil {
 		return err
@@ -103,6 +127,11 @@ func isFormatValid(leiCode LeiCode) error {
 	}
 }
 
+// isUppercaseAlphaNumeric checks if a string contains only uppercase letters or digits.
+//
+// It takes a string as input.
+// It checks if each character in the string is either an uppercase letter or a digit.
+// Returns an error if any character is not an uppercase letter or a digit.
 func isUppercaseAlphaNumeric(s string) error {
 	for idx, c := range s {
 		if !((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
@@ -112,7 +141,11 @@ func isUppercaseAlphaNumeric(s string) error {
 	return nil
 }
 
-// isChecksumValid checks if the LEI code's checksum is valid
+// isChecksumValid checks if the LEI code's checksum is valid.
+//
+// It takes a LeiCode as input.
+// It calculates the checksum of the LEI code and compares it to the last two digits of the code.
+// Returns an error if the checksum is invalid.
 func isChecksumValid(leiCode LeiCode) error {
 	if !unicode.IsDigit(rune(leiCode[18])) || !unicode.IsDigit(rune(leiCode[19])) {
 		return errors.Join(InvalidLeiCode.NewWithNoMessage(), InvalidFormat.New("leiCode checksum must be digits; %s", leiCode[18:19]))

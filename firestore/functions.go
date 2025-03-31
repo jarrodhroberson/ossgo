@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jarrodhroberson/ossgo/containers"
-	"github.com/jarrodhroberson/ossgo/gcp"
 	"iter"
 	"maps"
 	"os"
@@ -15,18 +13,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jarrodhroberson/ossgo/containers"
+	"github.com/jarrodhroberson/ossgo/gcp"
+
 	"cloud.google.com/go/compute/metadata"
 	fs "cloud.google.com/go/firestore"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/seq"
 	strs "github.com/jarrodhroberson/ossgo/strings"
 	"github.com/jarrodhroberson/ossgo/timestamp"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/api/iterator"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
@@ -207,7 +209,7 @@ func MapToUpdates(m map[string]interface{}) []fs.Update {
 		case time.Time:
 			updates = append(updates, fs.Update{Path: k, Value: timestamp.From(v.(time.Time)).String()})
 		case timestamp.Timestamp:
-			updates = append(updates, fs.Update{Path: k, Value: v.(timestamp.Timestamp).String()})
+			updates = append(updates, fs.Update{Path: k, Value: v.(timestamp.Timestamp)})
 		default:
 			updates = append(updates, fs.Update{Path: k, Value: string(must.MarshalJson(v))})
 		}
@@ -323,7 +325,7 @@ func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapsh
 // DocumentIteratorToSeq2 converts a firestore.Iterator to an iter.Seq2.
 // doc.Ref.ID is used as the "key" or first value, second value is a pointer to the type V
 func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.DocumentSnapshot] {
-	return seq.SeqToSeq2[string, *fs.DocumentSnapshot](DocumentIteratorToSeq(dsi), func(v *fs.DocumentSnapshot) string {
+	return seq.ToSeq2[string, *fs.DocumentSnapshot](DocumentIteratorToSeq(dsi), func(v *fs.DocumentSnapshot) string {
 		return v.Ref.ID
 	})
 }

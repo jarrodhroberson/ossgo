@@ -1,8 +1,8 @@
+// Deprecated: use the stand-alone package instead
 package cuid2
 
 import (
 	"fmt"
-	"github.com/joomcode/errorx"
 	"math"
 	"math/big"
 	"math/rand"
@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joomcode/errorx"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -94,6 +96,7 @@ func padWithZero(str string, size int) string {
 	return paddedString[:len(paddedString)-size]
 }
 
+// Deprecated: use the stand-alone package instead
 type CUID2 string
 
 func (c CUID2) String() string {
@@ -101,6 +104,7 @@ func (c CUID2) String() string {
 }
 
 // New returns a new CUID2 identifier with length of l
+// Deprecated: use the stand-alone package instead
 func New(l int) CUID2 {
 	t := strconv.FormatInt(time.Now().UnixMilli(), 36)
 	firstLetter := alphabet_array[int(math.Abs(float64(nextIntValue()%len(alphabet_array))))]

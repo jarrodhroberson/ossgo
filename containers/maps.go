@@ -8,6 +8,11 @@ import (
 	"github.com/barkimedes/go-deepcopy"
 )
 
+// WalkMap recursively walks through a map[string]interface{}, applying a function to each key-value pair.
+//
+// It handles nested maps by recursively calling itself.
+//
+// Parameters:
 func WalkMap(m map[string]interface{}, prefix string, f func(k string, v interface{})) {
 	for k, v := range m {
 		switch v.(type) {

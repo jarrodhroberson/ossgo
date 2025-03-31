@@ -9,9 +9,13 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
-func WrapWithCounter[T any](it iter.Seq[T]) CountingSeq[T] {
+// WrapWithCounter takes an iter.Seq and returns a *CountingSeq.
+// The *CountingSeq will count the number of items that have been yielded
+// when the Seq function is called.
+// This is useful for debugging and testing.
+func WrapWithCounter[T any](it iter.Seq[T]) *CountingSeq[T] {
 	var counter atomic.Int64
-	return CountingSeq[T]{
+	return &CountingSeq[T]{
 		Seq: func(yield func(T) bool) {
 			for i := range it {
 				if !yield(i) {
@@ -24,6 +28,11 @@ func WrapWithCounter[T any](it iter.Seq[T]) CountingSeq[T] {
 	}
 }
 
+// IntRange returns an iter.Seq that yields a sequence of integers from start to end inclusive.
+//
+//	for i := range IntRange(1, 5) {
+//		fmt.Println(i) // 1, 2, 3, 4, 5
+//	}
 func IntRange[N Integer](start N, end N) iter.Seq[N] {
 	return func(yield func(N) bool) {
 		for i := start; i <= end; i++ {
@@ -34,6 +43,11 @@ func IntRange[N Integer](start N, end N) iter.Seq[N] {
 	}
 }
 
+// Build takes a slice of type T and returns an iter.Seq[T] that yields each item in the slice.
+//
+//	for i := range Build([]int{1, 2, 3}) {
+//		fmt.Println(i) // 1, 2, 3
+//	}
 func Build[T any](seq ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for i := range seq {
@@ -75,7 +89,11 @@ func Map2[K any, V any, KR any, VR any](it iter.Seq2[K, V], keyFunc func(k K) KR
 	}
 }
 
-func SeqToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V] {
+// ToSeq2 converts an iter.Seq[V] to an iter.Seq2[K, V] by applying a key function to each value.
+// This is useful when you have a sequence of values and you want to associate a key with each value.
+// The key function is applied to each value in the sequence to generate the key.
+// The original value is preserved as the value in the resulting iter.Seq2.
+func ToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V] {
 	return iter.Seq2[K, V](func(yield func(K, V) bool) {
 		for v := range is {
 			k := keyFunc(v)
@@ -248,6 +266,10 @@ func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]
 	}
 }
 
+// Min returns the minimum value in the sequence.
+// It uses the cmp.Ordered constraint to compare values.
+// It assumes the sequence is not empty.
+// If the sequence is empty it will panic.
 func Min[T cmp.Ordered](it iter.Seq[T]) T {
 	minV := slices.Collect(FirstN[T](it, 1))[0]
 	for v := range it {

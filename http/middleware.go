@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// AntiHackingMiddleware is a middleware that blocks requests from blacklisted IPs and paths.
 func AntiHackingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientIp := c.ClientIP()
@@ -30,6 +31,7 @@ func AntiHackingMiddleware() gin.HandlerFunc {
 	}
 }
 
+// StackTraceLoggingErrorHandler is a middleware that logs stack traces for errors.
 func StackTraceLoggingErrorHandler(log zerolog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
@@ -39,6 +41,7 @@ func StackTraceLoggingErrorHandler(log zerolog.Logger) gin.HandlerFunc {
 	}
 }
 
+// RequestMetricsLogger is a middleware that logs request metrics.
 func RequestMetricsLogger(serName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()

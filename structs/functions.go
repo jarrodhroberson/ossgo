@@ -7,19 +7,23 @@ import (
 	"github.com/jarrodhroberson/destruct/destruct"
 )
 
-func parseTags(tag reflect.StructTag) []Tag {
-	tagsWithValues := strings.Split(string(tag), " ")
+func parseTags(t reflect.StructTag) []Tag {
+	tagsWithValues := strings.Split(string(t), " ")
 	tags := make([]Tag, 0, len(tagsWithValues))
 	for _, tag := range tagsWithValues {
 		kv := strings.Split(tag, ":")
 		name := kv[0]
 		values := strings.Split(kv[1], ",")
-		tags = append(tags, Tag{
-			Name:   name,
-			Values: values,
-		})
+		tags = append(tags, NewTag(name, values...))
 	}
 	return tags
+}
+
+func NewTag(name string, values ...string) Tag {
+	return Tag{
+		Name:   name,
+		Values: values,
+	}
 }
 
 func Tags[T any](t T) map[string][]Tag {
