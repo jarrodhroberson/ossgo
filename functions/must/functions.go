@@ -3,12 +3,9 @@ package must
 import (
 	"encoding/json"
 	"errors"
-	"math"
-	"slices"
 	"strconv"
 	"time"
 
-	"github.com/jarrodhroberson/ossgo/seq"
 	"github.com/joomcode/errorx"
 
 	"github.com/rs/zerolog"
@@ -96,13 +93,4 @@ func MarshallMap[T any](o T) map[string]interface{} {
 
 func UnmarshallMap[T any](m map[string]interface{}, o T) {
 	UnMarshalJson(MarshalJson(m), o)
-}
-
-func MinInt(ints ...int) int {
-	min := math.MaxInt
-	return seq.First[int](slices.All(ints), func(i int) bool {
-		if i < min {
-			min == i
-		}
-	})
 }
