@@ -4,9 +4,25 @@ import (
 	"cmp"
 	"iter"
 	"slices"
+	"sync/atomic"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
+
+func WrapWithCounter[T any](it iter.Seq[T]) CountingSeq[T] {
+	var counter atomic.Int64
+	return CountingSeq[T]{
+		Seq: func(yield func(T) bool) {
+			for i := range it {
+				if !yield(i) {
+					return
+				}
+				counter.Add(1)
+			}
+		},
+		counter: &counter,
+	}
+}
 
 func IntRange[N Integer](start N, end N) iter.Seq[N] {
 	return func(yield func(N) bool) {
@@ -18,7 +34,7 @@ func IntRange[N Integer](start N, end N) iter.Seq[N] {
 	}
 }
 
-func BuildSeq[T any](seq ...T) iter.Seq[T] {
+func Build[T any](seq ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for i := range seq {
 			if !yield(seq[i]) {
@@ -114,7 +130,6 @@ func First[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
 		}
 	}
 }
-
 
 // SkipFirstN skips the first N items in the sequence and then iterates over the rest of them normally.
 // if skip is greater than the number of items in the sequence then an empty sequence is returned.
@@ -234,7 +249,7 @@ func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]
 }
 
 func Min[T cmp.Ordered](it iter.Seq[T]) T {
-	minV := slices.Collect(FirstN[T](it,1))[0]
+	minV := slices.Collect(FirstN[T](it, 1))[0]
 	for v := range it {
 		minV = min(minV, v)
 	}
