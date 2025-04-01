@@ -19,7 +19,7 @@ const CURRENT_USER_ID_TOKEN = "CURRENT_USER_ID_TOKEN"
 func GetValue[T any](c *g.Context, key string) (T, error) {
 	value, exists := c.Get(key)
 	if !exists {
-		return *new(T), errs.NotFoundError.New("%s not found in context", key)
+		return *new(T), errs.NotFoundError.New("key %s not found in context", key)
 	}
 	return value.(T), nil
 }

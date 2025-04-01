@@ -49,32 +49,6 @@ func IsZero(t *Timestamp) bool {
 	return Enums().ZeroValue().Compare(t) == 0
 }
 
-// MonthToPeriod returns a Period that represents the entire month of the given Timestamp.
-func MonthToPeriod(ts *Timestamp) *Period {
-	firstDayOfMonth := From(time.Date(ts.Year(), ts.Month(), 1, 0, 0, 0, 0, time.UTC))
-	daysInMonth := daysIn(ts.Month(), ts.Year())
-	lastDayOfMonth := From(time.Date(ts.Year(), ts.Month(), daysInMonth, 0, 0, 0, 0, time.UTC).Add(24 * time.Hour))
-	return &Period{
-		Start: firstDayOfMonth,
-		End:   lastDayOfMonth,
-	}
-}
-
-// ToPeriod returns a Period that starts at from and ends at from + d.
-// The end time is set to the beginning of the day.
-func ToPeriod(from *Timestamp, d time.Duration) *Period {
-	return &Period{
-		Start: from,
-		End:   from.Add(d).ZeroTime(),
-	}
-}
-
-// Today returns a Period that represents the current day in UTC.
-func Today() *Period {
-	today := time.Now().UTC()
-	return ToPeriod(From(today).ZeroTime(), time.Hour*24)
-}
-
 // MustParse parses a timestamp from a string using the given format.
 // It panics if the string cannot be parsed.
 func MustParse(format string, s string) *Timestamp {

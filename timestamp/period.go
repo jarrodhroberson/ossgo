@@ -26,3 +26,36 @@ func (p *Period) Duration() time.Duration {
 func (p *Period) Contains(ts *Timestamp) bool {
 	return (p.Start == ts || p.End == ts) || (p.Start.Before(ts) && p.End.After(ts))
 }
+
+// MonthToPeriod returns a Period that represents the entire month of the given Timestamp.
+func MonthToPeriod(ts *Timestamp) *Period {
+	firstDayOfMonth := From(time.Date(ts.Year(), ts.Month(), 1, 0, 0, 0, 0, time.UTC))
+	daysInMonth := daysIn(ts.Month(), ts.Year())
+	lastDayOfMonth := From(time.Date(ts.Year(), ts.Month(), daysInMonth, 0, 0, 0, 0, time.UTC).Add(24 * time.Hour))
+	return &Period{
+		Start: firstDayOfMonth,
+		End:   lastDayOfMonth,
+	}
+}
+
+// ToPeriod returns a Period that starts at from and ends at from + d.
+// The end time is set to the beginning of the day.
+func ToPeriod(from *Timestamp, d time.Duration) *Period {
+	return &Period{
+		Start: from,
+		End:   from.Add(d).ZeroTime(),
+	}
+}
+
+// Today returns a Period that represents the current day in UTC.
+func Today() *Period {
+	today := time.Now().UTC()
+	return ToPeriod(From(today).ZeroTime(), time.Hour*24)
+}
+
+func UntilNow() *Period {
+	return &Period{
+		Start: Enums().BeginningOfTime(),
+		End:   Now(),
+	}
+}
