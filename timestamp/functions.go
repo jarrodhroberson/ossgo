@@ -35,7 +35,7 @@ func addMonth(t time.Time, m int) time.Time {
 // you would get November 30 and NOT December 1. This is OPPOSITE of the
 // behavior of the standard library time.AddDate(), which would return December 1
 // m is the number of months to add
-func AddMonth(ts Timestamp, m int) *Timestamp {
+func AddMonth(ts *Timestamp, m int) *Timestamp {
 	return From(addMonth(ts.t, m))
 }
 
