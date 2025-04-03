@@ -44,6 +44,11 @@ func ParseYouTubeTimestamp(s string) *Timestamp {
 	return MustParse("2006-01-02T15:04:05.999999Z", s)
 }
 
+// FormatYouTubeActivityTimestamp formats a Timestamp using the YouTube timestamp format.
+func FormatYouTubeActivityTimestamp(ts *Timestamp) string {
+	return ts.t.Format("2006-01-02T15:04:05.0Z")
+}
+
 // IsZero returns true if the Timestamp is the zero value.
 func IsZero(t *Timestamp) bool {
 	return Enums().ZeroValue().Compare(t) == 0

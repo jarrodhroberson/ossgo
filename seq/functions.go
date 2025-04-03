@@ -136,7 +136,7 @@ func FirstN[T any](it iter.Seq[T], limit int) iter.Seq[T] {
 
 // First returns the first item in the sequence that matches the predicate.
 // if no item matches the predicate then the sequence is empty.
-func First[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
+func FindFirst[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for i := range it {
 			if predicate(i) {
@@ -276,4 +276,12 @@ func Min[T cmp.Ordered](it iter.Seq[T]) T {
 		minV = min(minV, v)
 	}
 	return minV
+}
+
+// First returns the first item in the sequence.
+// If the sequence is empty, it returns a errs.NotFoundError.
+func First[T any](it iter.Seq[T]) (T, bool) {
+	next, stop := iter.Pull[T](it)
+	defer stop()
+	return next()
 }
