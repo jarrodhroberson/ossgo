@@ -9,6 +9,38 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
+func Collect2[K comparable, V any](it iter.Seq2[K, V]) map[K]V {
+	m := make(map[K]V)
+	for k, v := range it {
+		m[k] = v
+	}
+	return m
+}
+
+func Filter[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for i := range it {
+			if predicate(i) {
+				if !yield(i) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func Filter2[K any, V any](it iter.Seq2[K, V], predicate func(k K, v V) bool) iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for k, v := range it {
+			if predicate(k, v) {
+				if !yield(k, v) {
+					return
+				}
+			}
+		}
+	}
+}
+
 // WrapWithCounter takes an iter.Seq and returns a *CountingSeq.
 // The *CountingSeq will count the number of items that have been yielded
 // when the Seq function is called.
