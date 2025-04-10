@@ -3,6 +3,7 @@ module github.com/jarrodhroberson/ossgo
 go 1.23.5
 
 require (
+	cloud.google.com/go/cloudtasks v1.13.3
 	cloud.google.com/go/compute/metadata v0.6.0
 	cloud.google.com/go/firestore v1.18.0
 	cloud.google.com/go/kms v1.21.1
