@@ -2,6 +2,7 @@ package containers
 
 import (
 	"fmt"
+	"iter"
 	"maps"
 	"slices"
 
@@ -44,4 +45,46 @@ func KeepKeys[K comparable, V any](m map[K]V, keys ...K) map[K]V {
 
 func DeepClone[T any](m T) T {
 	return deepcopy.MustAnything(m).(T)
+}
+
+func Seq2[K comparable, V any](m map[K]V) iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for k := range maps.Keys(m) {
+			if !yield(k, m[k]) {
+				return
+			}
+		}
+	}
+}
+
+type ImmutableMap[K comparable, V any] interface {
+	Get(key K) (V,bool)
+	Keys() iter.Seq[K]
+	Values() iter.Seq[V]
+	IterSeq2() iter.Seq2[K,V]
+}
+
+type immutableMap[K comparable, V any] struct {
+	m map[K]V
+}
+
+func (i immutableMap[K, V]) Get(key K) (V,bool) {
+	v, ok := i.m[key]
+	return v, ok
+}
+
+func (i immutableMap[K, V]) Keys() iter.Seq[K] {
+	return maps.Keys(i.m)
+}
+
+func (i immutableMap[K, V]) Values() iter.Seq[V] {
+	return maps.Values(i.m)
+}
+
+func (i immutableMap[K, V]) IterSeq2() iter.Seq2[K,V] {
+	return Seq2(i.m)
+}
+
+func NewImmutableMap[K comparable, V any](m map[K]V) ImmutableMap[K, V] {
+	return immutableMap[K, V]{m: DeepClone(m)}
 }
