@@ -88,14 +88,14 @@ func Now() *Timestamp {
 	return &Timestamp{t: time.Now().UTC()}
 }
 
-// FormatCompact formats a Timestamp using the CompactFormat.
+// FormatCompact formats a Timestamp using the compact_format.
 func FormatCompact(ts *Timestamp) string {
-	return ts.t.Format(CompactFormat)
+	return ts.t.Format(compact_format)
 }
 
-// ParseCompact parses a Timestamp from a string using the CompactFormat.
+// ParseCompact parses a Timestamp from a string using the compact_format.
 func ParseCompact(s string) *Timestamp {
-	return MustParse(CompactFormat, s)
+	return MustParse(compact_format, s)
 }
 
 func Enums() Timestamps {
@@ -121,4 +121,15 @@ func ToRange(from *Timestamp, to *Timestamp, d time.Duration) []*Timestamp {
 	}
 	r = append(r, to)
 	return r
+}
+
+// FirstDayOfNextMonth returns a Timestamp representing midnight (00:00:00) UTC on the first day
+// of the next month. If the next month would be January, the year is incremented accordingly.
+func FirstDayOfNextMonth() *Timestamp {
+	nextMonth := AddMonth(Now(), 1).Month()
+	year := Now().Year()
+	if nextMonth == time.January {
+		year = year + 1
+	}
+	return From(time.Date(year, nextMonth, 1, 0, 0, 0, 0, time.UTC))
 }

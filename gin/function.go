@@ -8,6 +8,7 @@ import (
 
 	g "github.com/gin-gonic/gin"
 	errs "github.com/jarrodhroberson/ossgo/errors"
+	strs "github.com/jarrodhroberson/ossgo/strings"
 )
 
 const CURRENT_USER_ID_TOKEN = "CURRENT_USER_ID_TOKEN"
@@ -22,6 +23,14 @@ func GetValue[T any](c *g.Context, key string) (T, error) {
 		return *new(T), errs.NotFoundError.New("key %s not found in context", key)
 	}
 	return value.(T), nil
+}
+
+func GetQueryValue(c *g.Context, key string) (string, error) {
+	value, exists := c.GetQuery(key)
+	if !exists {
+		return strs.NO_DATA, errs.NotFoundError.New("key %s not found in context", key)
+	}
+	return value, nil
 }
 
 // MustGetValue retrieves a value from the Gin context with the specified key.

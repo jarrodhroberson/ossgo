@@ -28,18 +28,12 @@ func (c *Context) AccountId() (string, error) {
 	return GetValue[string](gc, "account_id")
 }
 
-func (c *Context) YouTubeId() (string, error) {
-	gc := (*gin.Context)(c)
-	return GetValue[string](gc, "youtube_id")
-}
-
 // AcceptHandlerRegistry struct to manage the acceptHeaderHandlerMap.
 type AcceptHandlerRegistry struct {
 	contentType            string                     // The base content type, e.g., "application/vnd.example.resource+json"
 	acceptHeaderHandlerMap map[string]gin.HandlerFunc // Key is the full Accept header, value is the handler
 }
 
-// RegisterAcceptHandler registers an Accept header and handler.
 func (r *AcceptHandlerRegistry) RegisterAcceptHandler(acceptHeader string, handler gin.HandlerFunc) *AcceptHandlerRegistry {
 	if acceptHeader == "" {
 		err := errorx.EnsureStackTrace(errs.MustNeverError.WrapWithNoMessage(errorx.IllegalArgument.New("acceptHeader cannot be empty")))
@@ -59,7 +53,6 @@ func (r *AcceptHandlerRegistry) RegisterAcceptHandler(acceptHeader string, handl
 	return r // Return the registry for chaining
 }
 
-// HandlerFunc returns a gin.HandlerFunc that handles routing based on the Accept header.
 func (r *AcceptHandlerRegistry) HandlerFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		acceptHeaderFromRequest := c.GetHeader("Accept")
