@@ -296,15 +296,16 @@ func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapsh
 	return func(yield func(ref *fs.DocumentSnapshot) bool) {
 		defer dsi.Stop()
 		for {
-			doc, err := dsi.Next()
+			docSS, err := dsi.Next()
 			if errors.Is(err, iterator.Done) {
 				return
 			}
 			if err != nil {
-				log.Error().Err(err).Msg("error iterating through Firestore documents")
+				err = errs.MustNeverError.Wrap(err, "error iterating through Firestore documents")
+				log.Error().Err(err).Msg(err.Error())
 				return
 			}
-			if !yield(doc) {
+			if !yield(docSS) {
 				return
 			}
 		}
