@@ -66,7 +66,7 @@ func NewCollectionStore[T any](database DatabaseName, collection string, keyerFu
 
 // IsNotFound checks if the given error is a Firestore "not found" error.
 func IsNotFound(err error) bool {
-	return status.Code(err) == codes.NotFound
+	return err != nil && status.Code(err) == codes.NotFound
 }
 
 // Exists checks if the given error is not a Firestore "not found" error.
@@ -119,17 +119,6 @@ func DeleteCollection(ctx context.Context, client *fs.Client, path string) error
 		return err
 	}
 	return nil
-}
-
-// Deprecated: Use must.Must(Client(ctx, database)) instead.
-// Must is a helper function that panics if the error is not nil, otherwise returns the client.
-func Must(client *fs.Client, err error) *fs.Client {
-	if err != nil {
-		log.Error().Err(err).Msgf("error creating firestore client %s", err)
-		panic(errorx.Panic(err))
-	} else {
-		return client
-	}
 }
 
 // Client creates a new Firestore client for the specified database.
