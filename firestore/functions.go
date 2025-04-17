@@ -292,12 +292,13 @@ func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R]
 
 // DocumentIteratorToSeq converts a firestore.Iterator to an iter.Seq.
 // value is a pointer to the type V
-func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapshot] {
+func DocumentIteratorToSeq(dsi *fs.DocumentIterator, closeFunc func()) iter.Seq[*fs.DocumentSnapshot] {
 	return func(yield func(ref *fs.DocumentSnapshot) bool) {
 		defer dsi.Stop()
+		defer closeFunc()
 		for {
 			docSS, err := dsi.Next()
-			if err == iterator.Done {
+			if errors.Is(err, iterator.Done) {
 				break
 			}
 			if err != nil {
