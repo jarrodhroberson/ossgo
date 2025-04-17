@@ -9,6 +9,18 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
+func Empty[T any]() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		return
+	}
+}
+
+func Empty2[K comparable, V any]() iter.Seq2[K,V] {
+	return func(yield func(K, V) bool) {
+		return
+	}
+}
+
 func Collect2[K comparable, V any](it iter.Seq2[K, V]) map[K]V {
 	m := make(map[K]V)
 	for k, v := range it {
@@ -75,12 +87,12 @@ func IntRange[N Integer](start N, end N) iter.Seq[N] {
 	}
 }
 
-// Build takes a slice of type T and returns an iter.Seq[T] that yields each item in the slice.
+// ToSeq takes a slice of type T and returns an iter.Seq[T] that yields each item in the slice.
 //
-//	for i := range Build([]int{1, 2, 3}) {
+//	for i := range ToSeq([]int{1, 2, 3}) {
 //		fmt.Println(i) // 1, 2, 3
 //	}
-func Build[T any](seq ...T) iter.Seq[T] {
+func ToSeq[T any](seq ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for i := range seq {
 			if !yield(seq[i]) {
