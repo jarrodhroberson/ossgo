@@ -1,7 +1,6 @@
 package timestamp
 
 import (
-	"math"
 	"sync"
 	"time"
 
@@ -103,7 +102,7 @@ func Enums() Timestamps {
 		instances = enums{
 			beginningOfTime: &Timestamp{time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)},
 			endOfTime:       &Timestamp{time.Date(9999, 12, 31, 23, 59, 59, 0, time.UTC)},
-			zeroValue:       From(time.UnixMilli(math.MinInt64).UTC()),
+			zeroValue:       From(time.Unix(0, 0).UTC()),
 		}
 	})
 	return instances
