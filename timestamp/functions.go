@@ -132,3 +132,37 @@ func FirstDayOfNextMonth() *Timestamp {
 	}
 	return From(time.Date(year, nextMonth, 1, 0, 0, 0, 0, time.UTC))
 }
+
+// HumanReadableDuration converts a time.Duration into a human-readable string format.
+// The output will include years, days, hours, minutes, and seconds as applicable,
+// in descending order of significance. Components that are not relevant (i.e., with a value of 0)
+// are omitted, except seconds, which is always included.
+//
+// For example:
+// - A duration of 90061 seconds will yield "1d 1h 1m 1s"
+// - A duration of 86400 seconds will yield "1d 0s"
+// - A duration of 31556952 seconds will yield "1y 0s"
+func HumanReadableDuration(d time.Duration) string {
+	years := int(d.Hours()/24) / 365
+	days := int(d.Hours()/24) - years*365
+	hours := int(d.Hours()) % 24
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+
+	formattedDuration := ""
+	if years > 0 {
+		formattedDuration += fmt.Sprintf("%dy ", years)
+	}
+	if years > 0 || days > 0 {
+		formattedDuration += fmt.Sprintf("%dd ", days)
+	}
+	if hours > 0 || days > 0 { // Include hours if days are present for clarity
+		formattedDuration += fmt.Sprintf("%dh ", hours)
+	}
+	if minutes > 0 || hours > 0 || days > 0 { // Include minutes similarly
+		formattedDuration += fmt.Sprintf("%dm ", minutes)
+	}
+	formattedDuration += fmt.Sprintf("%ds", seconds)
+
+	return formattedDuration
+}
