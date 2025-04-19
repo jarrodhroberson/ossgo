@@ -2,7 +2,20 @@ package secrets
 
 import (
 	"fmt"
+	"regexp"
 )
+
+// NameRegex is a compiled regular expression to validate secret naming, ensuring names start and end with alphanumeric characters and can include hyphens or underscores in-between, with a length limit of 1 to 225 characters.
+// @see https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#:~:text=A%20secret%20name%20can%20contain,(for%20example%2C%20abcd1234%20).
+var secretNameRegex = regexp.MustCompile("^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0, 223}[a-zA-Z0-9])?$")
+
+type Name struct {
+	name string
+}
+
+func (s Name) String() string {
+	return string(s.name)
+}
 
 // Path represents a path to a secret in Secret Manager.
 //

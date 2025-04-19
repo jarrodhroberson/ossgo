@@ -72,13 +72,13 @@ func GetCurrentUserIdToken(c *g.Context) (*auth.Token, error) {
 
 // HasHeader checks if a header with the specified name exists in the Gin context.
 // It returns true if the header exists, false otherwise.
-func HasHeader(c *g.Context, name string) bool {
+func HasHeader(c *g.Context, name SecretName) bool {
 	return c.GetHeader(name) != ""
 }
 
 // HasCookie checks if a cookie with the specified name exists in the Gin context.
 // It returns true if the cookie exists, false otherwise.
-func HasCookie(c *g.Context, name string) bool {
+func HasCookie(c *g.Context, name SecretName) bool {
 	_, err := c.Cookie(name)
 	return err == nil
 }
