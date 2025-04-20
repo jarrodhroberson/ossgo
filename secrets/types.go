@@ -9,12 +9,6 @@ import (
 // @see https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#:~:text=A%20secret%20name%20can%20contain,(for%20example%2C%20abcd1234%20).
 var secretNameRegex = regexp.MustCompile("^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0, 223}[a-zA-Z0-9])?$")
 
-type Name string
-
-func (s Name) String() string {
-	return string(s)
-}
-
 // Path represents a path to a secret in Secret Manager.
 //
 // A path can be represented in three different ways:
