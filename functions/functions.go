@@ -25,4 +25,3 @@ func FirstNonEmpty(data ...string) string {
 	}
 	return data[idx]
 }
-
