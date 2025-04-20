@@ -5,3 +5,5 @@ import (
 )
 
 type CreateTaskRequestOption func(ctr *cloudtaskspb.CreateTaskRequest)
+
+type QueuePathProvider func() string
