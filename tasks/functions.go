@@ -15,7 +15,7 @@ func CreateQueuePath(queueId string) string {
 	return fmt.Sprintf("projects/%s/locations/%s/queues/%s", projectId, locationId, queueId)
 }
 
-func DisallowDuplicates(path QueuePathProvider, name string) CreateTaskRequestOption {
+func DisallowDuplicates(path string, name string) CreateTaskRequestOption {
 	return func(ctr *cloudtaskspb.CreateTaskRequest) {
 		// Task name must be formatted: "projects/<PROJECT_ID>/locations/<LOCATION_ID>/queues/<QUEUE_ID>/tasks/<TASK_ID>"
 		ctr.Task.Name = fmt.Sprintf("%s/tasks/%s", path(), ctr.Task.Name)
