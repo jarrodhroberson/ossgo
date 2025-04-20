@@ -40,19 +40,19 @@ func (m *MemoizedSeq[T]) Reset() {
 
 // ToMemoizingSeq wraps an iter.Seq to memoize its items and allows it to be re-iterated after a reset() call.
 func ToMemoizingSeq[T any](seq iter.Seq[T]) MemoizedSeq[T] {
-	var cache []T
+	var items []T
 	var memoized bool
 
 	memoizedSeq := func(yield func(item T) bool) {
 		if memoized {
-			for _, item := range cache {
+			for _, item := range items {
 				if !yield(item) {
 					return
 				}
 			}
 		} else {
 			seq(func(item T) bool {
-				cache = append(cache, item)
+				items = append(items, item)
 				return yield(item)
 			})
 			memoized = true
@@ -66,5 +66,18 @@ func ToMemoizingSeq[T any](seq iter.Seq[T]) MemoizedSeq[T] {
 	return MemoizedSeq[T]{
 		Seq:   memoizedSeq,
 		reset: reset,
+	}
+}
+
+// FlattenSeq takes an iter.Seq of batches (iter.Seq[T]) and flat maps all the batches
+// into a single iter.Seq.
+func FlattenSeq[T any](iterSeqs iter.Seq[iter.Seq[T]]) iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		iterSeqs(func(iterSeq iter.Seq[T]) bool {
+			iterSeq(func(t T) bool {
+				return yield(t)
+			})
+			return true
+		})
 	}
 }
