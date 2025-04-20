@@ -68,6 +68,27 @@ func ParseInt(s string) int {
 	return i
 }
 
+// ParseIntOr attempts to parse a string into an integer, returning a default value if parsing fails.
+//
+// Parameters:
+//   - s: The string to parse.
+//   - or: The default integer value to return if parsing fails.
+//
+// Returns:
+//   - The parsed integer value if successful, otherwise the default value `or`.
+//
+// Example:
+//
+//	parsedValue := ParseIntOr("42", 0) // returns 42
+//	parsedValue := ParseIntOr("invalid", 10) // returns 10
+func ParseIntOr(s string, or int) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return or
+	}
+	return i
+}
+
 // ParseInt64 converts a string to an int64.
 // It panics if the conversion fails, logging the error before panicking.
 // Returns the parsed int64 value.
@@ -144,5 +165,3 @@ func AsString(b []byte) string {
 	}
 	return string(b)
 }
-
-
