@@ -1,16 +1,18 @@
 package firestore
 
 import (
+	"context"
+	"iter"
+
 	"cloud.google.com/go/firestore"
 	fs "cloud.google.com/go/firestore"
-	"context"
+
 	"github.com/jarrodhroberson/ossgo/containers"
 	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions"
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/timestamp"
 	"github.com/rs/zerolog/log"
-	"iter"
 )
 
 const MAX_BULK_WRITE_SIZE = 20
@@ -87,7 +89,8 @@ func (c CollectionStore[T]) All() (iter.Seq2[string, *T], error) {
 		}
 	}(client)
 	docIter := client.Collection(c.collection).Documents(ctx)
-	return DocSnapShotSeq2ToType[T](DocumentIteratorToSeq2(docIter)), nil
+	dssSeq2 := DocSnapShotSeq2ToType[T](DocumentIteratorToSeq2(docIter))
+	return ClosingWhenDoneSeq2(dssSeq2,client), nil
 }
 
 func (c CollectionStore[T]) Load(id string) (*T, error) {
@@ -123,8 +126,8 @@ func (c CollectionStore[T]) Store(v *T) (*T, error) {
 
 	docRef := client.Collection(c.collection).Doc(c.keyer(v))
 	m := must.MarshallMap(v)
-	containers.RemoveKeys(m, "created_at")
 	m["last_updated_at"] = timestamp.Now()
+	containers.RemoveKeys(m,"created_at")
 	ctx := context.Background()
 	_, err := docRef.Set(ctx, m)
 	if err != nil {

@@ -319,3 +319,59 @@ func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.Docu
 		return v.Ref.ID
 	})
 }
+
+// FindDuplicateDocumentIds finds and reports duplicate document IDs within a Firestore collection.
+// It takes the Firestore client and the collection path as input.
+// It returns an iter.Seq2[string,int] where keys are duplicate document Ids and values are the number of occurrences.
+// If no duplicates are found, it returns an empty iter.Seq2[string,int.  Returns an error if one occurs.
+func FindDuplicateDocumentIds(ctx context.Context, databaseName DatabaseName, collectionPath string) (iter.Seq2[string,int], error) {
+	client := must.Must(Client(ctx, databaseName))
+	defer func(client *fs.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Warn().Err(err).Msgf("error closing firestore client %s", err)
+		}
+	}(client)
+
+	// Iterate over all documents in the collection.
+	docRefIter := client.Collection(collectionPath).Documents(ctx)
+	docRefSeq := DocumentIteratorToSeq(docRefIter)
+	duplicates := make(map[string]int)
+	for docRef := range docRefSeq {
+		id := docRef.Ref.ID
+		// Check if the document ID already exists.
+		if _, ok := duplicates[id]; ok {
+			duplicates[id] = duplicates[id] + 1
+		} else {
+			duplicates[id] = 1
+		}
+	}
+	return containers.Seq2(duplicates), nil
+}
+
+// ClosingWhenDoneSeq wraps the provided iter.Seq and ensures that fs.Client.Close() is called
+// after the last item is provided by the Seq.
+func ClosingWhenDoneSeq[T any](seq iter.Seq[T], client *fs.Client) iter.Seq[T] {
+	return func(yield func(item T) bool) {
+		defer func() {
+			if err := client.Close(); err != nil {
+				log.Warn().Err(err).Msg("error closing Firestore client")
+			}
+		}()
+		seq(yield)
+	}
+}
+
+// ClosingWhenDoneSeq2 wraps the provided iter.Seq2 and ensures that fs.Client.Close() is called
+// after the last item is provided by the Seq2.
+func ClosingWhenDoneSeq2[K, V any](seq2 iter.Seq2[K, V], client *fs.Client) iter.Seq2[K, V] {
+	return func(yield func(key K, value V) bool) {
+		defer func() {
+			if err := client.Close(); err != nil {
+				log.Warn().Err(err).Msg("error closing Firestore client")
+			}
+		}()
+		seq2(yield)
+	}
+}
+
