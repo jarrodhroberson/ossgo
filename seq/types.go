@@ -73,11 +73,12 @@ func ToMemoizingSeq[T any](seq iter.Seq[T]) MemoizedSeq[T] {
 // into a single iter.Seq.
 func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
 	return func(yield func(t T) bool) {
-		iterSeqs(func(iterSeq iter.Seq[T]) bool {
-			iterSeq(func(t T) bool {
-				return yield(t)
-			})
-			return true
-		})
+		for is := range iterSeqs {
+			for i := range iterSeqs[is] {
+				if !yield(i) {
+					return
+				}
+			}
+		}
 	}
 }
