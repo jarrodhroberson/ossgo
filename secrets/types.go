@@ -38,6 +38,8 @@ func (p Path) LatestVersion() string {
 	return fmt.Sprintf(pathToLatestVersion, p.ProjectNumber, p.Name)
 }
 
+// WithVersion returns the path to the secret with a specific version.
+// Example: projects/1234567890/secrets/my-secret/versions/1
 func (p Path) WithVersion() string {
 	return fmt.Sprintf(pathToNumericVersion, p.ProjectNumber, p.Name, p.Version)
 }
