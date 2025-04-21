@@ -27,7 +27,7 @@ func DisallowDuplicates(path string, name string) CreateTaskRequestOption {
 }
 
 func CreateTask(ctx context.Context, req *cloudtaskspb.CreateTaskRequest) (*cloudtaskspb.Task, error) {
-	client, err := cloudtasks.NewClient(ctx)
+	c, err := cloudtasks.NewClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func CreateTask(ctx context.Context, req *cloudtaskspb.CreateTaskRequest) (*clou
 		if err != nil {
 			log.Error().Err(err).Msg(err.Error())
 		}
-	}(client)
+	}(c)
 
 	createdTask, err := client.CreateTask(ctx, req)
 	if err != nil {
