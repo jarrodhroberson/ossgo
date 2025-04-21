@@ -71,7 +71,7 @@ func ToMemoizingSeq[T any](seq iter.Seq[T]) MemoizedSeq[T] {
 
 // FlattenSeq takes an iter.Seq of batches (iter.Seq[T]) and flat maps all the batches
 // into a single iter.Seq.
-func FlattenSeq[T any](iterSeqs iter.Seq[iter.Seq[T]]) iter.Seq[T] {
+func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
 	return func(yield func(t T) bool) {
 		iterSeqs(func(iterSeq iter.Seq[T]) bool {
 			iterSeq(func(t T) bool {
