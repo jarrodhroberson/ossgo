@@ -70,6 +70,7 @@ var DisabledError = errorx.IllegalState.NewSubtype("Disabled", errorx.Temporary(
 var InvalidJsonPayloadReceived = InvalidData.NewSubtype("invalid json payload received.")
 var CanNotBindQueryParameter = UnMarshalError.NewSubtype("can not bind query parameter.")
 var IterationError = MustNeverError.NewSubtype("iteration error", IterationTrait)
+var RegExDoesNotMatch = errorx.IllegalFormat.NewSubtype("does not match regex")
 
 // standard http errors
 var HttpRedirectionStatus = errorx.NewType(HttpNamespace, "Redirect Error", HttpRedirectionTrait)

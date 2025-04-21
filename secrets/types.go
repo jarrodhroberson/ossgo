@@ -5,8 +5,13 @@ import (
 	"regexp"
 )
 
-// NameRegex is a compiled regular expression to validate secret naming, ensuring names start and end with alphanumeric characters and can include hyphens or underscores in-between, with a length limit of 1 to 225 characters.
-// @see https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#:~:text=A%20secret%20name%20can%20contain,(for%20example%2C%20abcd1234%20).
+// secretNameRegex is a regular expression that validates the format of a secret name.
+//
+// A valid secret name must:
+// - Start with an alphanumeric character (a-z, A-Z, 0-9).
+// - Contain only alphanumeric characters, dashes (-), or underscores (_).
+// - Be between 6 and 254 characters long.
+// - End with an alphanumeric character (a-z, A-Z, 0-9).
 var secretNameRegex = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9_-]{5,253}[a-zA-Z0-9]$")
 
 // Path represents a path to a secret in Secret Manager.

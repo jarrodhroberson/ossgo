@@ -61,6 +61,10 @@ const (
 	latestVersion  int = 0
 )
 
+func isValidSecretName(name string) bool {
+	return validSecretNameRegex.MatchString(name)
+}
+
 type NewPathVersionOption func(path *Path)
 
 func WithVersion(version int) NewPathVersionOption {
@@ -159,8 +163,7 @@ func buildPathToSecretWithoutVersion(name string) string {
 
 // GetSecretValueAsString gets the secret value as a string.
 func GetSecretValueAsString(ctx context.Context, name string) string {
-	value := MustGetSecretValue(ctx, name, GetSecretValue)
-	return string(value)
+	return string(must.Must(GetSecretValue(ctx, name)))
 }
 
 func getSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, error) {
@@ -219,6 +222,11 @@ func getSecretLatestVersion(ctx context.Context, name string) (int, error) {
 // exists. The version can be a version number as a string (e.g. "5") or an
 // alias (e.g. "latest").
 func GetSecretValue(ctx context.Context, name string) ([]byte, error) {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return nil, err
+	}
 	path := buildPathToSecretWithLatest(name)
 	if !validSecretPathWithVersionRegex.MatchString(path) {
 		return nil, errorx.IllegalState.New("%s does not match the validPathWithVersionPattern %s", path, validPathWithVersionPattern)
@@ -246,19 +254,13 @@ func GetSecretValue(ctx context.Context, name string) ([]byte, error) {
 	return result.Payload.Data, nil
 }
 
-// MustGetSecretValue gets the secret value or panics if an error occurs.
-func MustGetSecretValue(ctx context.Context, name string, f func(ctx context.Context, name string) ([]byte, error)) []byte {
-	if value, err := f(ctx, name); err != nil {
-		err = errors.Join(errs.NotFoundError.New("Error trying to retrieve secret: %s", name), err)
-		log.Error().Err(err).Msgf(err.Error())
-		panic(errorx.EnsureStackTrace(err))
-	} else {
-		return value
-	}
-}
-
 // CreateSecret creates a new secret.
 func CreateSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, error) {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return nil, err
+	}
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
 		return nil, errorx.InitializationFailed.Wrap(err, "failed to create secretmanager client")
@@ -298,6 +300,11 @@ func CreateSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, er
 
 // AddSecretVersion adds a new secret version to the given secret with the provided payload.
 func AddSecretVersion(ctx context.Context, name string, value []byte) (*secretmanagerpb.SecretVersion, error) {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return nil, err
+	}
 	// parent := "projects/my-project/secrets/my-secret"
 	path := buildPathToSecretWithoutVersion(name)
 	if !validSecretPathRegex.MatchString(path) {
@@ -331,6 +338,11 @@ func AddSecretVersion(ctx context.Context, name string, value []byte) (*secretma
 
 // EnableSecretVersion enables a specific version of a secret.
 func EnableSecretVersion(ctx context.Context, name string, version int) error {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return err
+	}
 	if version <= 0 {
 		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
 	}
@@ -364,6 +376,12 @@ func EnableSecretVersion(ctx context.Context, name string, version int) error {
 
 // DisableSecretVersion disables a specific version of a secret.
 func DisableSecretVersion(ctx context.Context, name string, version int) error {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return err
+	}
+
 	if version <= 0 {
 		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
 	}
@@ -397,6 +415,11 @@ func DisableSecretVersion(ctx context.Context, name string, version int) error {
 
 // DestroySecretVersion destroys a specific version of a secret.
 func DestroySecretVersion(ctx context.Context, name string, version int) error {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return err
+	}
 	if version <= 0 {
 		return secretVersionNotFound.New("version %d out of range, must be >= 1", version)
 	}
@@ -445,6 +468,11 @@ func DestroyAllButLatestVersion(ctx context.Context, name string) error {
 // the latest. If the version is > 0, it will destroy all versions less than
 // the specified version.
 func DestroyAllPreviousVersions(ctx context.Context, name string, version int) error {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return err
+	}
 	// path := "projects/${project-number}/secrets/${name}/versions/${version}"
 	path := buildPathToSecretWithoutVersion(name)
 	if !validSecretPathWithVersionRegex.MatchString(path) {
@@ -516,7 +544,6 @@ func ReplaceSecretWithNewVersion(ctx context.Context, name string, value []byte)
 
 // CreateSecretWithValue creates a secret with a value and enables it.
 func CreateSecretWithValue(ctx context.Context, name string, value []byte) error {
-	log.Info().Msgf("creating secret with value and enabling at %s", buildPathToSecretWithoutVersion(name))
 	_, err := CreateSecret(ctx, name)
 	if err != nil {
 		return err
@@ -526,6 +553,11 @@ func CreateSecretWithValue(ctx context.Context, name string, value []byte) error
 
 // RemoveSecret removes a secret.
 func RemoveSecret(ctx context.Context, name string) error {
+	if !isValidSecretName(name) {
+		err := errorx.IllegalArgument.New("invalid secret name: %s", name)
+		err = errs.RegExDoesNotMatch.Wrap(err, "secret name %s does not match the validSecretNameRegex %s", name, validSecretNameRegex)
+		return err
+	}
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
 		return errorx.InitializationFailed.Wrap(err, "failed to create secretmanager client")
