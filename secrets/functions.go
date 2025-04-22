@@ -32,7 +32,7 @@ const (
 
 var projectNumber = must.Must(strconv.Atoi(must.Must(metadata.NumericProjectIDWithContext(context.Background()))))
 var validSecretPathRegex *regexp.Regexp = nil
-var validSecretNameRegex *regexp.Regexp = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9_-]{4, 253}[a-zA-Z0-9]$")
+var validSecretNameRegex *regexp.Regexp = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9_-]{4,253}[a-zA-Z0-9]$")
 var validSecretPathWithVersionRegex *regexp.Regexp = nil
 var validSecretAnnotationKeyRegex *regexp.Regexp = nil
 
@@ -62,8 +62,7 @@ const (
 )
 
 func isValidSecretName(name string) bool {
-	//return validSecretNameRegex.MatchString(name)
-	return true
+	return validSecretNameRegex.MatchString(name)
 }
 
 type NewPathVersionOption func(path *Path)
