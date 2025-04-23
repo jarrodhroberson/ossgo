@@ -74,29 +74,8 @@ func Exists(err error) bool {
 	return !IsNotFound(err)
 }
 
-// CollectionExists checks if a collection exists at the specified path in Firestore.
-func CollectionExists(ctx context.Context, client *fs.Client, path string) bool {
-	iter := client.Collections(ctx)
-	for {
-		colRef, err := iter.Next()
-		if err == iterator.Done {
-			return false
-		}
-		if err != nil {
-			panic(errorx.Panic(err))
-		}
-		if colRef.Path == path {
-			return true
-		}
-	}
-}
-
 // DeleteCollection deletes all documents in a specified Firestore collection.
 func DeleteCollection(ctx context.Context, client *fs.Client, path string) error {
-	if !CollectionExists(ctx, client, path) {
-		return errs.NotFoundError.New("collection \"%s\" does not exist", path)
-	}
-
 	bulkwriter := client.BulkWriter(ctx)
 	defer bulkwriter.End()
 
@@ -324,7 +303,7 @@ func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.Docu
 // It takes the Firestore client and the collection path as input.
 // It returns an iter.Seq2[string,int] where keys are duplicate document Ids and values are the number of occurrences.
 // If no duplicates are found, it returns an empty iter.Seq2[string,int.  Returns an error if one occurs.
-func FindDuplicateDocumentIds(ctx context.Context, databaseName DatabaseName, collectionPath string) (iter.Seq2[string,int], error) {
+func FindDuplicateDocumentIds(ctx context.Context, databaseName DatabaseName, collectionPath string) (iter.Seq2[string, int], error) {
 	client := must.Must(Client(ctx, databaseName))
 	defer func(client *fs.Client) {
 		err := client.Close()
@@ -374,4 +353,3 @@ func ClosingWhenDoneSeq2[K, V any](seq2 iter.Seq2[K, V], client *fs.Client) iter
 		seq2(yield)
 	}
 }
-
