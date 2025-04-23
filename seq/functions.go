@@ -329,3 +329,61 @@ func First[T any](it iter.Seq[T]) (T, bool) {
 	defer stop()
 	return next()
 }
+
+// RuneSeq creates a sequence of runes from the given string.
+//
+// The sequence iterates over all runes in the input string and passes each rune
+// to the provided yielding function until all runes are processed, or the yielding
+// function returns false to stop the iteration.
+//
+// Parameters:
+//   - s: The input string to generate the rune sequence from.
+//
+// Returns:
+//   - iter.Seq[rune]: A sequence that yields runes from the input string.
+//
+// Example:
+//   seq := RuneSeq("hello")
+//   seq(func(r rune) bool {
+//	   fmt.Printf("Rune: %c\n", r)
+//	   return true // Continue iteration
+//   })
+func RuneSeq(s string) iter.Seq[rune] {
+	return func(yield func(rune) bool) {
+		for _, r := range s {
+			if !yield(r) {
+				return
+			}
+		}
+	}
+}
+
+// RuneSeq2 creates a sequence of runes from the given string,
+// where each yielded element is a key-value pair consisting of the index
+// and the rune at that index in the string.
+//
+// The sequence will iterate over the string, yielding the index and 
+// corresponding rune until all runes in the string have been processed,
+// or until the yielding function returns false to stop iteration.
+//
+// Parameters:
+//   - s: The input string to generate the rune sequence from.
+//
+// Returns:
+//   - iter.Seq2[int,rune]: A sequence that yields index-rune pairs from the string.
+//
+// Example:
+//   seq := RuneSeq2("hello")
+//   seq(func(idx int, r rune) bool {
+//	   fmt.Printf("Index: %d, Rune: %c\n", idx, r)
+//	   return true // Continue iteration
+//   })
+func RuneSeq2(s string) iter.Seq2[int,rune] {
+	return func(yield func(int,rune) bool) {
+		for idx, r := range s {
+			if !yield(idx,r) {
+				return
+			}
+		}
+	}
+}
