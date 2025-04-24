@@ -228,7 +228,7 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 	if val, ok := groups["days"]; ok {
 		if len(val) > 0 {
 			days := must.ParseInt(val)
-			dur += int64(days)
+			dur += int64(days) * int64(time.Hour*24)
 		}
 	}
 	if val, ok := groups["hours"]; ok {

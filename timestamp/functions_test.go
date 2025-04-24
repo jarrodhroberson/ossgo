@@ -176,7 +176,7 @@ func TestToRange(t *testing.T) {
 
 func TestAddMonth(t *testing.T) {
 	type args struct {
-		ts Timestamp
+		ts *Timestamp
 		m  int
 	}
 	tests := []struct {
@@ -187,7 +187,7 @@ func TestAddMonth(t *testing.T) {
 		{
 			name: "test add 1 month from October 31",
 			args: args{
-				ts: Timestamp{
+				ts: &Timestamp{
 					t: time.Date(2024, time.October, 31, 1, 2, 3, 0, time.UTC),
 				},
 				m: 1,
@@ -199,7 +199,7 @@ func TestAddMonth(t *testing.T) {
 		{
 			name: "test add 1 month from December 31, 2024",
 			args: args{
-				ts: Timestamp{
+				ts: &Timestamp{
 					t: time.Date(2024, time.December, 31, 1, 2, 3, 0, time.UTC),
 				},
 				m: 1,
@@ -211,7 +211,7 @@ func TestAddMonth(t *testing.T) {
 		{
 			name: "test add 1 month from February 29",
 			args: args{
-				ts: Timestamp{
+				ts: &Timestamp{
 					t: time.Date(2024, time.February, 29, 1, 2, 3, 0, time.UTC),
 				},
 				m: 1,
@@ -223,7 +223,7 @@ func TestAddMonth(t *testing.T) {
 		{
 			name: "test add 1 month from January 29 on a leap year",
 			args: args{
-				ts: Timestamp{
+				ts: &Timestamp{
 					t: time.Date(2024, time.January, 29, 1, 2, 3, 0, time.UTC),
 				},
 				m: 1,
@@ -304,6 +304,57 @@ func TestMonthToPeriod(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := MonthToPeriod(tt.args.ts); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MonthToPeriod() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestISO8601ToDuration(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		expected  time.Duration
+		expectErr bool
+	}{
+		// Valid Test Cases
+		{"Complete ISO8601 Duration", "P1Y2M3W4DT5H6M7S", time.Duration(1*365*24*time.Hour + 2*30*24*time.Hour + 3*7*24*time.Hour + 4*24*time.Hour + 5*time.Hour + 6*time.Minute + 7*time.Second), false},
+		{"Years Only", "P2Y", time.Duration(2 * 365 * 24 * time.Hour), false},
+		{"Months Only", "P3M", time.Duration(3 * 30 * 24 * time.Hour), false},
+		{"Weeks Only", "P4W", time.Duration(4 * 7 * 24 * time.Hour), false},
+		{"Days Only", "P5D", time.Duration(5 * 24 * time.Hour), false},
+		{"Hours Only", "PT6H", time.Duration(6 * time.Hour), false},
+		{"Minutes Only", "PT7M", time.Duration(7 * time.Minute), false},
+		{"Seconds Only", "PT30S", time.Duration(30 * time.Second), false},
+		{"Decimal Seconds Stripped", "PT5.9S", time.Duration(5 * time.Second), false},
+		{"Mixed Time Only", "PT1H30M45S", time.Duration(1*time.Hour + 30*time.Minute + 45*time.Second), false},
+		{"Mixed Date Only", "P1Y2M10D", time.Duration(1*365*24*time.Hour + 2*30*24*time.Hour + 10*24*time.Hour), false},
+		{"Empty Time Designator", "P1Y2M3W4D", time.Duration(1*365*24*time.Hour + 2*30*24*time.Hour + 3*7*24*time.Hour + 4*24*time.Hour), false},
+		{"Only Time Designator", "PT", time.Duration(0), false},
+
+		// Invalid Test Cases
+		{"Empty String", "", time.Duration(0), true},
+		{"Invalid Format", "1Y2M3W4DT5H6M7S", time.Duration(0), true},
+		{"Missing Designator", "P1Y2M3DT", time.Duration(0), true},
+		{"Negative Input", "PT-5S", time.Duration(0), true},
+		{"Non-Numeric Values", "P1Y2M3W4DT5H6MXS", time.Duration(0), true},
+		{"Only Non-ISO8601 Format String", "AnythingNotISO", time.Duration(0), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dur, err := ISO8601ToDuration(tt.input)
+
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("expected error, got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("did not expect error, got: %v", err)
+				}
+				if dur != tt.expected {
+					t.Errorf("expected duration %v, got %v", tt.expected, dur)
+				}
 			}
 		})
 	}
