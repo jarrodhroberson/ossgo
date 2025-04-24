@@ -408,13 +408,13 @@ func (ipc *client) SignUpWithEmailPassword(ctx context.Context, email string, pa
 		SetError(&errorBody).
 		Send()
 	if err != nil {
-		log.Error().Err(err).Msgf("http.Client error %s", err.Error())
+		log.Error().Stack().Err(err).Msgf("http.Client error %s", err.Error())
 		return nil, err
 	}
 	must.UnmarshallMap(rbm, &responseBody)
 
 	if res.IsError() {
-		log.Error().Err(err).Msgf("http.Client.Response.IsError %s", res.Err.Error())
+		log.Error().Stack().Err(err).Msgf("http.Client.Response.IsError %s", res.Err.Error())
 		return &responseBody, errorBody
 	}
 	return &responseBody, nil

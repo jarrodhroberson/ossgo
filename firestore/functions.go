@@ -128,14 +128,14 @@ func Count(ctx context.Context, query fs.Query) int64 {
 	value, ok := cqr["val"]
 	if !ok {
 		err = errs.MustNeverError.New("could not get \"count\" from results %s", strings.Join(slices.Collect(maps.Keys(cqr)), ","))
-		log.Error().Err(err).Msg(err.Error())
+		log.Error().Stack().Err(err).Msg(err.Error())
 
 		panic(errorx.Panic(err))
 	}
 	count, ok := value.(int64)
 	if !ok {
 		err := errs.MustNeverError.New("could not assert that \"%s\" was of type int64", "count")
-		log.Error().Err(err).Msg(err.Error())
+		log.Error().Stack().Err(err).Msg(err.Error())
 
 		panic(errorx.Panic(err))
 	}
@@ -148,7 +148,7 @@ func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T)
 	defer func(client *fs.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msgf("error closing firestore client %s", err)
+			log.Error().Stack().Err(err).Msgf("error closing firestore client %s", err)
 		}
 	}(client)
 	doc, err := client.Doc(path).Get(ctx)
@@ -260,7 +260,7 @@ func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R]
 		m := make(map[string]interface{})
 		err := dss.DataTo(&m)
 		if err != nil {
-			log.Error().Err(err).Msgf("error unmarshalling Firestore document with ID %s", dss.Ref.ID)
+			log.Error().Stack().Err(err).Msgf("error unmarshalling Firestore document with ID %s", dss.Ref.ID)
 
 			panic(errorx.Panic(err))
 		}
@@ -281,7 +281,7 @@ func DocumentIteratorToSeq(dsi *fs.DocumentIterator) iter.Seq[*fs.DocumentSnapsh
 			}
 			if err != nil {
 				err = errs.MustNeverError.Wrap(err, "error iterating through Firestore documents")
-				log.Error().Err(err).Msg(err.Error())
+				log.Error().Stack().Err(err).Msg(err.Error())
 				break
 			}
 			if !yield(docSS) {

@@ -34,7 +34,7 @@ func CreateTask(ctx context.Context, req *cloudtaskspb.CreateTaskRequest) (*clou
 	defer func(c *cloudtasks.Client) {
 		err = c.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(c)
 

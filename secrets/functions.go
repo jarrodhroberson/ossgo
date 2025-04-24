@@ -178,7 +178,7 @@ func getSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, error
 	defer func(client *secretmanager.Client) {
 		err = client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -202,7 +202,7 @@ func getSecretLatestVersion(ctx context.Context, name string) (int, error) {
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -238,7 +238,7 @@ func GetSecretValue(ctx context.Context, name string) ([]byte, error) {
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -268,7 +268,7 @@ func CreateSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, er
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 	log.Info().Msgf("attempting to create secret %s", buildPathToSecretWithoutVersion(name))
@@ -287,7 +287,7 @@ func CreateSecret(ctx context.Context, name string) (*secretmanagerpb.Secret, er
 
 	secret, err := client.CreateSecret(ctx, req)
 	if err != nil {
-		log.Error().Err(err).Msgf("could not create secret: %s", err.Error())
+		log.Error().Stack().Err(err).Msgf("could not create secret: %s", err.Error())
 		if strings.Contains(err.Error(), "AlreadyExists") {
 			log.Warn().Err(err).Msg(err.Error())
 			return getSecret(ctx, name)
@@ -317,7 +317,7 @@ func AddSecretVersion(ctx context.Context, name string, value []byte) (*secretma
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -358,7 +358,7 @@ func EnableSecretVersion(ctx context.Context, name string, version int) error {
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -397,7 +397,7 @@ func DisableSecretVersion(ctx context.Context, name string, version int) error {
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -435,7 +435,7 @@ func DestroySecretVersion(ctx context.Context, name string, version int) error {
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -485,7 +485,7 @@ func DestroyAllPreviousVersions(ctx context.Context, name string, version int) e
 	defer func(client *secretmanager.Client) {
 		err = client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 
@@ -565,7 +565,7 @@ func RemoveSecret(ctx context.Context, name string) error {
 	defer func(client *secretmanager.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 	path := buildPathToSecretWithoutVersion(name)

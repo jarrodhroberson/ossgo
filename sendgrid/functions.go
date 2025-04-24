@@ -136,7 +136,7 @@ func shouldSend(ctx context.Context, eventID string) error {
 	defer func(db *firestore.Client) {
 		err := db.Close()
 		if err != nil {
-			log.Error().Err(err).Msg("could not close firebase client")
+			log.Error().Stack().Err(err).Msg("could not close firebase client")
 		}
 	}(client)
 
@@ -171,7 +171,7 @@ func markSent(ctx context.Context, eventID string) error {
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg("could not close firebase client")
+			log.Error().Stack().Err(err).Msg("could not close firebase client")
 		}
 	}(client)
 	//emailRef := client.Collection("sent").Doc(eventID)

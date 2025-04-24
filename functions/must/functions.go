@@ -96,7 +96,7 @@ func ParseInt64(s string) int64 {
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		err = errs.MustNeverError.WrapWithNoMessage(errs.ParseError.Wrap(err, "could not parse %s as int", s))
-		log.Error().Err(err).Str("arg", s).Msg(err.Error())
+		log.Error().Stack().Err(err).Str("arg", s).Msg(err.Error())
 
 		panic(errorx.Panic(err))
 	}
@@ -110,7 +110,7 @@ func UnMarshalJson(bytes []byte, o any) {
 	err := json.Unmarshal(bytes, o)
 	if err != nil {
 		err = errors.Join(err, errs.UnMarshalError.New("could not unmarshal %s", string(bytes)))
-		log.Error().Err(err).Msg(err.Error())
+		log.Error().Stack().Err(err).Msg(err.Error())
 
 		panic(errorx.Panic(err))
 	}

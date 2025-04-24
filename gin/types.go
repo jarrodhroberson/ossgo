@@ -37,12 +37,12 @@ type AcceptHandlerRegistry struct {
 func (r *AcceptHandlerRegistry) RegisterAcceptHandler(acceptHeader string, handler gin.HandlerFunc) *AcceptHandlerRegistry {
 	if acceptHeader == "" {
 		err := errorx.EnsureStackTrace(errs.MustNeverError.WrapWithNoMessage(errorx.IllegalArgument.New("acceptHeader cannot be empty")))
-		log.Error().Err(err).Msg(err.Error())
+		log.Error().Stack().Err(err).Msg(err.Error())
 		errorx.Panic(err)
 	}
 	if handler == nil {
 		err := errorx.EnsureStackTrace(errs.MustNeverError.WrapWithNoMessage(errorx.IllegalArgument.New("handler cannot be nil")))
-		log.Error().Err(err).Msg(err.Error())
+		log.Error().Stack().Err(err).Msg(err.Error())
 		errorx.Panic(err)
 	}
 

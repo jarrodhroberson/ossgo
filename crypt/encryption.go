@@ -32,7 +32,7 @@ func GenerateRandomBytes(w io.Writer, numBytes int32) ([]byte, error) {
 	defer func(client *kms.KeyManagementClient) {
 		err := client.Close()
 		if err != nil {
-			log.Error().Err(err).Msg(err.Error())
+			log.Error().Stack().Err(err).Msg(err.Error())
 		}
 	}(client)
 

@@ -63,7 +63,7 @@ func MustParse(format string, s string) *Timestamp {
 	// It panics if the string cannot be parsed.
 	t, err := time.Parse(format, s)
 	if err != nil {
-		log.Error().Err(err).Msgf("Could not parse as timestamp %s", s)
+		log.Error().Stack().Err(err).Msgf("Could not parse as timestamp %s", s)
 	}
 	return From(t)
 }
