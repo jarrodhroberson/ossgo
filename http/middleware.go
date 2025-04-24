@@ -36,7 +36,7 @@ func StackTraceLoggingErrorHandler(log zerolog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 		for _, ginErr := range c.Errors {
-			log.Error().Err(ginErr).Stack().Msgf(ginErr.Error())
+			log.Error().Stack().Err(ginErr).Msgf(ginErr.Error())
 		}
 	}
 }

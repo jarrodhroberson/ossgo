@@ -502,7 +502,7 @@ func DestroyAllPreviousVersions(ctx context.Context, name string, version int) e
 	//log.Debug().Msgf("Secret Version Iterator.PageInfo(): %s", sviter.PageInfo())
 	for sv, iterr := range sviter {
 		if iterr != nil {
-			log.Error().Err(iterr).Msg(iterr.Error())
+			log.Error().Stack().Err(iterr).Msg(iterr.Error())
 			err = errors.Join(err, iterr)
 		} else {
 			p := parsePathFrom(sv)

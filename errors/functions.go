@@ -2,11 +2,15 @@ package errors
 
 import (
 	"github.com/joomcode/errorx"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
 )
 
 var statusCodeToError = make(map[string]*errorx.Type)
 
 func init() {
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+
 	statusCodeToError["300"] = StatusMultipleChoices // Multiple Choices
 	statusCodeToError["301"] = StatusMovedPermanently
 	statusCodeToError["302"] = StatusFound
