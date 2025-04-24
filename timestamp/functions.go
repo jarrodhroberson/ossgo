@@ -204,32 +204,46 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 
 	var dur int64
 	if val, ok := groups["years"]; ok {
-		years := must.ParseInt(val)
-		dur += int64(years) * int64(time.Hour*24*365)
+		if len(val) > 0 {
+			years := must.ParseInt(val)
+			dur += int64(years) * int64(time.Hour*24*365)
+		}
 	}
 	if val, ok := groups["months"]; ok {
-		months := must.ParseInt(val)
-		dur += int64(months) * int64(time.Hour*24*30)
+		if len(val) > 0 {
+			months := must.ParseInt(val)
+			dur += int64(months) * int64(time.Hour*24*30)
+		}
 	}
 	if val, ok := groups["weeks"]; ok {
-		weeks := must.ParseInt(val)
-		dur += int64(weeks) * int64(time.Hour*24*7)
+		if len(val) > 0 {
+			weeks := must.ParseInt(val)
+			dur += int64(weeks) * int64(time.Hour*24*7)
+		}
 	}
 	if val, ok := groups["days"]; ok {
-		days := must.ParseInt(val)
-		dur += int64(days)
+		if len(val) > 0 {
+			days := must.ParseInt(val)
+			dur += int64(days)
+		}
 	}
 	if val, ok := groups["hours"]; ok {
-		hours := must.ParseInt(val)
-		dur += int64(hours) * int64(time.Hour)
+		if len(val) > 0 {
+			hours := must.ParseInt(val)
+			dur += int64(hours) * int64(time.Hour)
+		}
 	}
 	if val, ok := groups["minutes"]; ok {
-		minutes := must.ParseInt(val)
-		dur += int64(minutes) * int64(time.Minute)
+		if len(val) > 0 {
+			minutes := must.ParseInt(val)
+			dur += int64(minutes) * int64(time.Minute)
+		}
 	}
 	if val, ok := groups["seconds"]; ok {
-		seconds := must.ParseInt(val)
-		dur += int64(seconds) * int64(time.Second)
+		if len(val) > 0 {
+			seconds := must.ParseInt(val)
+			dur += int64(seconds) * int64(time.Second)
+		}
 	}
 
 	return time.Duration(dur), nil
