@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	errs "github.com/jarrodhroberson/ossgo/errors"
+	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/rs/zerolog/log"
 )
 
@@ -166,4 +168,69 @@ func HumanReadableDuration(d time.Duration) string {
 	formattedDuration += fmt.Sprintf("%ds", seconds)
 
 	return formattedDuration
+}
+
+// ISO8601ToDuration converts an ISO 8601 duration string into a time.Duration.
+// It parses the duration components (years, months, weeks, days, hours, minutes, seconds),
+// sums them up, and returns the total duration.
+//
+// Supported format examples:
+//   - "P1Y2M3W4DT5H6M7S" (1 year, 2 months, 3 weeks, 4 days, 5 hours, 6 minutes, 7 seconds)
+//   - "PT10M" (10 minutes)
+//
+// Note: For simplicity, this implementation assumes all months are 30 days
+// and all years are 365 days. This can result in approximations when handling
+// months and years.
+//
+// Parameters:
+//   s - An ISO 8601 duration string.
+//
+// Returns:
+//   A time.Duration representing the total duration, or an error if the input string
+//   is not a valid ISO 8601 duration format.
+//
+// Errors:
+//   Returns an error if the input string does not match the ISO 8601 format.
+func ISO8601ToDuration(s string) (time.Duration, error) {
+	if !iso8601DurationRegex.MatchString(s) {
+		return -1, errs.ParseError.New("invalid ISO 8601 duration: %s", s)
+	}
+	matches := iso8601DurationRegex.FindStringSubmatch(s)
+	names := iso8601DurationRegex.SubexpNames()
+	groups := make(map[string]string, len(names))
+	for idx, name := range names {
+		groups[name] = matches[idx]
+	}
+
+	var dur int64
+	if val, ok := groups["years"]; ok {
+		years := must.ParseInt(val)
+		dur += int64(years) * int64(time.Hour*24*365)
+	}
+	if val, ok := groups["months"]; ok {
+		months := must.ParseInt(val)
+		dur += int64(months) * int64(time.Hour*24*30)
+	}
+	if val, ok := groups["weeks"]; ok {
+		weeks := must.ParseInt(val)
+		dur += int64(weeks) * int64(time.Hour*24*7)
+	}
+	if val, ok := groups["days"]; ok {
+		days := must.ParseInt(val)
+		dur += int64(days)
+	}
+	if val, ok := groups["hours"]; ok {
+		hours := must.ParseInt(val)
+		dur += int64(hours) * int64(time.Hour)
+	}
+	if val, ok := groups["minutes"]; ok {
+		minutes := must.ParseInt(val)
+		dur += int64(minutes) * int64(time.Minute)
+	}
+	if val, ok := groups["seconds"]; ok {
+		seconds := must.ParseInt(val)
+		dur += int64(seconds) * int64(time.Second)
+	}
+
+	return time.Duration(dur), nil
 }
