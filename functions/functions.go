@@ -29,19 +29,14 @@ func FirstNonEmpty(data ...string) string {
 	return data[idx]
 }
 
-
-// DebounceDeduplicate creates a debounced and deduplicated version of the given function.
+// DeDuplicate creates a deduplicated version of the given function.
 //
-//   - fn: The function to debounce and deduplicate. Must accept a single argument
-//     and return a single value.
-//   - duration: The debounce/deduplication duration.  The function will only be called
-//     once per this duration.
+// - fn: The function to deduplicate.
 //
-// Returns a new function that behaves as a debounced and deduplicated version of `fn`.
-func DebounceDeduplicate[T comparable, R any](fn func(T) R, duration time.Duration) func(T) R {
+// Returns a new function that behaves as a deduplicated version of `fn`.
+func DeDuplicate[T comparable, R any](fn func(T) R) func(T) R {
 	var (
 		mu         sync.Mutex
-		timer      *time.Timer
 		lastArg    T
 		lastResult R
 		lastCalled time.Time
@@ -54,36 +49,59 @@ func DebounceDeduplicate[T comparable, R any](fn func(T) R, duration time.Durati
 
 		now := time.Now()
 
-		// Check if the function was called recently.  If so, and if the argument is the same,
-		// return the last result.
-		if now.Sub(lastCalled) < duration && arg == lastArg && hasResult {
+		// Check if the function was called recently and with the same argument.
+		if now.Sub(lastCalled) < time.Minute && arg == lastArg && hasResult { // Changed from duration to a fixed 1 minute to decouple it from the Debounce Duration
 			return lastResult
 		}
 
-		// If a timer is already running, stop it.  This effectively resets the debounce.
+		// Execute the function and store the result.
+		lastResult = fn(arg)
+		lastArg = arg
+		lastCalled = now
+		hasResult = true
+		return lastResult
+	}
+}
+
+// Debounce creates a debounced version of the given function.
+//
+// - fn: The function to debounce.
+// - duration: The debounce duration.
+//
+// Returns a new function that behaves as a debounced version of `fn`.
+func Debounce[T any, R any](fn func(T) R, duration time.Duration) func(T) R {
+	var (
+		mu         sync.Mutex
+		timer      *time.Timer
+		resultChan = make(chan R, 1) // Channel to pass the result back
+	)
+
+	return func(arg T) R {
+		mu.Lock()
+		defer mu.Unlock()
+
+		// If a timer is already running, stop it.
 		if timer != nil {
 			timer.Stop()
 		}
 
-		// Capture the current argument.
-		lastArg = arg
-
 		// Define a function to execute after the debounce duration.
-		execute := func() {
-			mu.Lock()
-			defer mu.Unlock()
-
-			// Execute the function and store the result.
-			lastResult = fn(lastArg)
-			lastCalled = time.Now()
-			timer = nil // Clear the timer after execution.
-			hasResult = true
+		execute := func(arg T) {
+			res := fn(arg)
+			resultChan <- res // Send the result to the channel
 		}
 
 		// Start a new timer that will execute the function after the debounce duration.
-		timer = time.AfterFunc(duration, execute)
+		timer = time.AfterFunc(duration, func() {
+			execute(arg)
+		})
 
-		// Return the last cached result immediately.
-		return lastResult
+		select {
+		case res := <-resultChan: // Try to receive a result from the channel immediately
+			return res
+		default: // No result available immediately; the debounced function hasn't executed yet.
+			var zero R
+			return zero // Return the zero value for the return type.
+		}
 	}
 }
