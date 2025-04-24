@@ -245,7 +245,10 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 	}
 	if val, ok := groups["seconds"]; ok {
 		if len(val) > 0 {
-			val = val[:strings.Index(val, ".")]
+			decIdx := strings.Index(val, ".")
+			if decIdx != -1 {
+				val = val[:decIdx]
+			}
 			seconds := must.ParseInt(val)
 			dur += int64(seconds) * int64(time.Second)
 		}
