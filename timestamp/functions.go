@@ -183,14 +183,17 @@ func HumanReadableDuration(d time.Duration) string {
 // months and years.
 //
 // Parameters:
-//   s - An ISO 8601 duration string.
+//
+//	s - An ISO 8601 duration string.
 //
 // Returns:
-//   A time.Duration representing the total duration, or an error if the input string
-//   is not a valid ISO 8601 duration format.
+//
+//	A time.Duration representing the total duration, or an error if the input string
+//	is not a valid ISO 8601 duration format.
 //
 // Errors:
-//   Returns an error if the input string does not match the ISO 8601 format.
+//
+//	Returns an error if the input string does not match the ISO 8601 format.
 func ISO8601ToDuration(s string) (time.Duration, error) {
 	if !iso8601DurationRegex.MatchString(s) {
 		return -1, errs.ParseError.New("invalid ISO 8601 duration: %s", s)

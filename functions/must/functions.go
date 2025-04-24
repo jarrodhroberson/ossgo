@@ -61,7 +61,7 @@ func ParseInt(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		err = errs.MustNeverError.WrapWithNoMessage(errs.ParseError.Wrap(err, "could not parse %s as int", s))
-		log.Error().Err(err).Str("arg", s).Msg(err.Error())
+		log.Error().Stack().Err(err).Str("arg", s).Msg(err.Error())
 
 		panic(errorx.Panic(err))
 	}
