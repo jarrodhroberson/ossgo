@@ -2,6 +2,7 @@ package timestamp
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -180,7 +181,7 @@ func HumanReadableDuration(d time.Duration) string {
 //
 // Note: For simplicity, this implementation assumes all months are 30 days
 // and all years are 365 days. This can result in approximations when handling
-// months and years.
+// months and years. It also only returns INTEGER seconds. Any decimal places are stripped off.
 //
 // Parameters:
 //
@@ -244,6 +245,7 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 	}
 	if val, ok := groups["seconds"]; ok {
 		if len(val) > 0 {
+			val = val[:strings.Index(val, ".")]
 			seconds := must.ParseInt(val)
 			dur += int64(seconds) * int64(time.Second)
 		}
