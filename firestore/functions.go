@@ -76,28 +76,29 @@ func Exists(err error) bool {
 
 // DeleteCollection deletes all documents in a specified Firestore collection.
 func DeleteCollection(ctx context.Context, client *fs.Client, path string) error {
-	bulkwriter := client.BulkWriter(ctx)
-	defer bulkwriter.End()
+	bw := client.BulkWriter(ctx)
+	defer func() {
+		bw.Flush()
+		bw.End()
+	}()
 
 	errgp, ctx := errgroup.WithContext(context.Background())
 	docIter := client.Collection(path).Select().OrderBy("created_at", fs.Asc).Documents(ctx)
-
-	for docSSIter := range seq.Chunk(DocumentIteratorToSeq(docIter), 500) {
+	batches := seq.Chunk(DocumentIteratorToSeq(docIter), MAX_BULK_WRITE_SIZE)
+	for batch := range batches {
 		errgp.Go(func() error {
-			for docSS := range docSSIter {
-				_, err := bulkwriter.Delete(docSS.Ref)
+			for docSS := range batch {
+				_, err := bw.Delete(docSS.Ref)
 				if err != nil {
-					return BulkWriterError.New("error deleting document \"%s\" in collection \"%s\"", docSS.Ref.ID, path)
+					return BulkWriterError.Wrap(err, "error deleting document \"%s\" in collection \"%s\"", docSS.Ref.ID, path)
 				}
 			}
-			bulkwriter.Flush()
+			bw.Flush()
 			return nil
 		})
 	}
-	if err := errgp.Wait(); err != nil {
-		return err
-	}
-	return nil
+
+	return errgp.Wait()
 }
 
 // Client creates a new Firestore client for the specified database.
