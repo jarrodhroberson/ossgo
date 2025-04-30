@@ -177,7 +177,7 @@ func TestToRange(t *testing.T) {
 func TestAddMonth(t *testing.T) {
 	type args struct {
 		ts *Timestamp
-		m  int
+		m  time.Month
 	}
 	tests := []struct {
 		name string
@@ -235,7 +235,7 @@ func TestAddMonth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := AddMonth(tt.args.ts, tt.args.m); !reflect.DeepEqual(got, tt.want) {
+			if got := AddMonth(tt.args.ts, int(tt.args.m)); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("AddMonth() = %v, want %v", got, tt.want)
 			}
 		})
@@ -302,7 +302,7 @@ func TestMonthToPeriod(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MonthToPeriod(tt.args.ts); !reflect.DeepEqual(got, tt.want) {
+			if got := MonthToPeriod(tt.args.ts.Year(), tt.args.ts.t.Month()); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MonthToPeriod() = %v, want %v", got, tt.want)
 			}
 		})
