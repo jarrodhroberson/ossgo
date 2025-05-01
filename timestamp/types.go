@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-const compact_format = "20060102t150405Z"
+const YEAR_MONTH = "200601"
+const COMPACT_FORMAT = "20060102t150405Z"
 
 var iso8601DurationRegex = regexp.MustCompile(`^(?:<period>P(?:(?P<years>(\d+))Y)?(?:(?P<months>(\d+))M)?(?:(?P<weeks>(\d+))W)?(?:(?P<days>(\d+))D))?(?P<time>T(?:(?P<hours>(\d+))H)?(?:(?P<minutes>(\d+))M)?(?:(?P<seconds>(\d+(?:\.\d+)?))S)?)?$`)
 

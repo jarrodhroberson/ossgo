@@ -52,6 +52,10 @@ func FormatYouTubeActivityTimestamp(ts *Timestamp) string {
 	return ts.t.Format("2006-01-02T15:04:05.0Z")
 }
 
+func Format(ts *Timestamp, format string) string {
+	return ts.t.Format(format)
+}
+
 // IsZero returns true if the Timestamp is the zero value.
 func IsZero(t *Timestamp) bool {
 	return Enums().ZeroValue().Compare(t) == 0
@@ -91,14 +95,14 @@ func Now() *Timestamp {
 	return &Timestamp{t: time.Now().UTC()}
 }
 
-// FormatCompact formats a Timestamp using the compact_format.
+// FormatCompact formats a Timestamp using the COMPACT_FORMAT.
 func FormatCompact(ts *Timestamp) string {
-	return ts.t.Format(compact_format)
+	return ts.t.Format(COMPACT_FORMAT)
 }
 
-// ParseCompact parses a Timestamp from a string using the compact_format.
+// ParseCompact parses a Timestamp from a string using the COMPACT_FORMAT.
 func ParseCompact(s string) *Timestamp {
-	return MustParse(compact_format, s)
+	return MustParse(COMPACT_FORMAT, s)
 }
 
 func Enums() Timestamps {
