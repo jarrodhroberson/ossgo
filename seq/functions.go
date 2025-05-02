@@ -344,11 +344,12 @@ func First[T any](it iter.Seq[T]) (T, bool) {
 //   - iter.Seq[rune]: A sequence that yields runes from the input string.
 //
 // Example:
-//   seq := RuneSeq("hello")
-//   seq(func(r rune) bool {
-//	   fmt.Printf("Rune: %c\n", r)
-//	   return true // Continue iteration
-//   })
+//
+//	  seq := RuneSeq("hello")
+//	  seq(func(r rune) bool {
+//		   fmt.Printf("Rune: %c\n", r)
+//		   return true // Continue iteration
+//	  })
 func RuneSeq(s string) iter.Seq[rune] {
 	return func(yield func(rune) bool) {
 		for _, r := range s {
@@ -363,7 +364,7 @@ func RuneSeq(s string) iter.Seq[rune] {
 // where each yielded element is a key-value pair consisting of the index
 // and the rune at that index in the string.
 //
-// The sequence will iterate over the string, yielding the index and 
+// The sequence will iterate over the string, yielding the index and
 // corresponding rune until all runes in the string have been processed,
 // or until the yielding function returns false to stop iteration.
 //
@@ -374,11 +375,12 @@ func RuneSeq(s string) iter.Seq[rune] {
 //   - iter.Seq2[int,rune]: A sequence that yields index-rune pairs from the string.
 //
 // Example:
-//   seq := RuneSeq2("hello")
-//   seq(func(idx int, r rune) bool {
-//	   fmt.Printf("Index: %d, Rune: %c\n", idx, r)
-//	   return true // Continue iteration
-//   })
+//
+//	  seq := RuneSeq2("hello")
+//	  seq(func(idx int, r rune) bool {
+//		   fmt.Printf("Index: %d, Rune: %c\n", idx, r)
+//		   return true // Continue iteration
+//	  })
 func RuneSeq2(s string) iter.Seq2[int, rune] {
 	return func(yield func(int, rune) bool) {
 		for idx, r := range s {
@@ -389,10 +391,9 @@ func RuneSeq2(s string) iter.Seq2[int, rune] {
 	}
 }
 
-//
 // OrderedIterSeq creates an ordered sequence from the given input sequence.
 // It reads all elements from the input sequence into memory, sorts them using
-// their natural order (defined by the cmp.Ordered constraint), and produces 
+// their natural order (defined by the cmp.Ordered constraint), and produces
 // an iterator that yields the sorted elements.
 //
 // The input sequence is consumed fully before yielding the sorted sequence,
@@ -403,14 +404,15 @@ func RuneSeq2(s string) iter.Seq2[int, rune] {
 //
 // Returns:
 //   - iter.Seq[T]: An iterator that yields the elements of the input sequence
-//	 in ascending order.
+//     in ascending order.
 //
 // Usage:
-//   seq := OrderedIterSeq(SomeSeq)
-//   seq(func(v int) bool {
-//	   fmt.Println(v)
-//	   return true // Continue iteration
-//   })
+//
+//	  seq := OrderedIterSeq(SomeSeq)
+//	  seq(func(v int) bool {
+//		   fmt.Println(v)
+//		   return true // Continue iteration
+//	  })
 //
 // Notes:
 //   - The ordering is determined by slices.Sort, which uses the natural order of the items.
