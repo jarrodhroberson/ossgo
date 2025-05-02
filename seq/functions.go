@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"iter"
 	"slices"
+	"sync"
 	"sync/atomic"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
@@ -15,7 +16,7 @@ func Empty[T any]() iter.Seq[T] {
 	}
 }
 
-func Empty2[K comparable, V any]() iter.Seq2[K,V] {
+func Empty2[K comparable, V any]() iter.Seq2[K, V] {
 	return func(yield func(K, V) bool) {
 		return
 	}
@@ -323,7 +324,7 @@ func Min[T cmp.Ordered](it iter.Seq[T]) T {
 }
 
 // First returns the first item in the sequence.
-// If the sequence is empty, it returns a errs.NotFoundError.
+// If the sequence is empty, it returns nil, false.
 func First[T any](it iter.Seq[T]) (T, bool) {
 	next, stop := iter.Pull[T](it)
 	defer stop()
@@ -378,12 +379,82 @@ func RuneSeq(s string) iter.Seq[rune] {
 //	   fmt.Printf("Index: %d, Rune: %c\n", idx, r)
 //	   return true // Continue iteration
 //   })
-func RuneSeq2(s string) iter.Seq2[int,rune] {
-	return func(yield func(int,rune) bool) {
+func RuneSeq2(s string) iter.Seq2[int, rune] {
+	return func(yield func(int, rune) bool) {
 		for idx, r := range s {
-			if !yield(idx,r) {
+			if !yield(idx, r) {
 				return
 			}
 		}
 	}
+}
+
+//
+// OrderedIterSeq creates an ordered sequence from the given input sequence.
+// It reads all elements from the input sequence into memory, sorts them using
+// their natural order (defined by the cmp.Ordered constraint), and produces 
+// an iterator that yields the sorted elements.
+//
+// The input sequence is consumed fully before yielding the sorted sequence,
+// so this function is suitable for sequences that can fit into memory.
+//
+// Parameters:
+//   - in: An input sequence of elements implementing the cmp.Ordered constraint.
+//
+// Returns:
+//   - iter.Seq[T]: An iterator that yields the elements of the input sequence
+//	 in ascending order.
+//
+// Usage:
+//   seq := OrderedIterSeq(SomeSeq)
+//   seq(func(v int) bool {
+//	   fmt.Println(v)
+//	   return true // Continue iteration
+//   })
+//
+// Notes:
+//   - The ordering is determined by slices.Sort, which uses the natural order of the items.
+//   - The function utilizes a buffered channel of size 256 to pass sorted items to the output sequence.
+//   - Synchronization is ensured using a WaitGroup and a done channel to prevent race conditions.
+func OrderedIterSeq[T cmp.Ordered](in iter.Seq[T]) iter.Seq[T] {
+	orderChan := make(chan T, 256)
+	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer close(orderChan)
+		defer wg.Done()
+
+		var items []T
+		for item := range in {
+			items = append(items, item)
+		}
+
+		slices.Sort(items)
+
+		for item := range ToSeq(items...) {
+			orderChan <- item
+		}
+
+		close(done)
+	}()
+
+	return iter.Seq[T](func(yield func(T) bool) {
+		defer wg.Wait()
+
+		for {
+			select {
+			case item, ok := <-orderChan:
+				if !ok {
+					return
+				}
+				if !yield(item) {
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	})
 }
