@@ -69,6 +69,10 @@ func IsNotFound(err error) bool {
 	return err != nil && status.Code(err) == codes.NotFound
 }
 
+func IsAlreadyExists(err error) bool {
+	return err != nil && status.Code(err) == codes.AlreadyExists
+}
+
 // Exists checks if the given error is not a Firestore "not found" error.
 func Exists(err error) bool {
 	return !IsNotFound(err)
