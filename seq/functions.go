@@ -460,3 +460,38 @@ func OrderedIterSeq[T cmp.Ordered](in iter.Seq[T]) iter.Seq[T] {
 		}
 	})
 }
+
+// Reduce reduces a sequence to a single value by repeatedly applying a function
+// to an accumulator and each element of the sequence.
+//
+// Parameters:
+//   - s: An input sequence of elements.
+//   - initialValue: The initial value of the accumulator.
+//   - f: A function that combines the accumulator with an element from the sequence.
+//
+// Returns:
+//   - The final accumulated value after processing the entire sequence.
+//
+// Example:
+//
+//   seq := iter.Seq[int](func(yield func(int) bool) {
+//	   yield(1)
+//	   yield(2)
+//	   yield(3)
+//   })
+//
+//   sum := Reduce(seq, 0, func(acc, val int) int {
+//	   return acc + val
+//   })
+//   fmt.Println(sum) // Output: 6
+//
+// Notes:
+//   - The sequence `s` will be consumed entirely by this function.
+//   - The function `f` must be capable of reducing any two elements into the accumulator.
+func Reduce[T any, A any](s iter.Seq[T], initialValue A, f func(A, T) A) A {
+	acc := initialValue
+	for i := range s {
+		acc = f(acc, i)
+	}
+	return acc
+}

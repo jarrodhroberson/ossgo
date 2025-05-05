@@ -82,3 +82,9 @@ func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
 		}
 	}
 }
+
+func Sum[T Number](s iter.Seq[T]) T {
+	return Reduce[T, T](s, 0, func(a T, t T) T {
+		return a + t
+	})
+}
