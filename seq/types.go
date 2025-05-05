@@ -2,10 +2,7 @@ package seq
 
 import (
 	"iter"
-	"maps"
 	"sync/atomic"
-
-	"github.com/jarrodhroberson/destruct/destruct"
 )
 
 type Integer interface {
@@ -39,66 +36,4 @@ type MemoizedSeq[T any] struct {
 
 func (m *MemoizedSeq[T]) Reset() {
 	m.reset()
-}
-
-// ToMemoizingSeq wraps an iter.Seq to memoize its items and allows it to be re-iterated after a reset() call.
-func ToMemoizingSeq[T any](seq iter.Seq[T]) MemoizedSeq[T] {
-	var items []T
-	var memoized bool
-
-	memoizedSeq := func(yield func(item T) bool) {
-		if memoized {
-			for _, item := range items {
-				if !yield(item) {
-					return
-				}
-			}
-		} else {
-			seq(func(item T) bool {
-				items = append(items, item)
-				return yield(item)
-			})
-			memoized = true
-		}
-	}
-
-	reset := func() {
-		memoized = false
-	}
-
-	return MemoizedSeq[T]{
-		Seq:   memoizedSeq,
-		reset: reset,
-	}
-}
-
-// FlattenSeq takes an iter.Seq of batches (iter.Seq[T]) and flat maps all the batches
-// into a single iter.Seq.
-func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
-	return func(yield func(t T) bool) {
-		for is := range iterSeqs {
-			for i := range iterSeqs[is] {
-				if !yield(i) {
-					return
-				}
-			}
-		}
-	}
-}
-
-func Sum[T Number](s iter.Seq[T]) T {
-	return Reduce[T, T](s, 0, func(a T, t T) T {
-		return a + t
-	})
-}
-
-func Deduplicate[T any](s iter.Seq[T]) iter.Seq[T] {
-	seen := make(map[string]T) // Use a map to track seen elements.
-
-	for v := range s {
-		key := destruct.MustHashIdentity(v)
-		seen[key] = v
-	}
-
-	return maps.Values(seen)
 }
