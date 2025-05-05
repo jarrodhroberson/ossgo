@@ -2,7 +2,10 @@ package seq
 
 import (
 	"iter"
+	"maps"
 	"sync/atomic"
+
+	"github.com/jarrodhroberson/destruct/destruct"
 )
 
 type Integer interface {
@@ -87,4 +90,15 @@ func Sum[T Number](s iter.Seq[T]) T {
 	return Reduce[T, T](s, 0, func(a T, t T) T {
 		return a + t
 	})
+}
+
+func Deduplicate[T any](s iter.Seq[T]) iter.Seq[T] {
+	seen := make(map[string]T) // Use a map to track seen elements.
+
+	for v := range s {
+		key := destruct.MustHashIdentity(v)
+		seen[key] = v
+	}
+	
+	return maps.Values(seen)
 }
