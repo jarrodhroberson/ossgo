@@ -99,6 +99,6 @@ func Deduplicate[T any](s iter.Seq[T]) iter.Seq[T] {
 		key := destruct.MustHashIdentity(v)
 		seen[key] = v
 	}
-	
+
 	return maps.Values(seen)
 }
