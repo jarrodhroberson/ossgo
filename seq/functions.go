@@ -580,3 +580,53 @@ func Count2[K any, V any](s iter.Seq2[K, V]) int64 {
         return acc + 1
     })
 }
+
+// Seq2ToMap converts an iter.Seq2[string, any] to a map[string]any.
+// TODO: move to ossgo/seq
+func Seq2ToMap[K comparable, V any](seq iter.Seq2[K, V]) map[K]V {
+    // Handle the case where the sequence itself might be nil,
+    // though often iterators returned by functions like maps.All
+    // will be non-nil even for an empty source.
+    if seq == nil {
+        return map[K]V{} // Return an empty map
+    }
+
+    m := make(map[K]V)
+    for k, v := range seq {
+        m[k] = v
+    }
+    return m
+}
+
+func UnzipMap[K comparable, V any](m map[K]V) ([]K, []V) {
+    keys := make([]K, 0, len(m))
+    values := make([]V, 0, len(m))
+
+    for k, v := range m {
+        keys = append(keys, k)
+        values = append(values, v)
+    }
+
+    return keys, values
+}
+
+func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc func(K, V) bool) iter.Seq2[K, iter.Seq[V]] {
+    return func(yield func(K, iter.Seq[V]) bool) {
+        groupKeys := Deduplicate[K](seq.Map[V, K](s, keyFunc))
+        for groupKey := range groupKeys {
+            group := Filter[V](s, func(v V) bool {
+                return groupByFunc(groupKey, v)
+            })
+            iter2 := func(yield func(V) bool) {
+                for item := range group {
+                    if !yield(item) {
+                        return
+                    }
+                }
+            }
+            if !yield(groupKey, iter2) {
+                return
+            }
+        }
+    }
+}
