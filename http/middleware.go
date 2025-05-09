@@ -34,10 +34,12 @@ func AntiHackingMiddleware() gin.HandlerFunc {
 // StackTraceLoggingErrorHandler is a middleware that logs stack traces for errors.
 func StackTraceLoggingErrorHandler(log zerolog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Next()
-		for _, ginErr := range c.Errors {
-			log.Error().Stack().Err(ginErr).Msgf(ginErr.Error())
+		if c.Errors != nil {
+			for _, ginErr := range c.Errors {
+				log.Error().Stack().Err(ginErr).Msgf(ginErr.Error())
+			}
 		}
+		c.Next()
 	}
 }
 
