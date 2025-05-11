@@ -13,18 +13,46 @@ import (
     errs "github.com/jarrodhroberson/ossgo/errors"
 )
 
+// Empty returns an iter.Seq[T] that does not yield any items.
+//
+// Example usage:
+//
+//	for i := range seq.Empty[int]() {
+//		fmt.Println(i) // This will not print anything as the sequence is empty
+//	}
+//
+// This can be useful when you need to provide an empty sequence to a function
+// that expects an iter.Seq[T], without requiring any special case handling for the caller.
 func Empty[T any]() iter.Seq[T] {
     return func(yield func(T) bool) {
         return
     }
 }
 
+// Empty2 returns an iter.Seq2[K, V] that does not yield any items.
+//
+// Example usage:
+//
+//	for k, v := range seq.Empty2[int, string]() {
+//		fmt.Println(k, v) // This will not print anything as the sequence is empty
+//	}
+//
+// This can be useful when you need to provide an empty sequence to a function
+// that expects an iter.Seq2[K, V], without requiring any special case handling for the caller.
 func Empty2[K comparable, V any]() iter.Seq2[K, V] {
     return func(yield func(K, V) bool) {
         return
     }
 }
 
+// Collect2 collects all key-value pairs from an iter.Seq2[K, V] into a map[K]V.
+//
+// Example usage:
+//
+//	seq := seq.ToSeq2(seq.ToSeq(1, 2, 3), func(v int) string { return fmt.Sprintf("Key%d", v) })
+//	result := seq.Collect2(seq)
+//
+//	fmt.Println(result) // Output: map[Key1:1 Key2:2 Key3:3]
 func Collect2[K comparable, V any](it iter.Seq2[K, V]) map[K]V {
     m := make(map[K]V)
     for k, v := range it {
@@ -33,6 +61,24 @@ func Collect2[K comparable, V any](it iter.Seq2[K, V]) map[K]V {
     return m
 }
 
+// Filter filters elements from an iter.Seq[T] that match the given predicate function.
+//
+// Parameters:
+//   - it: The input sequence of type T.
+//   - predicate: A function that takes an element of type T and returns a boolean indicating
+//     whether the element should be included in the resulting sequence.
+//
+// Returns:
+//   - An iter.Seq[T] containing only those elements of the input sequence that satisfy the predicate.
+//
+// Example usage:
+//
+//	seq := seq.ToSeq(1, 2, 3, 4, 5)
+//	filtered := seq.Filter(seq, func(i int) bool { return i%2 == 0 })
+//
+//	for v := range filtered {
+//		fmt.Println(v) // Output: 2, 4
+//	}
 func Filter[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
     return func(yield func(T) bool) {
         for i := range it {
@@ -45,6 +91,25 @@ func Filter[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
     }
 }
 
+// Filter2 filters key-value pairs from an iter.Seq2[K, V] that satisfy the given predicate function.
+//
+// Parameters:
+//   - it: The input sequence of key-value pairs.
+//   - predicate: A function that takes a key and a value, returning true if the pair
+//     should be included in the resulting sequence and false otherwise.
+//
+// Returns:
+//   - An iter.Seq2[K, V] containing only those key-value pairs of the input sequence
+//     that satisfy the predicate.
+//
+// Example usage:
+//
+//	pairs := seq.ToSeq2(seq.ToSeq(1, 2, 3), func(v int) string { return fmt.Sprintf("Key%d", v) })
+//	filtered := seq.Filter2(pairs, func(k string, v int) bool { return v%2 == 1 })
+//
+//	for k, v := range filtered {
+//		fmt.Println(k, v) // Output: Key1 1, Key3 3
+//	}
 func Filter2[K any, V any](it iter.Seq2[K, V], predicate func(k K, v V) bool) iter.Seq2[K, V] {
     return func(yield func(K, V) bool) {
         for k, v := range it {
@@ -499,43 +564,39 @@ func Reduce[T any, A any](s iter.Seq[T], initialValue A, f func(A, T) A) A {
     return acc
 }
 
+// Reduce2 reduces a sequence of key-value pairs to a single value by repeatedly applying a function
+// to an accumulator and each key-value pair from the sequence.
+//
+// Parameters:
+//   - s: An input sequence of key-value pairs.
+//   - initialValue: The initial value of the accumulator.
+//   - f: A function that combines the accumulator with a key and a value from the sequence.
+//
+// Returns:
+//   - The final accumulated value after processing the entire sequence.
+//
+// Example:
+//
+//	  seq := iter.Seq2[int, string](func(yield func(int, string) bool) {
+//		   yield(1, "a")
+//		   yield(2, "b")
+//		   yield(3, "c")
+//	  })
+//
+//	  result := Reduce2(seq, "", func(acc string, k int, v string) string {
+//		   return acc + fmt.Sprintf("%d:%s ", k, v)
+//	  })
+//	  fmt.Println(result) // Output: "1:a 2:b 3:c "
+//
+// Notes:
+//   - The sequence `s` will be consumed entirely by this function.
+//   - The function `f` must be capable of reducing the key-value pairs into the accumulator.
 func Reduce2[K any, V any, A any](s iter.Seq2[K, V], initialValue A, f func(A, K, V) A) A {
     acc := initialValue
     for k, v := range s {
         acc = f(acc, k, v)
     }
     return acc
-}
-
-// ToMemoizingSeq wraps an iter.Seq to memoize its items and allows it to be re-iterated after a reset() call.
-func ToMemoizingSeq[T any](seq iter.Seq[T]) MemoizedSeq[T] {
-    var items []T
-    var memoized bool
-
-    memoizedSeq := func(yield func(item T) bool) {
-        if memoized {
-            for _, item := range items {
-                if !yield(item) {
-                    return
-                }
-            }
-        } else {
-            seq(func(item T) bool {
-                items = append(items, item)
-                return yield(item)
-            })
-            memoized = true
-        }
-    }
-
-    reset := func() {
-        memoized = false
-    }
-
-    return MemoizedSeq[T]{
-        Seq:   memoizedSeq,
-        reset: reset,
-    }
 }
 
 // FlattenSeq takes an iter.Seq of batches (iter.Seq[T]) and flat maps all the batches
@@ -552,29 +613,126 @@ func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
     }
 }
 
+// Sum calculates the sum of a sequence of numbers.
+//
+// Parameters:
+//   - s: An input sequence of numeric elements.
+//
+// Returns:
+//   - The sum of all elements in the sequence.
+//
+// Example:
+//
+//	  seq := iter.Seq[int](func(yield func(int) bool) {
+//		   yield(1)
+//		   yield(2)
+//		   yield(3)
+//	  })
+//
+//	  total := Sum(seq)
+//	  fmt.Println(total) // Output: 6
 func Sum[T Number](s iter.Seq[T]) T {
     return Reduce[T, T](s, 0, func(a T, t T) T {
         return a + t
     })
 }
 
-func Deduplicate[T any](s iter.Seq[T]) iter.Seq[T] {
-    seen := make(map[string]T) // Use a map to track seen elements.
+// Unique filters a sequence to include only unique elements based on their hash identity.
+//
+// It ensures that only one instance of each unique element is yielded, with uniqueness
+// determined by a hash of the element.
+//
+// Parameters:
+//   - s: An input sequence of elements.
+//
+// Returns:
+//   - A new sequence containing only unique elements from the input sequence.
+//
+// Notes:
+//   - The uniqueness of elements is determined using their hash identity via MustHashIdentity.
+//   - If elements cannot be hashed correctly, this function might panic.
+//
+// Example:
+//
+//	  seq := iter.Seq[int](func(yield func(int) bool) {
+//			 yield(1)
+//			 yield(2)
+//			 yield(2)
+//			 yield(3)
+//	  })
+//
+//	  uniqueSeq := Unique(seq)
+//	  for v := range uniqueSeq {
+//		   fmt.Println(v) // Output: 1, 2, 3
+//	  }
+func Unique[T any](s iter.Seq[T]) iter.Seq[T] {
+    return func(yield func(T) bool) {
+        seen := make(map[string]struct{}) // Use a map to track seen elements.
 
-    for v := range s {
-        key := destruct.MustHashIdentity(v)
-        seen[key] = v
+        for v := range s {
+            key := destruct.MustHashIdentity(v)
+            if _, ok := seen[key]; ok {
+                continue
+            } else {
+                if !yield(v) {
+                    return
+                }
+                seen[key] = struct{}{}
+            }
+
+        }
     }
 
-    return maps.Values(seen)
 }
 
+// Count counts the number of elements in a sequence.
+//
+// Parameters:
+//   - s: An input sequence of elements.
+//
+// Returns:
+//   - The total count of elements in the sequence.
+//
+// Example:
+//
+//	  seq := iter.Seq[int](func(yield func(int) bool) {
+//		   yield(1)
+//		   yield(2)
+//		   yield(3)
+//	  })
+//
+//	  count := Count(seq)
+//	  fmt.Println(count) // Output: 3
+//
+// Notes:
+//   - The sequence `s` will be completely consumed by this function.
 func Count[T any](s iter.Seq[T]) int64 {
     return Reduce[T, int64](s, 0, func(acc int64, _ T) int64 {
         return acc + 1
     })
 }
 
+// Count2 counts the number of key-value pairs in a sequence of pairs.
+//
+// Parameters:
+//   - s: An input sequence of key-value pairs.
+//
+// Returns:
+//   - The total count of key-value pairs in the sequence.
+//
+// Example:
+//
+//	  seq := iter.Seq2[int, string](func(yield func(int, string) bool) {
+//		   yield(1, "a")
+//		   yield(2, "b")
+//		   yield(3, "c")
+//	  })
+//
+//	  count := Count2(seq)
+//	  fmt.Println(count) // Output: 3
+//
+// Notes:
+//   - The sequence `s` will be completely consumed by this function.
 func Count2[K any, V any](s iter.Seq2[K, V]) int64 {
     return Reduce2[K, V, int64](s, int64(0), func(acc int64, k K, v V) int64 {
         return acc + 1
@@ -582,37 +740,90 @@ func Count2[K any, V any](s iter.Seq2[K, V]) int64 {
 }
 
 // Seq2ToMap converts an iter.Seq2[string, any] to a map[string]any.
-// TODO: move to ossgo/seq
+//
+// Parameters:
+//   - seq: An input sequence of key-value pairs.
+//
+// Returns:
+//   - A map[string]any containing the key-value pairs from the input sequence.
+//
+// this just delegates to maps.Collect() because I keep forgetting it exists
+// Deprecated: Use maps.Collect instead for more streamlined functionality.
 func Seq2ToMap[K comparable, V any](seq iter.Seq2[K, V]) map[K]V {
-    // Handle the case where the sequence itself might be nil,
-    // though often iterators returned by functions like maps.All
-    // will be non-nil even for an empty source.
-    if seq == nil {
-        return map[K]V{} // Return an empty map
-    }
-
-    m := make(map[K]V)
-    for k, v := range seq {
-        m[k] = v
-    }
-    return m
+    return maps.Collect(seq)
 }
 
+// UnzipMap splits a map into two slices: one containing its keys and the other its values.
+//
+// Parameters:
+//   - m: The input map of type map[K]V.
+//
+// Returns:
+//   - A slice of keys ([]K) and a slice of values ([]V) extracted from the input map,
+//     sorted by the keys to ensure consistency in ordering.
+//
+// Example:
+//
+//	  m := map[string]int{
+//		   "a": 1,
+//		   "b": 2,
+//		   "c": 3,
+//	  }
+//
+//	  keys, values := UnzipMap(m)
+//	  fmt.Println(keys)   // Output: [a b c]
+//	  fmt.Println(values) // Output: [1 2 3]
 func UnzipMap[K comparable, V any](m map[K]V) ([]K, []V) {
     keys := make([]K, 0, len(m))
     values := make([]V, 0, len(m))
 
-    for k, v := range m {
+    for k := range maps.Keys(m) {
         keys = append(keys, k)
-        values = append(values, v)
+        values = append(values, m[k])
     }
 
     return keys, values
 }
 
+// GroupBy groups elements of a sequence by a key function. It collects elements
+// that share the same key into separate sequences.
+//
+// Parameters:
+//   - s: The input sequence of type iter.Seq[V].
+//   - keyFunc: A function that extracts the key (of type K) for each element.
+//   - groupByFunc: A function that determines if an element belongs to a specific group.
+//
+// Returns:
+//   - An iter.Seq2[K, iter.Seq[V]], where each key (K) is associated with a sequence
+//     of elements (iter.Seq[V]) that belong to its group.
+//
+// Example:
+//
+//	  seq := iter.Seq[int](func(yield func(int) bool) {
+//		   yield(1)
+//		   yield(2)
+//		   yield(3)
+//		   yield(4)
+//		   yield(5)
+//	  })
+//	  grouped := GroupBy(seq, func(v int) int { return v % 2 }, func(k, v int) bool { return v % 2 == k })
+//	  for key, group := range grouped {
+//		   fmt.Println("Key:", key)
+//		   for item := range group {
+//			   fmt.Println("  Item:", item)
+//		   }
+//	  }
+//	  // Output:
+//	  // Key: 0
+//	  //   Item: 2
+//	  //   Item: 4
+//	  // Key: 1
+//	  //   Item: 1
+//	  //   Item: 3
+//	  //   Item: 5
 func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc func(K, V) bool) iter.Seq2[K, iter.Seq[V]] {
     return func(yield func(K, iter.Seq[V]) bool) {
-        groupKeys := Deduplicate[K](seq.Map[V, K](s, keyFunc))
+        groupKeys := Unique[K](Map[V, K](s, keyFunc))
         for groupKey := range groupKeys {
             group := Filter[V](s, func(v V) bool {
                 return groupByFunc(groupKey, v)
