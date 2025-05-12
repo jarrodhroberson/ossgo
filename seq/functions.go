@@ -1,7 +1,9 @@
 package seq
 
 import (
+    "bufio"
     "cmp"
+    "io"
     "iter"
     "maps"
     "slices"
@@ -9,8 +11,10 @@ import (
     "sync/atomic"
 
     "github.com/jarrodhroberson/destruct/destruct"
+    "github.com/rs/zerolog/log"
 
     errs "github.com/jarrodhroberson/ossgo/errors"
+    "github.com/jarrodhroberson/ossgo/functions/must"
 )
 
 // Empty returns an iter.Seq[T] that does not yield any items.
@@ -838,6 +842,77 @@ func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc 
             if !yield(groupKey, iter2) {
                 return
             }
+        }
+    }
+}
+
+//
+// JsonMarshalCompact serializes the given sequence into a compact JSON array
+// and writes it to the provided writer.
+//
+// Parameters:
+//   - w: An `io.Writer` where the serialized JSON array is written.
+//   - seq: A sequence `iter.Seq[T]` of elements to be serialized.
+//
+// Returns:
+//   - An error if any issue occurs during marshaling or writing.
+//
+// Notes:
+//   - Uses a buffered writer for efficient writing, ensuring any pending 
+//     data is flushed at the end.
+//   - Serializes the sequence items one by one, maintaining a compact JSON format  
+//     without extra whitespace.
+//
+// Example:
+//
+//   seq := iter.Seq[int](func(yield func(int) bool) {
+//       yield(1)
+//       yield(2)
+//       yield(3)
+//   })
+//
+//   var buf bytes.Buffer
+//   err := JsonMarshalCompact(&buf, seq)
+//   if err != nil {
+//       log.Fatal(err)
+//   }
+//   fmt.Println(buf.String()) // Output: [1,2,3]
+//
+//   If the writer fails at any point, marshaling stops and an error is returned.
+func JsonMarshalCompact[T any](w io.Writer, seq iter.Seq[T]) error {
+    // no need to check if it is already a buffered writer, it does that already
+    // default size is 4096 bytes
+    w = bufio.NewWriter(w)
+    defer func() {
+        if err := w.(*bufio.Writer).Flush(); err != nil {
+            err = errs.MarshalError.New("failed to flush buffered writer: %w", err)
+            log.Warn().Err(err).Msg(err.Error())
+        }
+    }()
+
+    first := true
+    next, stop := iter.Pull(seq)
+    defer stop()
+    for {
+        if t, ok := next(); ok {
+            if first {
+                if _, err := w.Write([]byte{'['}); err != nil {
+                    return errs.MarshalError.New("failed to write opening bracket: %w", err)
+                }
+                first = false
+            } else {
+                if _, err := w.Write([]byte{','}); err != nil {
+                    err = errs.MarshalError.New("failed to write comma: %w", err)
+                    return err // Stop iteration on write error
+                }
+                _, err := w.Write(must.MarshalJson(t))
+                if err != nil {
+                    return err
+                }
+            }
+        }
+        if _, err := w.Write([]byte{']'}); err != nil {
+            return errs.MarshalError.New("failed to write closing bracket: %w", err)
         }
     }
 }

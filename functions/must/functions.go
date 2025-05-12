@@ -4,6 +4,9 @@ package must
 import (
 	"encoding/json"
 	"errors"
+	"iter"
+	"maps"
+	"slices"
 	"strconv"
 	"time"
 
@@ -126,6 +129,13 @@ func MarshalJson(o any) []byte {
 		log.Error().Stack().Err(err).Msg(err.Error())
 
 		panic(errorx.Panic(err))
+	}
+
+	if seq, ok := o.(iter.Seq[any]); ok {
+		o = slices.Collect(seq)
+	}
+	if seq2, ok := o.(iter.Seq2[any, any]); ok {
+		o = maps.Collect(seq2)
 	}
 
 	bytes, err := json.Marshal(o)
