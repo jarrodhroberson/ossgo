@@ -343,7 +343,7 @@ func TestISO8601ToDuration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dur, err := ISO8601ToDuration(tt.input)
+			dur, err := ParseISO8601Duration(tt.input)
 
 			if tt.expectErr {
 				if err == nil {

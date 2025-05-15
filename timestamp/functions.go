@@ -288,21 +288,35 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 // It handles years, months, weeks, days, hours, minutes, and seconds (including fractional seconds).
 // It returns an error if the input string is not a valid ISO 8601 duration.  Because time.Duration
 // only goes to the nanosecond, the values for years, months, and weeks are approximate.
-func ParseISO8601Duration(durationStr string) (time.Duration, error) {
+func ParseISO8601Duration(s string) (time.Duration, error) {
+	if len(s) == 0 {
+		return -1, errs.MustNotBeEmpty.New("duration string is empty")
+	}
+	if len(s) < 3 {
+		return -1, errs.MinSizeExceededError.New("duration string must be >= 4 characters")
+	}
+	if s[0] != 'P' && s[0] != 'T' {
+		return -1, errs.InvalidFormat.New("invalid ISO 8601 duration: %s", s)
+	}
+	if s[len(s)-1] == 'T' {
+		err := errs.InvalidFormat.New("invalid ISO 8601 duration: %s", s)
+		return -1, errs.MustNeverError.Wrap(err, "missing designator for time")
+	}
+	if s == "PT" { return 0, nil }
 
 	var match []string
 	var regex *regexp.Regexp
 
-	if strings.Contains(durationStr, "T") {
+	if strings.Contains(s, "T") {
 		regex = timeDurationRegex
-		match = regex.FindStringSubmatch(durationStr)
+		match = append(match,regex.FindStringSubmatch(s)...)
 	} else {
 		regex = dateDurationRegex
-		match = regex.FindStringSubmatch(durationStr)
+		match = append(match,regex.FindStringSubmatch(s)...)
 	}
 
 	if match == nil {
-		return 0, fmt.Errorf("invalid ISO 8601 duration format: %s", durationStr)
+		return 0, fmt.Errorf("invalid ISO 8601 duration format: %s", s)
 	}
 
 	result := make(map[string]string)
@@ -364,12 +378,15 @@ func ParseISO8601Duration(durationStr string) (time.Duration, error) {
 		duration += time.Duration(minutes) * time.Minute
 	}
 
-	if secondsStr, ok := result["seconds"]; ok {
-		seconds, err := strconv.ParseFloat(secondsStr, 64)
-		if err != nil {
-			return 0, fmt.Errorf("invalid seconds value: %s", secondsStr)
+	if val, ok := result["seconds"]; ok {
+		if len(val) > 0 {
+			decIdx := strings.Index(val, ".")
+			if decIdx > -1 {
+				val = val[:decIdx]
+			}
+			seconds := must.ParseInt64(val)
+			duration += time.Duration(seconds) * time.Second
 		}
-		duration += time.Duration(seconds * float64(time.Second))
 	}
 
 	return duration, nil

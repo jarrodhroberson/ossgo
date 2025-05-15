@@ -18,7 +18,7 @@ var dateDurationRegex = regexp.MustCompile(
 		`$`)
 
 var timeDurationRegex = regexp.MustCompile(
-	`^PT` + // P and T - Duration and Time designators
+	`^P.*T` + // P and T - Duration and Time designators
 		`(?:(?P<hours>\d+)H)?` + // Hours
 		`(?:(?P<minutes>\d+)M)?` + // Minutes
 		`(?:(?P<seconds>[\d.]+)S)?` + // Seconds (including fractional)
