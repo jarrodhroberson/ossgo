@@ -18,43 +18,19 @@ type item[V any] struct {
 }
 
 // You can have a single map for an application or few maps for different purposes
-type TTLMap[V any] struct {
+type ttlMap[V any] struct {
 	m map[string]*item[V]
 	// For safe access to the map
 	mu sync.Mutex
 }
 
-func New[V any](size int, maxTTL time.Duration, purgeInterval time.Duration) (m *TTLMap[V]) {
-	// map is created with the given length
-	m = &TTLMap[V]{m: make(map[string]*item[V], size)}
-
-	// this goroutine will clean up the map from old items
-	go func() {
-		if len(m.m) > 0 {
-			// You can adjust this ticker to be more or less frequent
-			for now := range time.Tick(purgeInterval) {
-				m.mu.Lock()
-				for k, v := range m.m {
-					if now.Unix()-v.lastAccess > int64(maxTTL) {
-						delete(m.m, k)
-					}
-				}
-				m.mu.Unlock()
-			}
-		}
-	}()
-
-	return
-}
-
-// Put adds a new item to the map or updates the existing one
-func (m *TTLMap[T]) Put(k string, v T) error {
+func (m *ttlMap[V]) Put(k string, v V) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	it, ok := m.m[k]
 	if !ok {
-		it = &item[T]{
+		it = &item[V]{
 			value: v,
 		}
 	}
@@ -64,8 +40,7 @@ func (m *TTLMap[T]) Put(k string, v T) error {
 	return nil
 }
 
-// Get returns the value of the given key if it exists
-func (m *TTLMap[V]) Get(k string) (V, bool) {
+func (m *ttlMap[V]) Get(k string) (V, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -77,8 +52,7 @@ func (m *TTLMap[V]) Get(k string) (V, bool) {
 	return *new(V), false
 }
 
-// Delete removes the item from the map
-func (m *TTLMap[T]) Delete(k string) error {
+func (m *ttlMap[V]) Delete(k string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -86,4 +60,29 @@ func (m *TTLMap[T]) Delete(k string) error {
 		delete(m.m, k)
 	}
 	return nil
+}
+
+func New[V any](size int, maxTTL time.Duration, purgeInterval time.Duration) (m Map[string, V]) {
+	// map is created with the given length
+	ttlm := ttlMap[V]{
+		m: make(map[string]*item[V], size),
+	}
+
+	// this goroutine will clean up the map from old items
+	go func() {
+		if len(ttlm.m) > 0 {
+			// You can adjust this ticker to be more or less frequent
+			for now := range time.Tick(purgeInterval) {
+				ttlm.mu.Lock()
+				for k, v := range ttlm.m {
+					if now.Unix()-v.lastAccess > int64(maxTTL) {
+						delete(ttlm.m, k)
+					}
+				}
+				ttlm.mu.Unlock()
+			}
+		}
+	}()
+
+	return &ttlm
 }
