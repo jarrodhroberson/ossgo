@@ -1,3 +1,4 @@
+// Package firestore provides functionality for interacting with Google Cloud Firestore database
 package firestore
 
 import (
@@ -15,9 +16,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const MAX_BULK_WRITE_SIZE = 20
+// MAX_BULK_WRITE_SIZE defines the maximum number of operations that can be performed in a single bulk write
+// [maximum number of field transformations that can be performed on a single document in a Commit operation or in a transaction] : https://firebase.google.com/docs/firestore/quotas
+const MAX_BULK_WRITE_SIZE = 500
 
+// DatabaseName represents the name of a Firestore database
 type DatabaseName string
+
+// CollectionName represents the name of a Firestore collection
 type CollectionName string
 
 const DEFAULT DatabaseName = fs.DefaultDatabaseID
@@ -29,8 +35,10 @@ const DocumentWritten = "google.cloud.firestore.v1.written"
 
 // The op argument must be one of "==", "!=", "<", "<=", ">", ">=",
 // "array-contains", "array-contains-any", "in" or "not-in"
+// QueryOp represents a Firestore query operation
 type QueryOp string
 
+// String returns the string representation of the QueryOp
 func (q QueryOp) String() string {
 	return string(q)
 }
@@ -59,20 +67,27 @@ var QueryOps = struct {
 	NotIn:               "not-in",
 }
 
+// WherePredicate is a function type that applies filtering conditions to a Firestore query
 type WherePredicate func(q fs.Query) fs.Query
 
+// Projection defines the fields to be returned in a query result
 type Projection string
 
+// String returns the string representation of the Projection
 func (proj Projection) String() string {
 	return string(proj)
 }
 
 const (
-	OnlyId              Projection = "id_only"
+	// OnlyId returns only the document ID
+	OnlyId Projection = "id_only"
+	// OnlyIdLastUpdatedAt returns the document ID and last updated timestamp
 	OnlyIdLastUpdatedAt Projection = "id_last_updated_at"
-	All                 Projection = "all"
+	// All returns all fields of the document
+	All Projection = "all"
 )
 
+// CollectionStore provides CRUD operations for a specific Firestore collection
 type CollectionStore[T any] struct {
 	clientProvider functions.Provider[*firestore.Client]
 	collection     string
@@ -90,7 +105,7 @@ func (c CollectionStore[T]) All() (iter.Seq2[string, *T], error) {
 	}(client)
 	docIter := client.Collection(c.collection).Documents(ctx)
 	dssSeq2 := DocSnapShotSeq2ToType[T](DocumentIteratorToSeq2(docIter))
-	return ClosingWhenDoneSeq2(dssSeq2,client), nil
+	return ClosingWhenDoneSeq2(dssSeq2, client), nil
 }
 
 func (c CollectionStore[T]) Load(id string) (*T, error) {
@@ -127,7 +142,7 @@ func (c CollectionStore[T]) Store(v *T) (*T, error) {
 	docRef := client.Collection(c.collection).Doc(c.keyer(v))
 	m := must.MarshallMap(v)
 	m["last_updated_at"] = timestamp.Now()
-	containers.RemoveKeys(m,"created_at")
+	containers.RemoveKeys(m, "created_at")
 	ctx := context.Background()
 	_, err := docRef.Set(ctx, m)
 	if err != nil {

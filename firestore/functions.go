@@ -69,6 +69,8 @@ func IsNotFound(err error) bool {
 	return err != nil && status.Code(err) == codes.NotFound
 }
 
+// IsAlreadyExists checks if the given error is a Firestore "already exists" error.
+// It returns true if the error is not nil and its status code indicates the resource already exists.
 func IsAlreadyExists(err error) bool {
 	return err != nil && status.Code(err) == codes.AlreadyExists
 }
@@ -78,7 +80,14 @@ func Exists(err error) bool {
 	return !IsNotFound(err)
 }
 
-// DeleteCollection deletes all documents in a specified Firestore collection.
+// DeleteCollection deletes all documents in a Firestore collection using a BulkWriter.
+// It processes documents in parallel batches of size MAX_BULK_WRITE_SIZE.
+//
+// ctx is the context for the operation
+// client is the Firestore client to use
+// path is the path to the collection to delete
+//
+// Returns an error if any document deletion fails, nil on success
 func DeleteCollection(ctx context.Context, client *fs.Client, path string) error {
 	bw := client.BulkWriter(ctx)
 	defer func() {
