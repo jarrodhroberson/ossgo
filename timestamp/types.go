@@ -13,7 +13,7 @@ var dateDurationRegex = regexp.MustCompile(
 	`^P` + // P - Duration designator
 		`(?:(?P<years>\d+)Y)?` + // Years
 		`(?:(?P<months>\d+)M)?` + // Months
-		`(?:(?P<weeks>\d+)W)?` + // Weeks (Added)
+		`(?:(?P<weeks>\d+)W)?` + // Weeks
 		`(?:(?P<days>\d+)D)?` + // Days
 		`$`)
 
@@ -21,7 +21,7 @@ var timeDurationRegex = regexp.MustCompile(
 	`^PT` + // P and T - Duration and Time designators
 		`(?:(?P<hours>\d+)H)?` + // Hours
 		`(?:(?P<minutes>\d+)M)?` + // Minutes
-		`(?:(?P<seconds>\d+(?:\.\d+)?)S)?` + // Seconds (including fractional)
+		`(?:(?P<seconds>[\d.]+)S)?` + // Seconds (including fractional)
 		`$`)
 
 // Timestamps interface defines methods to access special timestamp values

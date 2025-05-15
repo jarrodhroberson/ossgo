@@ -2,6 +2,8 @@ package timestamp
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -214,7 +216,7 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 		return -1, errs.MustNeverError.Wrap(err, "missing designator for time")
 	}
 	var matches []string
-	var names [] string
+	var names []string
 	var groups map[string]string
 	if s[1] == 'T' {
 		matches = timeDurationRegex.FindStringSubmatch(s)
@@ -280,4 +282,95 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 	}
 
 	return time.Duration(dur), nil
+}
+
+// ParseISO8601Duration parses an ISO 8601 duration string and returns a time.Duration.
+// It handles years, months, weeks, days, hours, minutes, and seconds (including fractional seconds).
+// It returns an error if the input string is not a valid ISO 8601 duration.  Because time.Duration
+// only goes to the nanosecond, the values for years, months, and weeks are approximate.
+func ParseISO8601Duration(durationStr string) (time.Duration, error) {
+
+	var match []string
+	var regex *regexp.Regexp
+
+	if strings.Contains(durationStr, "T") {
+		regex = timeDurationRegex
+		match = regex.FindStringSubmatch(durationStr)
+	} else {
+		regex = dateDurationRegex
+		match = regex.FindStringSubmatch(durationStr)
+	}
+
+	if match == nil {
+		return 0, fmt.Errorf("invalid ISO 8601 duration format: %s", durationStr)
+	}
+
+	result := make(map[string]string)
+	for i, name := range regex.SubexpNames() {
+		if i != 0 && name != "" && match[i] != "" { // Ensure we don't process empty matches
+			result[name] = match[i]
+		}
+	}
+
+	var duration time.Duration
+
+	if yearsStr, ok := result["years"]; ok {
+		years, err := strconv.Atoi(yearsStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid years value: %s", yearsStr)
+		}
+		// Approximate: 1 year = 365.25 days
+		duration += time.Duration(int64(years) * 365 * 24 * int64(time.Hour)) // Corrected: Explicit conversion
+	}
+
+	if monthsStr, ok := result["months"]; ok {
+		months, err := strconv.Atoi(monthsStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid months value: %s", monthsStr)
+		}
+		// Approximate: 1 month = 30.44 days
+		duration += time.Duration(int64(months) * 30 * 24 * int64(time.Hour)) // Corrected: Explicit conversion
+	}
+
+	if weeksStr, ok := result["weeks"]; ok {
+		weeks, err := strconv.Atoi(weeksStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid weeks value: %s", weeksStr)
+		}
+		duration += time.Duration(int64(weeks) * 7 * 24 * int64(time.Hour)) // Corrected: Explicit conversion
+	}
+
+	if daysStr, ok := result["days"]; ok {
+		days, err := strconv.Atoi(daysStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid days value: %s", daysStr)
+		}
+		duration += time.Duration(int64(days) * 24 * int64(time.Hour)) // Corrected: Explicit conversion
+	}
+
+	if hoursStr, ok := result["hours"]; ok {
+		hours, err := strconv.Atoi(hoursStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid hours value: %s", hoursStr)
+		}
+		duration += time.Duration(hours) * time.Hour
+	}
+
+	if minutesStr, ok := result["minutes"]; ok {
+		minutes, err := strconv.Atoi(minutesStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid minutes value: %s", minutesStr)
+		}
+		duration += time.Duration(minutes) * time.Minute
+	}
+
+	if secondsStr, ok := result["seconds"]; ok {
+		seconds, err := strconv.ParseFloat(secondsStr, 64)
+		if err != nil {
+			return 0, fmt.Errorf("invalid seconds value: %s", secondsStr)
+		}
+		duration += time.Duration(seconds * float64(time.Second))
+	}
+
+	return duration, nil
 }
