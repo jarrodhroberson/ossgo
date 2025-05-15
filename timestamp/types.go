@@ -16,8 +16,8 @@ var iso8601DurationRegex = regexp.MustCompile(
 		`(?:(?P<weeks>\d+)W)?` + // Weeks
 		`(?:(?P<days>\d+)D)?` + // Days
 		`(?:T` + // T - Time designator
-		`(?P<hours>\d+)H` + // Hours
-		`(?P<minutes>\d+)M` + // Minutes
+		`(?P<hours>\d+)H)?` + // Hours
+		`(?P<minutes>\d+)M)?` + // Minutes
 		`(?:(?P<seconds>\d+(?:\.\d+)?)S)?)?$` + // Seconds (including fractional)
 		``)
 

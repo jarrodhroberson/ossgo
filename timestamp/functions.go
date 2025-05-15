@@ -208,7 +208,7 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 	}
 	if !iso8601DurationRegex.MatchString(s) {
 		err := errs.InvalidFormat.New("invalid ISO 8601 duration: %s", iso8601DurationRegex.String())
-		return -1, errs.ParseError.Wrap(err, "invalid ISO 8601 duration: %s", s)
+		return -1, errs.ParseError.Wrap(err, "invalid ISO 8601 duration: \"%s\"", s)
 	}
 	log.Info().Msgf("duration string: %s", s)
 	matches := iso8601DurationRegex.FindStringSubmatch(s)
@@ -217,6 +217,7 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 	for idx, name := range names {
 		groups[name] = matches[idx]
 	}
+	fmt.Println(groups)
 
 	var dur int64
 	if val, ok := groups["years"]; ok {
@@ -243,31 +244,26 @@ func ISO8601ToDuration(s string) (time.Duration, error) {
 			dur += int64(days) * int64(time.Hour*24)
 		}
 	}
-	if val, ok := groups["time"]; ok {
-		log.Info().Msgf("time: %s", val)
-		if len(val) != 0 {
-			if val, ok := groups["hours"]; ok {
-				if len(val) > 0 {
-					hours := must.ParseInt(val)
-					dur += int64(hours) * int64(time.Hour)
-				}
+	if val, ok := groups["hours"]; ok {
+		if len(val) > 0 {
+			hours := must.ParseInt(val)
+			dur += int64(hours) * int64(time.Hour)
+		}
+	}
+	if val, ok := groups["minutes"]; ok {
+		if len(val) > 0 {
+			minutes := must.ParseInt(val)
+			dur += int64(minutes) * int64(time.Minute)
+		}
+	}
+	if val, ok := groups["seconds"]; ok {
+		if len(val) > 0 {
+			decIdx := strings.Index(val, ".")
+			if decIdx > -1 {
+				val = val[:decIdx]
 			}
-			if val, ok := groups["minutes"]; ok {
-				if len(val) > 0 {
-					minutes := must.ParseInt(val)
-					dur += int64(minutes) * int64(time.Minute)
-				}
-			}
-			if val, ok := groups["seconds"]; ok {
-				if len(val) > 0 {
-					decIdx := strings.Index(val, ".")
-					if decIdx > -1 {
-						val = val[:decIdx]
-					}
-					seconds := must.ParseInt(val)
-					dur += int64(seconds) * int64(time.Second)
-				}
-			}
+			seconds := must.ParseInt(val)
+			dur += int64(seconds) * int64(time.Second)
 		}
 	}
 
