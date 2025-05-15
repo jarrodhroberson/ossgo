@@ -28,15 +28,15 @@ func (m *ttlMap[V]) Put(k string, v V) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	it, ok := m.m[k]
-	if !ok {
+	if it, ok := m.m[k]; !ok {
 		it = &item[V]{
 			value: v,
 		}
+		it.value = v
+		it.lastAccess = time.Now().Unix()
+		m.m[k] = it
 	}
-	it.value = v
-	it.lastAccess = time.Now().Unix()
-	m.m[k] = it
+
 	return nil
 }
 
