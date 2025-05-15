@@ -9,17 +9,20 @@ import (
 const YEAR_MONTH = "200601"
 const COMPACT_FORMAT = "20060102t150405Z"
 
-var iso8601DurationRegex = regexp.MustCompile(
+var dateDurationRegex = regexp.MustCompile(
 	`^P` + // P - Duration designator
 		`(?:(?P<years>\d+)Y)?` + // Years
 		`(?:(?P<months>\d+)M)?` + // Months
-		`(?:(?P<weeks>\d+)W)?` + // Weeks
+		`(?:(?P<weeks>\d+)W)?` + // Weeks (Added)
 		`(?:(?P<days>\d+)D)?` + // Days
-		`(?:T` + // T - Time designator
-		`(?P<hours>\d+)H)?` + // Hours
-		`(?P<minutes>\d+)M)?` + // Minutes
-		`(?:(?P<seconds>\d+(?:\.\d+)?)S)?)?$` + // Seconds (including fractional)
-		``)
+		`$`)
+
+var timeDurationRegex = regexp.MustCompile(
+	`^PT` + // P and T - Duration and Time designators
+		`(?:(?P<hours>\d+)H)?` + // Hours
+		`(?:(?P<minutes>\d+)M)?` + // Minutes
+		`(?:(?P<seconds>\d+(?:\.\d+)?)S)?` + // Seconds (including fractional)
+		`$`)
 
 // Timestamps interface defines methods to access special timestamp values
 type Timestamps interface {

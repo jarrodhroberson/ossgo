@@ -200,20 +200,32 @@ func HumanReadableDuration(d time.Duration) string {
 //
 //	Returns an error if the input string does not match the ISO 8601 format.
 func ISO8601ToDuration(s string) (time.Duration, error) {
-	if s == "" {
+	if len(s) == 0 {
 		return -1, errs.MustNotBeEmpty.New("duration string is empty")
 	}
 	if len(s) < 3 {
 		return -1, errs.MinSizeExceededError.New("duration string must be >= 4 characters")
 	}
-	if !iso8601DurationRegex.MatchString(s) {
-		err := errs.InvalidFormat.New("invalid ISO 8601 duration: %s", iso8601DurationRegex.String())
-		return -1, errs.ParseError.Wrap(err, "invalid ISO 8601 duration: \"%s\"", s)
+	if s[0] != 'P' && s[0] != 'T' {
+		return -1, errs.InvalidFormat.New("invalid ISO 8601 duration: %s", s)
 	}
-	log.Info().Msgf("duration string: %s", s)
-	matches := iso8601DurationRegex.FindStringSubmatch(s)
-	names := iso8601DurationRegex.SubexpNames()
-	groups := make(map[string]string, len(names))
+	if s[len(s)-1] == 'T' {
+		err := errs.InvalidFormat.New("invalid ISO 8601 duration: %s", s)
+		return -1, errs.MustNeverError.Wrap(err, "missing designator for time")
+	}
+	var matches []string
+	var names [] string
+	var groups map[string]string
+	if s[1] == 'T' {
+		matches = timeDurationRegex.FindStringSubmatch(s)
+		names = timeDurationRegex.SubexpNames()
+		groups = make(map[string]string, len(names))
+	} else {
+		matches = dateDurationRegex.FindStringSubmatch(s)
+		names = dateDurationRegex.SubexpNames()
+		groups = make(map[string]string, len(names))
+	}
+
 	for idx, name := range names {
 		groups[name] = matches[idx]
 	}

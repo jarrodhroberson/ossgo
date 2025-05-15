@@ -330,7 +330,7 @@ func TestISO8601ToDuration(t *testing.T) {
 		{"Mixed Date Only", "P1Y2M10D", time.Duration(1*365*24*time.Hour + 2*30*24*time.Hour + 10*24*time.Hour), false},
 		{"Empty Time Designator", "P1Y2M3W4D", time.Duration(1*365*24*time.Hour + 2*30*24*time.Hour + 3*7*24*time.Hour + 4*24*time.Hour), false},
 		{"Only Time Designator", "PT", time.Duration(0), true},
-		{"Only Time Designator", "PT40M3S", time.Duration(40*time.Minute + 3*time.Second), true},
+		{"Only Time Designator", "PT40M3S", time.Duration(40*time.Minute + 3*time.Second), false},
 
 		// Invalid Test Cases
 		{"Empty String", "", time.Duration(0), true},
