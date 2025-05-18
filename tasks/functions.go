@@ -102,6 +102,35 @@ func Get(ctx context.Context, name string) (*cloudtaskspb.Task, error) {
 	return t, nil
 }
 
+// Delete removes a Cloud Task by its name. It establishes a new client connection
+// and attempts to delete the specified task.
+//
+// Parameters:
+//   - ctx: The context.Context for the request
+//   - name: The name of the task to delete, formatted as:
+//     "projects/<PROJECT_ID>/locations/<LOCATION_ID>/queues/<QUEUE_ID>/tasks/<TASK_ID>"
+//
+// Returns:
+//   - error: An error if the operation fails or nil if the deletion is successful
+func Delete(ctx context.Context, name string) error {
+	c, err := cloudtasks.NewClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer func(c *cloudtasks.Client) {
+		err = c.Close()
+		if err != nil {
+			log.Error().Stack().Err(err).Msg(err.Error())
+		}
+	}(c)
+
+	req := &cloudtaskspb.DeleteTaskRequest{
+		Name: name,
+	}
+
+	return client.DeleteTask(ctx, req)
+}
+
 // WaitForTaskCompletion polls a Cloud Task until it completes successfully or reaches the maximum retry attempts.
 // It checks the task's status by making repeated GetTask requests with a fixed delay between attempts.
 //
