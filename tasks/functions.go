@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"fmt"
+	"time"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
@@ -47,4 +48,32 @@ func CreateTask(ctx context.Context, req *cloudtaskspb.CreateTaskRequest) (*clou
 		}
 	}
 	return createdTask, nil
+}
+
+func WaitForTaskCompletion(ctx context.Context, client *cloudtasks.Client, task *cloudtaskspb.Task) error {
+	const maxRetries = 3                // Maximum number of retries.  Adjust as appropriate.
+	const retryDelay = 10 * time.Second // Delay between retries. Adjust as appropriate.
+	retries := 0
+
+	for retries < maxRetries {
+		retries++
+
+		getTaskRequest := &cloudtaskspb.GetTaskRequest{
+			Name:         task.Name,
+			ResponseView: cloudtaskspb.Task_BASIC,
+		}
+
+		t, err := client.GetTask(ctx, getTaskRequest)
+		if err != nil {
+			return err // Returning the error directly
+		}
+
+		if t.LastAttempt.ResponseTime != nil && t.LastAttempt.ResponseStatus.Code == int32(200) {
+			return nil // Task completed successfully
+		}
+
+		time.Sleep(retryDelay)
+	}
+
+	return fmt.Errorf("timed out waiting for task completion after %d retries", maxRetries)
 }
