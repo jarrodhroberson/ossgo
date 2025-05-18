@@ -27,7 +27,7 @@ func DisallowDuplicates(path string, name string) CreateTaskRequestOption {
 	}
 }
 
-// CreateTask 
+// CreateTask
 // Deprecated: use Create instead
 func CreateTask(ctx context.Context, req *cloudtaskspb.CreateTaskRequest) (*cloudtaskspb.Task, error) {
 	return Create(ctx, req)
