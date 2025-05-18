@@ -1,20 +1,20 @@
 package seq
 
 import (
-    "bufio"
-    "cmp"
-    "io"
-    "iter"
-    "maps"
-    "slices"
-    "sync"
-    "sync/atomic"
+	"bufio"
+	"cmp"
+	"io"
+	"iter"
+	"maps"
+	"slices"
+	"sync"
+	"sync/atomic"
 
-    "github.com/jarrodhroberson/destruct/destruct"
-    "github.com/rs/zerolog/log"
+	"github.com/jarrodhroberson/destruct/destruct"
+	"github.com/rs/zerolog/log"
 
-    errs "github.com/jarrodhroberson/ossgo/errors"
-    "github.com/jarrodhroberson/ossgo/functions/must"
+	errs "github.com/jarrodhroberson/ossgo/errors"
+	"github.com/jarrodhroberson/ossgo/functions/must"
 )
 
 // Empty returns an iter.Seq[T] that does not yield any items.
@@ -28,9 +28,9 @@ import (
 // This can be useful when you need to provide an empty sequence to a function
 // that expects an iter.Seq[T], without requiring any special case handling for the caller.
 func Empty[T any]() iter.Seq[T] {
-    return func(yield func(T) bool) {
-        return
-    }
+	return func(yield func(T) bool) {
+		return
+	}
 }
 
 // Empty2 returns an iter.Seq2[K, V] that does not yield any items.
@@ -44,9 +44,9 @@ func Empty[T any]() iter.Seq[T] {
 // This can be useful when you need to provide an empty sequence to a function
 // that expects an iter.Seq2[K, V], without requiring any special case handling for the caller.
 func Empty2[K comparable, V any]() iter.Seq2[K, V] {
-    return func(yield func(K, V) bool) {
-        return
-    }
+	return func(yield func(K, V) bool) {
+		return
+	}
 }
 
 // Collect2 collects all key-value pairs from an iter.Seq2[K, V] into a map[K]V.
@@ -58,11 +58,11 @@ func Empty2[K comparable, V any]() iter.Seq2[K, V] {
 //
 //	fmt.Println(result) // Output: map[Key1:1 Key2:2 Key3:3]
 func Collect2[K comparable, V any](it iter.Seq2[K, V]) map[K]V {
-    m := make(map[K]V)
-    for k, v := range it {
-        m[k] = v
-    }
-    return m
+	m := make(map[K]V)
+	for k, v := range it {
+		m[k] = v
+	}
+	return m
 }
 
 // Filter filters elements from an iter.Seq[T] that match the given predicate function.
@@ -84,15 +84,15 @@ func Collect2[K comparable, V any](it iter.Seq2[K, V]) map[K]V {
 //		fmt.Println(v) // Output: 2, 4
 //	}
 func Filter[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
-    return func(yield func(T) bool) {
-        for i := range it {
-            if predicate(i) {
-                if !yield(i) {
-                    return
-                }
-            }
-        }
-    }
+	return func(yield func(T) bool) {
+		for i := range it {
+			if predicate(i) {
+				if !yield(i) {
+					return
+				}
+			}
+		}
+	}
 }
 
 // Filter2 filters key-value pairs from an iter.Seq2[K, V] that satisfy the given predicate function.
@@ -115,15 +115,15 @@ func Filter[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
 //		fmt.Println(k, v) // Output: Key1 1, Key3 3
 //	}
 func Filter2[K any, V any](it iter.Seq2[K, V], predicate func(k K, v V) bool) iter.Seq2[K, V] {
-    return func(yield func(K, V) bool) {
-        for k, v := range it {
-            if predicate(k, v) {
-                if !yield(k, v) {
-                    return
-                }
-            }
-        }
-    }
+	return func(yield func(K, V) bool) {
+		for k, v := range it {
+			if predicate(k, v) {
+				if !yield(k, v) {
+					return
+				}
+			}
+		}
+	}
 }
 
 // WrapWithCounter takes an iter.Seq and returns a *CountingSeq.
@@ -131,18 +131,18 @@ func Filter2[K any, V any](it iter.Seq2[K, V], predicate func(k K, v V) bool) it
 // when the Seq function is called.
 // This is useful for debugging and testing.
 func WrapWithCounter[T any](it iter.Seq[T]) *CountingSeq[T] {
-    var counter atomic.Int64
-    return &CountingSeq[T]{
-        Seq: func(yield func(T) bool) {
-            for i := range it {
-                if !yield(i) {
-                    return
-                }
-                counter.Add(1)
-            }
-        },
-        counter: &counter,
-    }
+	var counter atomic.Int64
+	return &CountingSeq[T]{
+		Seq: func(yield func(T) bool) {
+			for i := range it {
+				if !yield(i) {
+					return
+				}
+				counter.Add(1)
+			}
+		},
+		counter: &counter,
+	}
 }
 
 // IntRange returns an iter.Seq that yields a sequence of integers from start to end inclusive.
@@ -151,13 +151,13 @@ func WrapWithCounter[T any](it iter.Seq[T]) *CountingSeq[T] {
 //		fmt.Println(i) // 1, 2, 3, 4, 5
 //	}
 func IntRange[N Integer](start N, end N) iter.Seq[N] {
-    return func(yield func(N) bool) {
-        for i := start; i <= end; i++ {
-            if !yield(i) {
-                return
-            }
-        }
-    }
+	return func(yield func(N) bool) {
+		for i := start; i <= end; i++ {
+			if !yield(i) {
+				return
+			}
+		}
+	}
 }
 
 // ToSeq takes a slice of type T and returns an iter.Seq[T] that yields each item in the slice.
@@ -166,44 +166,44 @@ func IntRange[N Integer](start N, end N) iter.Seq[N] {
 //		fmt.Println(i) // 1, 2, 3
 //	}
 func ToSeq[T any](seq ...T) iter.Seq[T] {
-    return func(yield func(T) bool) {
-        for i := range seq {
-            if !yield(seq[i]) {
-                return
-            }
-        }
-    }
+	return func(yield func(T) bool) {
+		for i := range seq {
+			if !yield(seq[i]) {
+				return
+			}
+		}
+	}
 }
 
 // PassThruFunc passes thru the value unchanged
 // this is just a convenience function for times when you do not want to transform the key or value in Map2
 // so you do not have to write an inline function and clutter up the code more than it needs to be.
 func PassThruFunc[K any](k K) K {
-    return k
+	return k
 }
 
 // Map also known as transform function, list comprehension, visitor pattern whatever.
 // this takes an iter.Seq and a function to apply to each item in the sequence
 // returning a new iter.Seq with the results.
 func Map[T any, R any](it iter.Seq[T], mapFunc func(t T) R) iter.Seq[R] {
-    return func(yield func(R) bool) {
-        for i := range it {
-            if !yield(mapFunc(i)) {
-                return
-            }
-        }
-    }
+	return func(yield func(R) bool) {
+		for i := range it {
+			if !yield(mapFunc(i)) {
+				return
+			}
+		}
+	}
 }
 
 // Map2 this does the same but allows you to transform the key and/or the value.
 func Map2[K any, V any, KR any, VR any](it iter.Seq2[K, V], keyFunc func(k K) KR, valFunc func(v V) VR) iter.Seq2[KR, VR] {
-    return func(yield func(KR, VR) bool) {
-        for k, v := range it {
-            if !yield(keyFunc(k), valFunc(v)) {
-                return
-            }
-        }
-    }
+	return func(yield func(KR, VR) bool) {
+		for k, v := range it {
+			if !yield(keyFunc(k), valFunc(v)) {
+				return
+			}
+		}
+	}
 }
 
 // ToSeq2 converts an iter.Seq[V] to an iter.Seq2[K, V] by applying a key function to each value.
@@ -211,14 +211,14 @@ func Map2[K any, V any, KR any, VR any](it iter.Seq2[K, V], keyFunc func(k K) KR
 // The key function is applied to each value in the sequence to generate the key.
 // The original value is preserved as the value in the resulting iter.Seq2.
 func ToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V] {
-    return iter.Seq2[K, V](func(yield func(K, V) bool) {
-        for v := range is {
-            k := keyFunc(v)
-            if !yield(k, v) {
-                return
-            }
-        }
-    })
+	return iter.Seq2[K, V](func(yield func(K, V) bool) {
+		for v := range is {
+			k := keyFunc(v)
+			if !yield(k, v) {
+				return
+			}
+		}
+	})
 }
 
 // SkipAndLimit combines SkipFirstN and FirstN in a way that allows accessing sub sequences without any overhead.
@@ -228,7 +228,7 @@ func ToSeq2[K any, V any](is iter.Seq[V], keyFunc func(v V) K) iter.Seq2[K, V] {
 // if limit is greater than the number of items remaining in the sequence then the sequence will
 // contain less than limit number of items in it.
 func SkipAndLimit[V any](it iter.Seq[V], skip int, limit int) iter.Seq[V] {
-    return FirstN[V](SkipFirstN[V](it, skip), limit)
+	return FirstN[V](SkipFirstN[V](it, skip), limit)
 }
 
 // FirstN takes an iter.Seq[int] and returns a new iter.Seq[int] that
@@ -236,151 +236,151 @@ func SkipAndLimit[V any](it iter.Seq[V], skip int, limit int) iter.Seq[V] {
 // if there are less than limit items in the sequence then the sequence ends
 // when the sequence end is reached.
 func FirstN[T any](it iter.Seq[T], limit int) iter.Seq[T] {
-    return iter.Seq[T](func(yield func(T) bool) {
-        count := 0
-        for item := range it {
-            if count < limit {
-                if !yield(item) {
-                    return
-                }
-                count++
-            } else {
-                return
-            }
-        }
-    })
+	return iter.Seq[T](func(yield func(T) bool) {
+		count := 0
+		for item := range it {
+			if count < limit {
+				if !yield(item) {
+					return
+				}
+				count++
+			} else {
+				return
+			}
+		}
+	})
 }
 
 // First returns the first item in the sequence that matches the predicate.
 // if no item matches the predicate then the sequence is empty.
 func FindFirst[T any](it iter.Seq[T], predicate func(i T) bool) iter.Seq[T] {
-    return func(yield func(T) bool) {
-        for i := range it {
-            if predicate(i) {
-                if !yield(i) {
-                    return
-                }
-                return
-            }
-        }
-    }
+	return func(yield func(T) bool) {
+		for i := range it {
+			if predicate(i) {
+				if !yield(i) {
+					return
+				}
+				return
+			}
+		}
+	}
 }
 
 // SkipFirstN skips the first N items in the sequence and then iterates over the rest of them normally.
 // if skip is greater than the number of items in the sequence then an empty sequence is returned.
 func SkipFirstN[T any](seq iter.Seq[T], skip int) iter.Seq[T] {
-    return iter.Seq[T](func(yield func(T) bool) {
-        next, stop := iter.Pull[T](seq)
-        defer stop()
+	return iter.Seq[T](func(yield func(T) bool) {
+		next, stop := iter.Pull[T](seq)
+		defer stop()
 
-        for i := 0; i <= skip; i++ {
-            _, ok := next()
-            if !ok {
-                break
-            }
-        }
-        for {
-            v, ok := next()
-            if !ok {
-                break
-            }
-            if !yield(v) {
-                return
-            }
-        }
-    })
+		for i := 0; i <= skip; i++ {
+			_, ok := next()
+			if !ok {
+				break
+			}
+		}
+		for {
+			v, ok := next()
+			if !ok {
+				break
+			}
+			if !yield(v) {
+				return
+			}
+		}
+	})
 }
 
 // Chunk returns an iterator over consecutive sub-slices of up to n elements of s.
 // All but the last iter.Seq chunk will have size n.
 // Chunk panics if n is less than 1.
 func Chunk[T any](sq iter.Seq[T], size int) iter.Seq[iter.Seq[T]] {
-    if size < 0 {
-        panic(errs.MinSizeExceededError.New("size %d must be >= 0", size))
-    }
+	if size < 0 {
+		panic(errs.MinSizeExceededError.New("size %d must be >= 0", size))
+	}
 
-    return func(yield func(s iter.Seq[T]) bool) {
-        next, stop := iter.Pull[T](sq)
-        defer stop()
-        endOfSeq := false
-        for !endOfSeq {
-            // get the first item for the chunk
-            v, ok := next()
-            // there are no more items !ok then exit loop
-            // this prevents returning an extra empty iter.Seq at end of Seq
-            if !ok {
-                break
-            }
-            // create the next sequence chunk
-            iterSeqChunk := func(yield func(T) bool) {
-                i := 0
-                for ; i < size; i++ {
-                    if ok {
-                        if !ok {
-                            // end of original sequence
-                            // this sequence may be <= size
-                            endOfSeq = true
-                            break
-                        }
+	return func(yield func(s iter.Seq[T]) bool) {
+		next, stop := iter.Pull[T](sq)
+		defer stop()
+		endOfSeq := false
+		for !endOfSeq {
+			// get the first item for the chunk
+			v, ok := next()
+			// there are no more items !ok then exit loop
+			// this prevents returning an extra empty iter.Seq at end of Seq
+			if !ok {
+				break
+			}
+			// create the next sequence chunk
+			iterSeqChunk := func(yield func(T) bool) {
+				i := 0
+				for ; i < size; i++ {
+					if ok {
+						if !ok {
+							// end of original sequence
+							// this sequence may be <= size
+							endOfSeq = true
+							break
+						}
 
-                        if !yield(v) {
-                            return
-                        }
-                        v, ok = next()
-                    }
-                }
-            }
-            if !yield(iterSeqChunk) {
-                return
-            }
-        }
-    }
+						if !yield(v) {
+							return
+						}
+						v, ok = next()
+					}
+				}
+			}
+			if !yield(iterSeqChunk) {
+				return
+			}
+		}
+	}
 }
 
 // Chunk2 returns an iterator over consecutive sub-slices of up to n elements of s.
 // All but the last iter.Seq chunk will have size n.
 // Chunk2 panics if n is less than 1.
 func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]] {
-    if size < 0 {
-        panic(errs.MinSizeExceededError.New("size %d must be >= 0", size))
-    }
+	if size < 0 {
+		panic(errs.MinSizeExceededError.New("size %d must be >= 0", size))
+	}
 
-    return func(yield func(s iter.Seq2[K, V]) bool) {
-        next, stop := iter.Pull2[K, V](sq)
-        defer stop()
-        endOfSeq := false
-        for !endOfSeq {
-            // get the first item for the chunk
-            k, v, ok := next()
-            // there are no more items !ok then exit loop
-            // this prevents returning an extra empty iter.Seq at end of Seq
-            if !ok {
-                break
-            }
-            // create the next sequence chunk
-            iterSeqChunk := func(yield func(K, V) bool) {
-                i := 0
-                for ; i < size; i++ {
-                    if ok {
-                        if !ok {
-                            // end of original sequence
-                            // this sequence may be <= size
-                            endOfSeq = true
-                            break
-                        }
+	return func(yield func(s iter.Seq2[K, V]) bool) {
+		next, stop := iter.Pull2[K, V](sq)
+		defer stop()
+		endOfSeq := false
+		for !endOfSeq {
+			// get the first item for the chunk
+			k, v, ok := next()
+			// there are no more items !ok then exit loop
+			// this prevents returning an extra empty iter.Seq at end of Seq
+			if !ok {
+				break
+			}
+			// create the next sequence chunk
+			iterSeqChunk := func(yield func(K, V) bool) {
+				i := 0
+				for ; i < size; i++ {
+					if ok {
+						if !ok {
+							// end of original sequence
+							// this sequence may be <= size
+							endOfSeq = true
+							break
+						}
 
-                        if !yield(k, v) {
-                            return
-                        }
-                        k, v, ok = next()
-                    }
-                }
-            }
-            if !yield(iterSeqChunk) {
-                return
-            }
-        }
-    }
+						if !yield(k, v) {
+							return
+						}
+						k, v, ok = next()
+					}
+				}
+			}
+			if !yield(iterSeqChunk) {
+				return
+			}
+		}
+	}
 }
 
 // Min returns the minimum value in the sequence.
@@ -388,19 +388,19 @@ func Chunk2[K any, V any](sq iter.Seq2[K, V], size int) iter.Seq[iter.Seq2[K, V]
 // It assumes the sequence is not empty.
 // If the sequence is empty it will panic.
 func Min[T cmp.Ordered](it iter.Seq[T]) T {
-    minV := slices.Collect(FirstN[T](it, 1))[0]
-    for v := range it {
-        minV = min(minV, v)
-    }
-    return minV
+	minV := slices.Collect(FirstN[T](it, 1))[0]
+	for v := range it {
+		minV = min(minV, v)
+	}
+	return minV
 }
 
 // First returns the first item in the sequence.
 // If the sequence is empty, it returns nil, false.
 func First[T any](it iter.Seq[T]) (T, bool) {
-    next, stop := iter.Pull[T](it)
-    defer stop()
-    return next()
+	next, stop := iter.Pull[T](it)
+	defer stop()
+	return next()
 }
 
 // RuneSeq creates a sequence of runes from the given string.
@@ -423,13 +423,13 @@ func First[T any](it iter.Seq[T]) (T, bool) {
 //		   return true // Continue iteration
 //	  })
 func RuneSeq(s string) iter.Seq[rune] {
-    return func(yield func(rune) bool) {
-        for _, r := range s {
-            if !yield(r) {
-                return
-            }
-        }
-    }
+	return func(yield func(rune) bool) {
+		for _, r := range s {
+			if !yield(r) {
+				return
+			}
+		}
+	}
 }
 
 // RuneSeq2 creates a sequence of runes from the given string,
@@ -454,13 +454,13 @@ func RuneSeq(s string) iter.Seq[rune] {
 //		   return true // Continue iteration
 //	  })
 func RuneSeq2(s string) iter.Seq2[int, rune] {
-    return func(yield func(int, rune) bool) {
-        for idx, r := range s {
-            if !yield(idx, r) {
-                return
-            }
-        }
-    }
+	return func(yield func(int, rune) bool) {
+		for idx, r := range s {
+			if !yield(idx, r) {
+				return
+			}
+		}
+	}
 }
 
 // OrderedIterSeq creates an ordered sequence from the given input sequence.
@@ -491,46 +491,46 @@ func RuneSeq2(s string) iter.Seq2[int, rune] {
 //   - The function utilizes a buffered channel of size 256 to pass sorted items to the output sequence.
 //   - Synchronization is ensured using a WaitGroup and a done channel to prevent race conditions.
 func OrderedIterSeq[T cmp.Ordered](in iter.Seq[T]) iter.Seq[T] {
-    orderChan := make(chan T, 256)
-    done := make(chan struct{})
-    var wg sync.WaitGroup
-    wg.Add(1)
+	orderChan := make(chan T, 256)
+	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-    go func() {
-        defer close(orderChan)
-        defer wg.Done()
+	go func() {
+		defer close(orderChan)
+		defer wg.Done()
 
-        var items []T
-        for item := range in {
-            items = append(items, item)
-        }
+		var items []T
+		for item := range in {
+			items = append(items, item)
+		}
 
-        slices.Sort(items)
+		slices.Sort(items)
 
-        for item := range ToSeq(items...) {
-            orderChan <- item
-        }
+		for item := range ToSeq(items...) {
+			orderChan <- item
+		}
 
-        close(done)
-    }()
+		close(done)
+	}()
 
-    return iter.Seq[T](func(yield func(T) bool) {
-        defer wg.Wait()
+	return iter.Seq[T](func(yield func(T) bool) {
+		defer wg.Wait()
 
-        for {
-            select {
-            case item, ok := <-orderChan:
-                if !ok {
-                    return
-                }
-                if !yield(item) {
-                    return
-                }
-            case <-done:
-                return
-            }
-        }
-    })
+		for {
+			select {
+			case item, ok := <-orderChan:
+				if !ok {
+					return
+				}
+				if !yield(item) {
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	})
 }
 
 // Reduce reduces a sequence to a single value by repeatedly applying a function
@@ -561,11 +561,11 @@ func OrderedIterSeq[T cmp.Ordered](in iter.Seq[T]) iter.Seq[T] {
 //   - The sequence `s` will be consumed entirely by this function.
 //   - The function `f` must be capable of reducing any two elements into the accumulator.
 func Reduce[T any, A any](s iter.Seq[T], initialValue A, f func(A, T) A) A {
-    acc := initialValue
-    for i := range s {
-        acc = f(acc, i)
-    }
-    return acc
+	acc := initialValue
+	for i := range s {
+		acc = f(acc, i)
+	}
+	return acc
 }
 
 // Reduce2 reduces a sequence of key-value pairs to a single value by repeatedly applying a function
@@ -596,25 +596,25 @@ func Reduce[T any, A any](s iter.Seq[T], initialValue A, f func(A, T) A) A {
 //   - The sequence `s` will be consumed entirely by this function.
 //   - The function `f` must be capable of reducing the key-value pairs into the accumulator.
 func Reduce2[K any, V any, A any](s iter.Seq2[K, V], initialValue A, f func(A, K, V) A) A {
-    acc := initialValue
-    for k, v := range s {
-        acc = f(acc, k, v)
-    }
-    return acc
+	acc := initialValue
+	for k, v := range s {
+		acc = f(acc, k, v)
+	}
+	return acc
 }
 
 // FlattenSeq takes an iter.Seq of batches (iter.Seq[T]) and flat maps all the batches
 // into a single iter.Seq.
 func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
-    return func(yield func(t T) bool) {
-        for is := range iterSeqs {
-            for i := range iterSeqs[is] {
-                if !yield(i) {
-                    return
-                }
-            }
-        }
-    }
+	return func(yield func(t T) bool) {
+		for is := range iterSeqs {
+			for i := range iterSeqs[is] {
+				if !yield(i) {
+					return
+				}
+			}
+		}
+	}
 }
 
 // Sum calculates the sum of a sequence of numbers.
@@ -636,9 +636,9 @@ func FlattenSeq[T any](iterSeqs ...iter.Seq[T]) iter.Seq[T] {
 //	  total := Sum(seq)
 //	  fmt.Println(total) // Output: 6
 func Sum[T Number](s iter.Seq[T]) T {
-    return Reduce[T, T](s, 0, func(a T, t T) T {
-        return a + t
-    })
+	return Reduce[T, T](s, 0, func(a T, t T) T {
+		return a + t
+	})
 }
 
 // Unique filters a sequence to include only unique elements based on their hash identity.
@@ -670,22 +670,22 @@ func Sum[T Number](s iter.Seq[T]) T {
 //		   fmt.Println(v) // Output: 1, 2, 3
 //	  }
 func Unique[T any](s iter.Seq[T]) iter.Seq[T] {
-    return func(yield func(T) bool) {
-        seen := make(map[string]struct{}) // Use a map to track seen elements.
+	return func(yield func(T) bool) {
+		seen := make(map[string]struct{}) // Use a map to track seen elements.
 
-        for v := range s {
-            key := destruct.MustHashIdentity(v)
-            if _, ok := seen[key]; ok {
-                continue
-            } else {
-                if !yield(v) {
-                    return
-                }
-                seen[key] = struct{}{}
-            }
+		for v := range s {
+			key := destruct.MustHashIdentity(v)
+			if _, ok := seen[key]; ok {
+				continue
+			} else {
+				if !yield(v) {
+					return
+				}
+				seen[key] = struct{}{}
+			}
 
-        }
-    }
+		}
+	}
 
 }
 
@@ -711,9 +711,9 @@ func Unique[T any](s iter.Seq[T]) iter.Seq[T] {
 // Notes:
 //   - The sequence `s` will be completely consumed by this function.
 func Count[T any](s iter.Seq[T]) int64 {
-    return Reduce[T, int64](s, 0, func(acc int64, _ T) int64 {
-        return acc + 1
-    })
+	return Reduce[T, int64](s, 0, func(acc int64, _ T) int64 {
+		return acc + 1
+	})
 }
 
 // Count2 counts the number of key-value pairs in a sequence of pairs.
@@ -738,9 +738,9 @@ func Count[T any](s iter.Seq[T]) int64 {
 // Notes:
 //   - The sequence `s` will be completely consumed by this function.
 func Count2[K any, V any](s iter.Seq2[K, V]) int64 {
-    return Reduce2[K, V, int64](s, int64(0), func(acc int64, k K, v V) int64 {
-        return acc + 1
-    })
+	return Reduce2[K, V, int64](s, int64(0), func(acc int64, k K, v V) int64 {
+		return acc + 1
+	})
 }
 
 // Seq2ToMap converts an iter.Seq2[string, any] to a map[string]any.
@@ -754,7 +754,7 @@ func Count2[K any, V any](s iter.Seq2[K, V]) int64 {
 // this just delegates to maps.Collect() because I keep forgetting it exists
 // Deprecated: Use maps.Collect instead for more streamlined functionality.
 func Seq2ToMap[K comparable, V any](seq iter.Seq2[K, V]) map[K]V {
-    return maps.Collect(seq)
+	return maps.Collect(seq)
 }
 
 // UnzipMap splits a map into two slices: one containing its keys and the other its values.
@@ -778,15 +778,15 @@ func Seq2ToMap[K comparable, V any](seq iter.Seq2[K, V]) map[K]V {
 //	  fmt.Println(keys)   // Output: [a b c]
 //	  fmt.Println(values) // Output: [1 2 3]
 func UnzipMap[K comparable, V any](m map[K]V) ([]K, []V) {
-    keys := make([]K, 0, len(m))
-    values := make([]V, 0, len(m))
+	keys := make([]K, 0, len(m))
+	values := make([]V, 0, len(m))
 
-    for k := range maps.Keys(m) {
-        keys = append(keys, k)
-        values = append(values, m[k])
-    }
+	for k := range maps.Keys(m) {
+		keys = append(keys, k)
+		values = append(values, m[k])
+	}
 
-    return keys, values
+	return keys, values
 }
 
 // GroupBy groups elements of a sequence by a key function. It collects elements
@@ -826,24 +826,24 @@ func UnzipMap[K comparable, V any](m map[K]V) ([]K, []V) {
 //	  //   Item: 3
 //	  //   Item: 5
 func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc func(K, V) bool) iter.Seq2[K, iter.Seq[V]] {
-    return func(yield func(K, iter.Seq[V]) bool) {
-        groupKeys := Unique[K](Map[V, K](s, keyFunc))
-        for groupKey := range groupKeys {
-            group := Filter[V](s, func(v V) bool {
-                return groupByFunc(groupKey, v)
-            })
-            iter2 := func(yield func(V) bool) {
-                for item := range group {
-                    if !yield(item) {
-                        return
-                    }
-                }
-            }
-            if !yield(groupKey, iter2) {
-                return
-            }
-        }
-    }
+	return func(yield func(K, iter.Seq[V]) bool) {
+		groupKeys := Unique[K](Map[V, K](s, keyFunc))
+		for groupKey := range groupKeys {
+			group := Filter[V](s, func(v V) bool {
+				return groupByFunc(groupKey, v)
+			})
+			iter2 := func(yield func(V) bool) {
+				for item := range group {
+					if !yield(item) {
+						return
+					}
+				}
+			}
+			if !yield(groupKey, iter2) {
+				return
+			}
+		}
+	}
 }
 
 //
@@ -880,39 +880,73 @@ func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc 
 //
 //   If the writer fails at any point, marshaling stops and an error is returned.
 func JsonMarshalCompact[T any](w io.Writer, seq iter.Seq[T]) error {
-    // no need to check if it is already a buffered writer, it does that already
-    // default size is 4096 bytes
-    w = bufio.NewWriter(w)
-    defer func() {
-        if err := w.(*bufio.Writer).Flush(); err != nil {
-            err = errs.MarshalError.New("failed to flush buffered writer: %w", err)
-            log.Warn().Err(err).Msg(err.Error())
-        }
-    }()
+	// no need to check if it is already a buffered writer, it does that already
+	// default size is 4096 bytes
+	w = bufio.NewWriter(w)
+	defer func() {
+		if err := w.(*bufio.Writer).Flush(); err != nil {
+			err = errs.MarshalError.New("failed to flush buffered writer: %w", err)
+			log.Warn().Err(err).Msg(err.Error())
+		}
+	}()
 
-    first := true
-    next, stop := iter.Pull(seq)
-    defer stop()
-    for {
-        if t, ok := next(); ok {
-            if first {
-                if _, err := w.Write([]byte{'['}); err != nil {
-                    return errs.MarshalError.New("failed to write opening bracket: %w", err)
-                }
-                first = false
-            } else {
-                if _, err := w.Write([]byte{','}); err != nil {
-                    err = errs.MarshalError.New("failed to write comma: %w", err)
-                    return err // Stop iteration on write error
-                }
-                _, err := w.Write(must.MarshalJson(t))
-                if err != nil {
-                    return err
-                }
-            }
-        }
-        if _, err := w.Write([]byte{']'}); err != nil {
-            return errs.MarshalError.New("failed to write closing bracket: %w", err)
-        }
-    }
+	first := true
+	next, stop := iter.Pull(seq)
+	defer stop()
+	for {
+		if t, ok := next(); ok {
+			if first {
+				if _, err := w.Write([]byte{'['}); err != nil {
+					return errs.MarshalError.New("failed to write opening bracket: %w", err)
+				}
+				first = false
+			} else {
+				if _, err := w.Write([]byte{','}); err != nil {
+					err = errs.MarshalError.New("failed to write comma: %w", err)
+					return err // Stop iteration on write error
+				}
+				_, err := w.Write(must.MarshalJson(t))
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if _, err := w.Write([]byte{']'}); err != nil {
+			return errs.MarshalError.New("failed to write closing bracket: %w", err)
+		}
+	}
+}
+
+// FilterErrors takes an iter.Seq2[K, error] and returns an iter.Seq[K] containing only the
+// elements whose associated error was nil.
+//
+// Parameters:
+//   - s: A sequence of key-error pairs where K is the key type.
+//
+// Returns:
+//   - An iter.Seq[K] that yields only the key values whose corresponding error was nil.
+//
+// Example:
+//
+//	seq := iter.Seq2[string, error](func(yield func(string, error) bool) {
+//		yield("success", nil)              // This will be included
+//		yield("failure", errors.New(""))   // This will be filtered out
+//		yield("success2", nil)             // This will be included
+//		return true
+//	})
+//	filtered := FilterErrors(seq)
+//	for k := range filtered {
+//		fmt.Println(k) // Prints: success, success2
+//	}
+func FilterErrors[K any](s iter.Seq2[K, error]) iter.Seq[K] {
+	return func(yield func(K) bool) {
+		for k, err := range s {
+			if err != nil {
+				continue
+			}
+			if !yield(k) {
+				return
+			}
+		}
+	}
 }
