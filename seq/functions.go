@@ -846,7 +846,6 @@ func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc 
 	}
 }
 
-//
 // JsonMarshalCompact serializes the given sequence into a compact JSON array
 // and writes it to the provided writer.
 //
@@ -858,27 +857,27 @@ func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc 
 //   - An error if any issue occurs during marshaling or writing.
 //
 // Notes:
-//   - Uses a buffered writer for efficient writing, ensuring any pending 
+//   - Uses a buffered writer for efficient writing, ensuring any pending
 //     data is flushed at the end.
-//   - Serializes the sequence items one by one, maintaining a compact JSON format  
+//   - Serializes the sequence items one by one, maintaining a compact JSON format
 //     without extra whitespace.
 //
 // Example:
 //
-//   seq := iter.Seq[int](func(yield func(int) bool) {
-//       yield(1)
-//       yield(2)
-//       yield(3)
-//   })
+//	seq := iter.Seq[int](func(yield func(int) bool) {
+//	    yield(1)
+//	    yield(2)
+//	    yield(3)
+//	})
 //
-//   var buf bytes.Buffer
-//   err := JsonMarshalCompact(&buf, seq)
-//   if err != nil {
-//       log.Fatal(err)
-//   }
-//   fmt.Println(buf.String()) // Output: [1,2,3]
+//	var buf bytes.Buffer
+//	err := JsonMarshalCompact(&buf, seq)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Println(buf.String()) // Output: [1,2,3]
 //
-//   If the writer fails at any point, marshaling stops and an error is returned.
+//	If the writer fails at any point, marshaling stops and an error is returned.
 func JsonMarshalCompact[T any](w io.Writer, seq iter.Seq[T]) error {
 	// no need to check if it is already a buffered writer, it does that already
 	// default size is 4096 bytes
