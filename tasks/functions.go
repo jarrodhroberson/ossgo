@@ -11,6 +11,8 @@ import (
 	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/gcp"
+	"github.com/jarrodhroberson/ossgo/timestamp"
+	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 )
 
@@ -147,31 +149,80 @@ func Delete(ctx context.Context, name string) error {
 //   - error: nil if the task completes successfully, an error if the operation fails
 //     or times out after maximum retries
 //
-// Deprecated: this is a place holder for a more sophisticated way using goroutines and channels
-func WaitForTaskCompletion(ctx context.Context, client *cloudtasks.Client, task *cloudtaskspb.Task) error {
-	const maxRetries = 3                // Maximum number of retries.  Adjust as appropriate.
-	const retryDelay = 10 * time.Second // Delay between retries. Adjust as appropriate.
-	retries := 0
-
-	for retries < maxRetries {
-		retries++
-
-		getTaskRequest := &cloudtaskspb.GetTaskRequest{
-			Name:         task.Name,
-			ResponseView: cloudtaskspb.Task_BASIC,
-		}
-
-		t, err := client.GetTask(ctx, getTaskRequest)
-		if err != nil {
-			return err // Returning the error directly
-		}
-
-		if t.LastAttempt.ResponseTime != nil && t.LastAttempt.ResponseStatus.Code == int32(200) {
-			return nil // Task completed successfully
-		}
-
-		time.Sleep(retryDelay)
+// Deprecated: this is a naive blocking implementation and should be replaced with a more sophisticated way using goroutines and channels
+func WaitForTaskCompletion(ctx context.Context, client *cloudtasks.Client, task *cloudtaskspb.Task, maxWaitDuration time.Duration) error {
+	if maxWaitDuration <= 0 {
+		return errorx.IllegalArgument.New("maxWaitDuration must be positive: %d", maxWaitDuration)
 	}
 
-	return fmt.Errorf("timed out waiting for task completion after %d retries", maxRetries)
+	timeoutCtx, cancel := context.WithTimeout(ctx, maxWaitDuration)
+	defer cancel()
+
+	resultChan := ListenForTaskCompletion(timeoutCtx, client, task)
+
+	select {
+	case <-timeoutCtx.Done():
+		if timeoutCtx.Err() == context.DeadlineExceeded {
+			return errs.DurationExceeded.New("maxWaitDuration exceeded waiting for task completion after %s", timestamp.HumanReadableDuration(maxWaitDuration))
+		}
+		return timeoutCtx.Err()
+	case result := <-resultChan:
+		return result.Error
+	}
+}
+
+// TaskResult represents the result of a task completion check
+type TaskResult struct {
+	Task  *cloudtaskspb.Task
+	Error error
+}
+
+// ListenForTaskCompletion monitors a Cloud Task's completion status asynchronously using
+// channels and goroutines. It asynchronously monitors the task status 5 seconds after the next scheduled attempt and sends the
+// result through a channel when the task either completes successfully or encounters an error.
+//
+// Parameters:
+//   - ctx: The context.Context for managing the monitoring lifecycle
+//   - client: The Cloud Tasks client instance
+//   - task: The task to monitor
+//
+// Returns:
+//   - <-chan TaskResult: A channel that will receive the task completion result
+func ListenForTaskCompletion(ctx context.Context, client *cloudtasks.Client, task *cloudtaskspb.Task) <-chan TaskResult {
+	resultChan := make(chan TaskResult, 1)
+
+	go func() {
+		defer close(resultChan)
+		ticker := time.NewTicker(task.ScheduleTime.AsTime().Sub(time.Now()) + time.Second * 5)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				resultChan <- TaskResult{Task: task, Error: ctx.Err()}
+				return
+			case <-ticker.C:
+				getTaskRequest := &cloudtaskspb.GetTaskRequest{
+					Name:         task.Name,
+					ResponseView: cloudtaskspb.Task_BASIC,
+				}
+
+				t, err := client.GetTask(ctx, getTaskRequest)
+				if err != nil {
+					resultChan <- TaskResult{Task: task, Error: err}
+					return
+				}
+
+
+				if t.LastAttempt != nil && t.LastAttempt.ResponseTime != nil && t.LastAttempt.ResponseStatus.Code == int32(200) {
+					resultChan <- TaskResult{Task: t, Error: nil}
+					return
+				} else {
+					ticker.Reset(task.ScheduleTime.AsTime().Sub(time.Now()) + t.CreateTime.AsTime().Sub(t.LastAttempt.ResponseTime.AsTime()))
+				}
+			}
+		}
+	}()
+
+	return resultChan
 }

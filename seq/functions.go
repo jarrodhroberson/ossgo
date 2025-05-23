@@ -949,3 +949,63 @@ func FilterErrors[K any](s iter.Seq2[K, error]) iter.Seq[K] {
 		}
 	}
 }
+
+// FilterNotError takes an iter.Seq2[K, error] and returns an iter.Seq[K] containing only the
+// elements whose associated error was not nil.
+//
+// Parameters:
+//   - s: A sequence of key-error pairs where K is the key type.
+//
+// Returns:
+//   - An iter.Seq[K] that yields only the key values whose corresponding error was not nil.
+//
+// Example:
+//
+//	seq := iter.Seq2[string, error](func(yield func(string, error) bool) {
+//		yield("success", nil)              // This will be filtered out
+//		yield("failure", errors.New(""))   // This will be included
+//		yield("success2", nil)             // This will be filtered out
+//		return true
+//	})
+//	filtered := FilterNotError(seq)
+//	for k := range filtered {
+//		fmt.Println(k) // Prints: failure
+//	}
+func FilterNotError[K any](s iter.Seq2[K, error]) iter.Seq[K] {
+	return func(yield func(K) bool) {
+		for k, err := range s {
+			if err == nil {
+				continue
+			}
+			if !yield(k) {
+				return
+			}
+		}
+	}
+}
+
+func Keys[K any, V any](s iter.Seq2[K, V]) iter.Seq[K] {
+	return func(yield func(K) bool) {
+		for k := range s {
+			if !yield(k) {
+				return
+			}
+		}
+	}
+}
+
+func Values[K any, V any](s iter.Seq2[K, V]) iter.Seq[V] {
+	return func(yield func(V) bool) {
+		for _, v := range s {
+			if !yield(v) {
+				return
+			}
+		}
+	}
+}
+
+func Memoize[T any](s iter.Seq[T]) *MemoizeSeq[T] {
+	return &MemoizeSeq[T]{
+		delegate: slices.Collect(s),
+	}
+}

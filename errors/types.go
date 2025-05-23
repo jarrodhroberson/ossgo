@@ -71,6 +71,7 @@ var InvalidSizeError = MustNeverError.NewSubtype("Invalid Size", InvalidSizeTrai
 var MinSizeExceededError = MustNeverError.NewSubtype("Min Required Size", InvalidSizeTrait)
 var MaxSizeExceededError = MustNeverError.NewSubtype("Max Size Exceeded", InvalidSizeTrait)
 var ExpiredError = errorx.TimeoutElapsed.NewSubtype("Expired", errorx.Timeout())
+var DurationExceeded = MustNeverError.NewSubtype("Duration Exceeded", errorx.Timeout())
 var DisabledError = errorx.IllegalState.NewSubtype("Disabled", errorx.Temporary())
 var InvalidJsonPayloadReceived = InvalidData.NewSubtype("invalid json payload received.")
 var CanNotBindQueryParameter = UnMarshalError.NewSubtype("can not bind query parameter.")

@@ -2,6 +2,7 @@ package seq
 
 import (
 	"iter"
+	"slices"
 	"sync/atomic"
 )
 
@@ -29,11 +30,18 @@ func (c CountingSeq[T]) Count() int64 {
 	return c.counter.Load()
 }
 
-type MemoizedSeq[T any] struct {
-	Seq   iter.Seq[T]
-	reset func()
+type MemoizeSeq[T any] struct {
+	delegate []T
 }
 
-func (m *MemoizedSeq[T]) Reset() {
-	m.reset()
+func (m *MemoizeSeq[T]) Seq() iter.Seq[T] {
+	return slices.Values(m.delegate)
+}
+
+func (m *MemoizeSeq[T]) Seq2() iter.Seq2[int,T] {
+	return slices.All(m.delegate)
+}
+
+func (m *MemoizeSeq[T]) Len() int {
+	return len(m.delegate)
 }

@@ -367,3 +367,34 @@ func ClosingWhenDoneSeq2[K, V any](seq2 iter.Seq2[K, V], client *fs.Client) iter
 		seq2(yield)
 	}
 }
+
+// CollectionIterToSeq converts a Firestore CollectionIterator to an iter.Seq of CollectionRefs.
+// It handles the iteration and error handling internally, providing a simplified interface to process collections.
+// Returns an iter.Seq that yields *fs.CollectionRef values.
+func CollectionIterToSeq(ci *fs.CollectionIterator) iter.Seq[*fs.CollectionRef] {
+	return func(yield func(ref *fs.CollectionRef) bool) {
+		for {
+			colRef, err := ci.Next()
+			if errors.Is(err, iterator.Done) {
+				break
+			}
+			if err != nil {
+				err = errs.MustNeverError.Wrap(err, "error iterating through Firestore documents")
+				log.Error().Stack().Err(err).Msg(err.Error())
+				break
+			}
+			if !yield(colRef) {
+				return
+			}
+		}
+	}
+}
+
+// DocumentIterToTypeSeq converts a Firestore DocumentIterator to an iter.Seq of type T.
+// It first converts the DocumentIterator to DocumentSnapshots using DocumentIteratorToSeq,
+// then converts those snapshots to type T using DocSnapShotSeqToType.
+// Type parameter T should be the target type to unmarshal the documents into.
+// Returns an iter.Seq that yields pointers to values of type T.
+func DocumentIterToTypeSeq[T any](di *fs.DocumentIterator) iter.Seq[*T] {
+	return DocSnapShotSeqToType[T](DocumentIteratorToSeq(di))
+}
