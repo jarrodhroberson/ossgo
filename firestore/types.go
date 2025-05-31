@@ -236,3 +236,43 @@ func (c collectionStore[T]) Remove(id string) error {
 	}
 	return err
 }
+
+func (c collectionStore[T]) BulkRemove(iter iter.Seq[string], errorHandling BulkStoreErrorHandling) error {
+	ctx := context.Background()
+	client := c.clientProvider()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Err(err).Msg(err.Error())
+		}
+	}(client)
+	bw := client.BulkWriter(ctx)
+	defer func() {
+		bw.Flush()
+		bw.End()
+	}()
+
+	eg := errorHandling.ErrGroup(ctx)
+	batches := seq.Chunk(iter, MAX_BULK_WRITE_SIZE)
+	for batch := range batches {
+		eg.Go(func() error {
+			for id := range batch {
+				docRef := client.Collection(c.collection).Doc(id)
+				_, err := bw.Delete(docRef)
+				if err != nil {
+					return BulkWriterError.Wrap(err, "error deleting document \"%s\"", docRef)
+				}
+			}
+			bw.Flush()
+			return nil
+		})
+	}
+	return eg.Wait()
+}
+
+type CollectionStore[T any] interface {
+	All() iter.Seq2[string, *T]
+	Load(id string) (*T, error)
+	Store(v *T) (*T, error)
+	Remove(id string) error
+}
