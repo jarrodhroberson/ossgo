@@ -30,7 +30,16 @@ const (
 	validPathWithVersionPattern     = "^projects/(?P<projectid>\\d+)/secrets/(?P<name>[\\w-]+)(?:/versions/(?P<version>\\d+|latest))?$"
 )
 
-var projectNumber = must.Must(strconv.Atoi(must.Must(metadata.NumericProjectIDWithContext(context.Background()))))
+var projectNumber int
+
+func init() {
+	if !metadata.OnGCE() {
+		projectNumber = 0 // Local development
+	} else {
+		projectNumber = must.Must(strconv.Atoi(must.Must(metadata.NumericProjectIDWithContext(context.Background()))))
+	}
+}
+
 var validSecretPathRegex *regexp.Regexp = nil
 var validSecretNameRegex *regexp.Regexp = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9_-]{4,253}[a-zA-Z0-9]$")
 var validSecretPathWithVersionRegex *regexp.Regexp = nil

@@ -15,6 +15,7 @@ import (
 
 	"github.com/jarrodhroberson/ossgo/containers"
 	"github.com/jarrodhroberson/ossgo/gcp"
+	slyces "github.com/jarrodhroberson/ossgo/slices"
 
 	"cloud.google.com/go/compute/metadata"
 	fs "cloud.google.com/go/firestore"
@@ -32,6 +33,20 @@ import (
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
+
+// NewProjection creates a new projection instance for querying specific fields from Firestore documents.
+// The paths parameter accepts dot-separated paths that specify the fields to select.
+// For example, "user.address.street" will be split into a FieldPath ["user", "address", "street"].
+// Each field path is converted to a fs.FieldPath internally for use in Firestore queries.
+func NewProjection(paths ...string) Projection {
+	pathIter := slices.Values(paths)
+	fieldPathIter := slyces.Transform[string, fs.FieldPath](pathIter, func(path string) fs.FieldPath {
+		return fs.FieldPath(strings.Split(path, "."))
+	})
+	return Projection{
+		fieldPaths: slices.Collect(fieldPathIter),
+	}
+}
 
 // NewQuery creates a new Query instance for the specified Firestore collection.
 func NewQuery(collection *fs.CollectionRef) Query {
@@ -53,9 +68,9 @@ func DocSnapShotKeyer() containers.Keyer[fs.DocumentSnapshot] {
 	}
 }
 
-// NewCollectionStore creates a new CollectionStore for a given database, collection, and keyer function.
-func NewCollectionStore[T any](database DatabaseName, collection string, keyerFunc containers.Keyer[T]) *CollectionStore[T] {
-	return &CollectionStore[T]{
+// NewCollectionStore creates a new collectionStore for a given database, collection, and keyer function.
+func NewCollectionStore[T any](database DatabaseName, collection string, keyerFunc containers.Keyer[T]) *collectionStore[T] {
+	return &collectionStore[T]{
 		clientProvider: func() *fs.Client {
 			return must.Must(Client(context.Background(), database))
 		},
@@ -268,7 +283,17 @@ func DocSnapShotSeq2ToType[V any](it iter.Seq2[string, *fs.DocumentSnapshot]) it
 }
 
 // DocSnapShotSeqToType converts a Seq of DocumentSnapshots to a Seq of type R.
+// Deprecated: Use DocumentIterToTypeSeq which automatically wraps the fs.DocumentIterator
+// and more efficient data processing. This delegates to an unexported implementation, so this can be deleted in a future release.
 func DocSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R] {
+	return docSnapShotSeqToType[R](it)
+}
+
+// docSnapShotSeqToType converts a Seq of DocumentSnapshots to a Seq of type R.
+// This is an unexported version of DocSnapShotSeqToType that will replace the exported version
+// once it is no longer being used. The exported version is deprecated and will be removed in a future release.
+// This function provides the same functionality but with better integration with the DocumentIterator wrapper functions.
+func docSnapShotSeqToType[R any](it iter.Seq[*fs.DocumentSnapshot]) iter.Seq[*R] {
 	return seq.Map[*fs.DocumentSnapshot, *R](it, func(dss *fs.DocumentSnapshot) *R {
 		var t R
 		m := make(map[string]interface{})
@@ -313,11 +338,11 @@ func DocumentIteratorToSeq2(dsi *fs.DocumentIterator) iter.Seq2[string, *fs.Docu
 	})
 }
 
-// FindDuplicateDocumentIds finds and reports duplicate document IDs within a Firestore collection.
+// CountDuplicateDocumentIds finds and reports duplicate document IDs within a Firestore collection.
 // It takes the Firestore client and the collection path as input.
 // It returns an iter.Seq2[string,int] where keys are duplicate document Ids and values are the number of occurrences.
 // If no duplicates are found, it returns an empty iter.Seq2[string,int.  Returns an error if one occurs.
-func FindDuplicateDocumentIds(ctx context.Context, databaseName DatabaseName, collectionPath string) (iter.Seq2[string, int], error) {
+func CountDuplicateDocumentIds(ctx context.Context, databaseName DatabaseName, collectionPath string) (iter.Seq2[string, int], error) {
 	client := must.Must(Client(ctx, databaseName))
 	defer func(client *fs.Client) {
 		err := client.Close()
@@ -351,7 +376,11 @@ func ClosingWhenDoneSeq[T any](seq iter.Seq[T], client *fs.Client) iter.Seq[T] {
 				log.Warn().Err(err).Msg("error closing Firestore client")
 			}
 		}()
-		seq(yield)
+		for item := range seq {
+			if !yield(item) {
+				return
+			}
+		}
 	}
 }
 
@@ -364,7 +393,11 @@ func ClosingWhenDoneSeq2[K, V any](seq2 iter.Seq2[K, V], client *fs.Client) iter
 				log.Warn().Err(err).Msg("error closing Firestore client")
 			}
 		}()
-		seq2(yield)
+		for k, v := range seq2 {
+			if !yield(k, v) {
+				return
+			}
+		}
 	}
 }
 
@@ -396,5 +429,5 @@ func CollectionIterToSeq(ci *fs.CollectionIterator) iter.Seq[*fs.CollectionRef] 
 // Type parameter T should be the target type to unmarshal the documents into.
 // Returns an iter.Seq that yields pointers to values of type T.
 func DocumentIterToTypeSeq[T any](di *fs.DocumentIterator) iter.Seq[*T] {
-	return DocSnapShotSeqToType[T](DocumentIteratorToSeq(di))
+	return docSnapShotSeqToType[T](DocumentIteratorToSeq(di))
 }
