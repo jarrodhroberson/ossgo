@@ -151,7 +151,76 @@ func (c CollectionStore[T]) Store(v *T) (*T, error) {
 	return v, nil
 }
 
-func (c CollectionStore[T]) Remove(id string) error {
+type BulkStoreErrorHandling string
+
+func (bs BulkStoreErrorHandling) ErrGroup(ctx context.Context) *errgroup.Group {
+	if bs == FAIL_ON_FIRST_ERROR {
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		eg, _ := errgroup.WithContext(ctx)
+		return eg
+	} else { // COLLECT_ERRORS
+		return &errgroup.Group{}
+	}
+}
+
+func (bs BulkStoreErrorHandling) String() string {
+	return string(bs)
+}
+
+const (
+	FAIL_ON_FIRST_ERROR BulkStoreErrorHandling = "fail_on_first_error"
+	COLLECT_ERRORS      BulkStoreErrorHandling = "collect_errors"
+)
+
+// BulkStoreErrorHandling stores multiple items in batches using Firestore BulkWriter.
+// It utilizes errgroup.Group to concurrently process batches of documents up to firestore.MAX_BULK_WRITE_SIZE.
+// The errgroup ensures all goroutines complete and collects any errors that occur during batch processing.
+// If any goroutine returns an error, BulkStoreErrorHandling will return that error after all goroutines complete.
+//
+// The errorHandling parameter determines how errors are handled:
+// - FAIL_ON_FIRST_ERROR: Stop processing batches as soon as any error occurs
+// - COLLECT_ERRORS: Continue processing remaining batches even if some fail report errors after iterator is complete
+func (c collectionStore[T]) BulkStore(iter iter.Seq[*T], errorHandling BulkStoreErrorHandling) error {
+	ctx := context.Background()
+	client := c.clientProvider()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Err(err).Msg(err.Error())
+		}
+	}(client)
+
+	bw := client.BulkWriter(ctx)
+	defer func() {
+		bw.Flush()
+		bw.End()
+	}()
+
+	eg := errorHandling.ErrGroup(ctx)
+
+	batches := seq.Chunk(iter, MAX_BULK_WRITE_SIZE)
+	for batch := range batches {
+		eg.Go(func() error {
+			for item := range batch {
+				docRef := client.Collection(c.collection).Doc(c.keyer(item))
+				m := must.MarshallMap(item)
+				m["last_updated_at"] = timestamp.Now()
+				containers.RemoveKeys(m, "created_at")
+				_, err := bw.Set(docRef, m)
+				if err != nil {
+					return BulkWriterError.Wrap(err, "error storing document \"%s\"", docRef)
+				}
+			}
+			bw.Flush()
+			return nil
+		})
+	}
+	return eg.Wait()
+}
+
+func (c collectionStore[T]) Remove(id string) error {
 	ctx := context.Background()
 	client := c.clientProvider()
 	defer func(client *firestore.Client) {
