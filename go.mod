@@ -19,6 +19,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/joomcode/errorx v1.2.0
 	github.com/rs/zerolog v1.34.0
+	github.com/valkey-io/valkey-go v1.0.60
 	golang.org/x/crypto v0.37.0
 	golang.org/x/sync v0.14.0
 	google.golang.org/api v0.231.0
@@ -43,7 +44,6 @@ require (
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20250501225837-2ac532fd4443 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.32.4 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
