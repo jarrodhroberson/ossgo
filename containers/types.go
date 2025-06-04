@@ -5,8 +5,13 @@ import (
 	"sync"
 )
 
+// SyncSet represents a thread-safe set data structure that can store unique comparable values.
 type SyncSet[T comparable] interface {
+	// Set adds a value to the set if it doesn't already exist.
+	// Returns true if the value was added, false if it was already present.
 	Set(v T) bool
+
+	// All returns an iterator over all values in the set in no particular order.
 	All() iter.Seq[T]
 }
 
