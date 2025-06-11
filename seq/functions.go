@@ -686,7 +686,6 @@ func Unique[T any](s iter.Seq[T]) iter.Seq[T] {
 
 		}
 	}
-
 }
 
 // Count counts the number of elements in a sequence.
