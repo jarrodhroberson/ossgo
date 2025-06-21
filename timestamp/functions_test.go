@@ -360,3 +360,31 @@ func TestISO8601ToDuration(t *testing.T) {
 		})
 	}
 }
+
+func TestParseYouTubeTimestamp(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Timestamp
+	}{
+		{
+			name: "2009-06-09T03:55:33Z",
+			args: args{
+				s: "2009-06-09T03:55:33Z",
+			},
+			want: &Timestamp{
+				t: time.Date(2009, time.June, 9, 3, 55, 33, 0, time.UTC),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParseYouTubeTimestamp(tt.args.s); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseYouTubeTimestamp() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

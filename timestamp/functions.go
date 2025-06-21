@@ -44,14 +44,14 @@ func AddMonth(ts *Timestamp, m int) *Timestamp {
 	return From(addMonth(ts.t, m))
 }
 
-// ParseYouTubeTimestamp parses a non-standard timestamp format that the YouTube V3 API uses.
+// ParseYouTubeTimestamp parses the timestamp format that the YouTube V3 API uses.
 func ParseYouTubeTimestamp(s string) *Timestamp {
-	return MustParse("2006-01-02T15:04:05.999999Z", s)
+	return MustParse(time.RFC3339, s)
 }
 
 // FormatYouTubeActivityTimestamp formats a Timestamp using the YouTube timestamp format.
 func FormatYouTubeActivityTimestamp(ts *Timestamp) string {
-	return ts.t.Format("2006-01-02T15:04:05.0Z")
+	return ts.t.Format(time.RFC3339)
 }
 
 func Format(ts *Timestamp, format string) string {
@@ -302,17 +302,19 @@ func ParseISO8601Duration(s string) (time.Duration, error) {
 		err := errs.InvalidFormat.New("invalid ISO 8601 duration: %s", s)
 		return -1, errs.MustNeverError.Wrap(err, "missing designator for time")
 	}
-	if s == "PT" { return 0, nil }
+	if s == "PT" {
+		return 0, nil
+	}
 
 	var match []string
 	var regex *regexp.Regexp
 
 	if strings.Contains(s, "T") {
 		regex = timeDurationRegex
-		match = append(match,regex.FindStringSubmatch(s)...)
+		match = append(match, regex.FindStringSubmatch(s)...)
 	} else {
 		regex = dateDurationRegex
-		match = append(match,regex.FindStringSubmatch(s)...)
+		match = append(match, regex.FindStringSubmatch(s)...)
 	}
 
 	if match == nil {

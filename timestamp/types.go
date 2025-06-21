@@ -103,6 +103,13 @@ func (ts *Timestamp) Compare(to *Timestamp) int {
 	return ts.t.Compare(to.t)
 }
 
+// Format formats the timestamp according to the layout string by delegating to
+// the underlying time.Time's Format method. See time.Time.Format for details
+// on layout strings.
+func (ts *Timestamp) Format(layout string) string {
+	return ts.t.Format(layout)
+}
+
 // String returns the timestamp in RFC3339Nano format
 func (ts *Timestamp) String() string {
 	bytes, _ := ts.MarshalText()
