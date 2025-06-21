@@ -154,38 +154,19 @@ func Count(ctx context.Context, query fs.Query) int64 {
 		log.Fatal().Err(err).Msg("could not run aggregation query")
 		return -1
 	}
-	value, ok := cqr["val"]
+	value, ok := cqr["count"]
 	if !ok {
 		err = errs.MustNeverError.New("could not get \"count\" from results %s", strings.Join(slices.Collect(maps.Keys(cqr)), ","))
 		log.Error().Stack().Err(err).Msg(err.Error())
-
 		panic(errorx.Panic(err))
 	}
 	count, ok := value.(int64)
 	if !ok {
 		err := errs.MustNeverError.New("could not assert that \"%s\" was of type int64", "count")
 		log.Error().Stack().Err(err).Msg(err.Error())
-
 		panic(errorx.Panic(err))
 	}
 	return count
-}
-
-// GetAs retrieves a document from Firestore and unmarshals it into the provided struct.
-func GetAs[T any](ctx context.Context, database DatabaseName, path string, t *T) error {
-	client := must.Must(Client(ctx, database))
-	defer func(client *fs.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Error().Stack().Err(err).Msgf("error closing firestore client %s", err)
-		}
-	}(client)
-	doc, err := client.Doc(path).Get(ctx)
-	if err != nil {
-		err = errors.Join(errs.NotFoundError.New("could not find document %s", path), err)
-		return err
-	}
-	return doc.DataTo(t)
 }
 
 // MapToUpdates converts a map to a slice of Firestore Update structs.
