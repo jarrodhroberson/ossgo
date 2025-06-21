@@ -7,7 +7,6 @@ import (
 	"iter"
 	"maps"
 	"slices"
-	"sync"
 	"sync/atomic"
 
 	"github.com/jarrodhroberson/destruct/destruct"
@@ -463,76 +462,6 @@ func RuneSeq2(s string) iter.Seq2[int, rune] {
 	}
 }
 
-// OrderedIterSeq creates an ordered sequence from the given input sequence.
-// It reads all elements from the input sequence into memory, sorts them using
-// their natural order (defined by the cmp.Ordered constraint), and produces
-// an iterator that yields the sorted elements.
-//
-// The input sequence is consumed fully before yielding the sorted sequence,
-// so this function is suitable for sequences that can fit into memory.
-//
-// Parameters:
-//   - in: An input sequence of elements implementing the cmp.Ordered constraint.
-//
-// Returns:
-//   - iter.Seq[T]: An iterator that yields the elements of the input sequence
-//     in ascending order.
-//
-// Usage:
-//
-//	  seq := OrderedIterSeq(SomeSeq)
-//	  seq(func(v int) bool {
-//		   fmt.Println(v)
-//		   return true // Continue iteration
-//	  })
-//
-// Notes:
-//   - The ordering is determined by slices.Sort, which uses the natural order of the items.
-//   - The function utilizes a buffered channel of size 256 to pass sorted items to the output sequence.
-//   - Synchronization is ensured using a WaitGroup and a done channel to prevent race conditions.
-func OrderedIterSeq[T cmp.Ordered](in iter.Seq[T]) iter.Seq[T] {
-	orderChan := make(chan T, 256)
-	done := make(chan struct{})
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		defer close(orderChan)
-		defer wg.Done()
-
-		var items []T
-		for item := range in {
-			items = append(items, item)
-		}
-
-		slices.Sort(items)
-
-		for item := range ToSeq(items...) {
-			orderChan <- item
-		}
-
-		close(done)
-	}()
-
-	return iter.Seq[T](func(yield func(T) bool) {
-		defer wg.Wait()
-
-		for {
-			select {
-			case item, ok := <-orderChan:
-				if !ok {
-					return
-				}
-				if !yield(item) {
-					return
-				}
-			case <-done:
-				return
-			}
-		}
-	})
-}
-
 // Reduce reduces a sequence to a single value by repeatedly applying a function
 // to an accumulator and each element of the sequence.
 //
@@ -786,63 +715,6 @@ func UnzipMap[K comparable, V any](m map[K]V) ([]K, []V) {
 	}
 
 	return keys, values
-}
-
-// GroupBy groups elements of a sequence by a key function. It collects elements
-// that share the same key into separate sequences.
-//
-// Parameters:
-//   - s: The input sequence of type iter.Seq[V].
-//   - keyFunc: A function that extracts the key (of type K) for each element.
-//   - groupByFunc: A function that determines if an element belongs to a specific group.
-//
-// Returns:
-//   - An iter.Seq2[K, iter.Seq[V]], where each key (K) is associated with a sequence
-//     of elements (iter.Seq[V]) that belong to its group.
-//
-// Example:
-//
-//	  seq := iter.Seq[int](func(yield func(int) bool) {
-//		   yield(1)
-//		   yield(2)
-//		   yield(3)
-//		   yield(4)
-//		   yield(5)
-//	  })
-//	  grouped := GroupBy(seq, func(v int) int { return v % 2 }, func(k, v int) bool { return v % 2 == k })
-//	  for key, group := range grouped {
-//		   fmt.Println("Key:", key)
-//		   for item := range group {
-//			   fmt.Println("  Item:", item)
-//		   }
-//	  }
-//	  // Output:
-//	  // Key: 0
-//	  //   Item: 2
-//	  //   Item: 4
-//	  // Key: 1
-//	  //   Item: 1
-//	  //   Item: 3
-//	  //   Item: 5
-func GroupBy[K comparable, V any](s iter.Seq[V], keyFunc func(V) K, groupByFunc func(K, V) bool) iter.Seq2[K, iter.Seq[V]] {
-	return func(yield func(K, iter.Seq[V]) bool) {
-		groupKeys := Unique[K](Map[V, K](s, keyFunc))
-		for groupKey := range groupKeys {
-			group := Filter[V](s, func(v V) bool {
-				return groupByFunc(groupKey, v)
-			})
-			iter2 := func(yield func(V) bool) {
-				for item := range group {
-					if !yield(item) {
-						return
-					}
-				}
-			}
-			if !yield(groupKey, iter2) {
-				return
-			}
-		}
-	}
 }
 
 // JsonMarshalCompact serializes the given sequence into a compact JSON array
