@@ -393,3 +393,27 @@ func ParseISO8601Duration(s string) (time.Duration, error) {
 
 	return duration, nil
 }
+
+// Max returns the latest (most recent) Timestamp from the provided list of Timestamps.
+// It panics if the input slice is empty.
+func Max(tss ...*Timestamp) *Timestamp {
+	maxValue := tss[0]
+	for _, ts := range tss {
+		if ts.After(maxValue) {
+			maxValue = ts
+		}
+	}
+	return maxValue
+}
+
+// Min returns the earliest (oldest) Timestamp from the provided list of Timestamps.
+// It panics if the input slice is empty.
+func Min(tss ...*Timestamp) *Timestamp {
+	minValue := tss[0]
+	for _, ts := range tss {
+		if ts.Before(minValue) {
+			minValue = ts
+		}
+	}
+	return minValue
+}
