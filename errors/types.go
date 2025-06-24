@@ -29,6 +29,7 @@ var TemporaryTrait = errorx.Temporary()
 var PermanentTrait = errorx.RegisterTrait("Permanent")
 var LeakTrait = errorx.RegisterTrait("Memory Leak")
 var NotClosedTrait = errorx.RegisterTrait("Not Closed")
+var UnknownTrait = errorx.RegisterTrait("Unknown")
 
 // http error status traits
 var HttpRedirectionTrait = errorx.RegisterTrait("Redirection")
@@ -36,6 +37,7 @@ var HttpClientTrait = errorx.RegisterTrait("Client Error")
 var HttpServerTrait = errorx.RegisterTrait("Server Error")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
+var UnknownError = errorx.NewType(errorx.CommonErrors, "Unknown Error", UnknownTrait)
 
 // security (authentication, authorization)
 var Unauthorized = MustNeverError.NewSubtype("Unauthorized")
@@ -89,10 +91,10 @@ var StatusTemporaryRedirect = HttpRedirectionStatus.NewSubtype("Status Temporary
 var StatusPermanentRedirect = HttpRedirectionStatus.NewSubtype("Status Permanent Redirect", PermanentTrait)
 
 var HttpClientErrorStatus = errorx.NewType(HttpNamespace, "Client Error", HttpClientTrait)
-var StatusBadRequest = HttpClientErrorStatus.NewSubtype("Status Bad Request")
-var StatusUnauthorized = HttpClientErrorStatus.NewSubtype("Status Unauthorized")
-var StatusPaymentRequired = HttpClientErrorStatus.NewSubtype("Status Payment Required")
-var StatusForbidden = HttpClientErrorStatus.NewSubtype("Status Forbidden")
+var StatusBadRequest = HttpClientErrorStatus.NewSubtype("Status Bad Request", TemporaryTrait)
+var StatusUnauthorized = HttpClientErrorStatus.NewSubtype("Status Unauthorized", TemporaryTrait)
+var StatusPaymentRequired = HttpClientErrorStatus.NewSubtype("Status Payment Required", TemporaryTrait)
+var StatusForbidden = HttpClientErrorStatus.NewSubtype("Status Forbidden", TemporaryTrait)
 var StatusNotFound = HttpClientErrorStatus.NewSubtype("Status Not Found", errorx.NotFound())
 var StatusMethodNotAllowed = HttpClientErrorStatus.NewSubtype("Status Method Not Allowed")
 var StatusNotAcceptable = HttpClientErrorStatus.NewSubtype("Status Not Acceptable")
