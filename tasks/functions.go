@@ -22,10 +22,10 @@ func CreateQueuePath(queueId string) string {
 	return fmt.Sprintf("projects/%s/locations/%s/queues/%s", projectId, locationId, queueId)
 }
 
-func DisallowDuplicates(path string, name string) CreateTaskRequestOption {
+func DisallowDuplicates(name string) CreateTaskRequestOption {
 	return func(ctr *cloudtaskspb.CreateTaskRequest) {
 		// Task name must be formatted: "projects/<PROJECT_ID>/locations/<LOCATION_ID>/queues/<QUEUE_ID>/tasks/<TASK_ID>"
-		ctr.Task.Name = fmt.Sprintf("%s/tasks/%s", path, name)
+		ctr.Task.Name = fmt.Sprintf("%s/tasks/%s", ctr.Parent, name)
 	}
 }
 
@@ -193,7 +193,7 @@ func ListenForTaskCompletion(ctx context.Context, client *cloudtasks.Client, tas
 
 	go func() {
 		defer close(resultChan)
-		ticker := time.NewTicker(task.ScheduleTime.AsTime().Sub(time.Now()) + time.Second * 5)
+		ticker := time.NewTicker(task.ScheduleTime.AsTime().Sub(time.Now()) + time.Second*5)
 		defer ticker.Stop()
 
 		for {
@@ -212,7 +212,6 @@ func ListenForTaskCompletion(ctx context.Context, client *cloudtasks.Client, tas
 					resultChan <- TaskResult{Task: task, Error: err}
 					return
 				}
-
 
 				if t.LastAttempt != nil && t.LastAttempt.ResponseTime != nil && t.LastAttempt.ResponseStatus.Code == int32(200) {
 					resultChan <- TaskResult{Task: t, Error: nil}
