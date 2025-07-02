@@ -30,6 +30,8 @@ var PermanentTrait = errorx.RegisterTrait("Permanent")
 var LeakTrait = errorx.RegisterTrait("Memory Leak")
 var NotClosedTrait = errorx.RegisterTrait("Not Closed")
 var UnknownTrait = errorx.RegisterTrait("Unknown")
+var CanceledTrait = errorx.RegisterTrait("Canceled")
+var AbortedTrait = errorx.RegisterTrait("Aborted")
 
 // http error status traits
 var HttpRedirectionTrait = errorx.RegisterTrait("Redirection")
@@ -38,6 +40,7 @@ var HttpServerTrait = errorx.RegisterTrait("Server Error")
 
 var MustNeverError = errorx.NewType(MustNamespace, "Must Never Fail", MustNeverErrorTrait)
 var UnknownError = errorx.NewType(errorx.CommonErrors, "Unknown Error", UnknownTrait)
+var CanceledError = errorx.NewType(errorx.CommonErrors, "Canceled", CanceledTrait)
 
 // security (authentication, authorization)
 var Unauthorized = MustNeverError.NewSubtype("Unauthorized")
