@@ -4,11 +4,33 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/jarrodhroberson/ossgo/containers"
-	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/jarrodhroberson/ossgo/containers"
+	"github.com/jarrodhroberson/ossgo/functions/must"
 )
+
+// ZeroLogAdapter
+type ZeroLogAdapter struct {
+	logger *zerolog.Logger
+}
+
+func (z ZeroLogAdapter) Debugf(format string, v ...interface{}) {
+	z.logger.Debug().Msgf(format, v...)
+}
+
+func (z ZeroLogAdapter) Errorf(format string, v ...interface{}) {
+	z.logger.Error().Msgf(format, v)
+}
+
+func (z ZeroLogAdapter) Infof(format string, v ...interface{}) {
+	z.logger.Info().Msgf(format, v)
+}
+
+func (z ZeroLogAdapter) Warnf(format string, v ...interface{}) {
+	z.logger.Warn().Msgf(format, v)
+}
 
 type restyLogger struct {
 	log zerolog.Logger
