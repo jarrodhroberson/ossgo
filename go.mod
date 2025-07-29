@@ -19,6 +19,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/joomcode/errorx v1.2.0
 	github.com/rs/zerolog v1.34.0
+	github.com/stripe/stripe-go/v82 v82.3.0
 	github.com/valkey-io/valkey-go v1.0.60
 	golang.org/x/crypto v0.37.0
 	golang.org/x/sync v0.14.0

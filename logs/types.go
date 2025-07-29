@@ -11,24 +11,24 @@ import (
 	"github.com/jarrodhroberson/ossgo/functions/must"
 )
 
-// ZeroLogAdapter
-type ZeroLogAdapter struct {
+// zeroLogAdapter
+type zeroLogAdapter struct {
 	logger *zerolog.Logger
 }
 
-func (z ZeroLogAdapter) Debugf(format string, v ...interface{}) {
+func (z zeroLogAdapter) Debugf(format string, v ...interface{}) {
 	z.logger.Debug().Msgf(format, v...)
 }
 
-func (z ZeroLogAdapter) Errorf(format string, v ...interface{}) {
+func (z zeroLogAdapter) Errorf(format string, v ...interface{}) {
 	z.logger.Error().Msgf(format, v)
 }
 
-func (z ZeroLogAdapter) Infof(format string, v ...interface{}) {
+func (z zeroLogAdapter) Infof(format string, v ...interface{}) {
 	z.logger.Info().Msgf(format, v)
 }
 
-func (z ZeroLogAdapter) Warnf(format string, v ...interface{}) {
+func (z zeroLogAdapter) Warnf(format string, v ...interface{}) {
 	z.logger.Warn().Msgf(format, v)
 }
 

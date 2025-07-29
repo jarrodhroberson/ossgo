@@ -4,7 +4,14 @@ import (
 	"resty.dev/v3"
 
 	"github.com/rs/zerolog"
+	"github.com/stripe/stripe-go/v82"
 )
+
+func StripeLeveledLogger(l *zerolog.Logger) stripe.LeveledLoggerInterface {
+	return zeroLogAdapter{
+		logger: l,
+	}
+}
 
 // ZerologToResty converts a zerolog.Logger to a resty.Logger.
 // This allows you to use zerolog as the underlying logger for resty.
