@@ -7,6 +7,15 @@ import (
 	"github.com/stripe/stripe-go/v82"
 )
 
+// StripeLeveledLogger creates a Stripe leveled logger adapter that wraps a zerolog.Logger.
+// It implements the stripe.LeveledLoggerInterface interface to enable Stripe SDK logging
+// through zerolog.
+//
+// Parameters:
+//   - l: A pointer to a zerolog.Logger instance that will be used for logging
+//
+// Returns:
+//   - stripe.LeveledLoggerInterface: An adapter that implements Stripe's logging interface
 func StripeLeveledLogger(l *zerolog.Logger) stripe.LeveledLoggerInterface {
 	return zeroLogAdapter{
 		logger: l,
