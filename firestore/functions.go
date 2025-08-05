@@ -97,9 +97,9 @@ func Exists(err error) bool {
 }
 
 // DocRefExists checks if the given DocumentRef exists.
-func DocRefExists(ctx context.Context, docRef fs.DocumentRef) (bool, error) {
-	_, err := docRef.Get(ctx)
-	return !IsNotFound(err), err
+func DocRefExists(ctx context.Context, docRef *fs.DocumentRef) bool {
+	docSS, err := docRef.Get(ctx)
+	return !IsNotFound(err) && docSS != nil && docSS.Exists()
 }
 
 // DeleteCollection deletes all documents in a Firestore collection using a BulkWriter.
