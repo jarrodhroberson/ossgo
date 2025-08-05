@@ -24,12 +24,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/joomcode/errorx"
+	"github.com/rs/zerolog/log"
+
 	"github.com/jarrodhroberson/ossgo/functions/must"
 	"github.com/jarrodhroberson/ossgo/seq"
 	strs "github.com/jarrodhroberson/ossgo/strings"
 	"github.com/jarrodhroberson/ossgo/timestamp"
-	"github.com/joomcode/errorx"
-	"github.com/rs/zerolog/log"
 
 	errs "github.com/jarrodhroberson/ossgo/errors"
 )
@@ -93,6 +94,12 @@ func IsAlreadyExists(err error) bool {
 // Exists checks if the given error is not a Firestore "not found" error.
 func Exists(err error) bool {
 	return !IsNotFound(err)
+}
+
+// DocRefExists checks if the given DocumentRef exists.
+func DocRefExists(ctx context.Context, docRef fs.DocumentRef) (bool, error) {
+	_, err := docRef.Get(ctx)
+	return !IsNotFound(err), err
 }
 
 // DeleteCollection deletes all documents in a Firestore collection using a BulkWriter.
