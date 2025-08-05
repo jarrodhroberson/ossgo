@@ -102,6 +102,12 @@ func DocRefExists(ctx context.Context, docRef *fs.DocumentRef) bool {
 	return !IsNotFound(err) && docSS != nil && docSS.Exists()
 }
 
+func AddTemporalMetadata(m map[string]interface{}, t time.Time) map[string]interface{} {
+	m["created_at"] = timestamp.From(t)
+	m["last_updated_at"] = timestamp.From(t)
+	return m
+}
+
 // DeleteCollection deletes all documents in a Firestore collection using a BulkWriter.
 // It processes documents in parallel batches of size MAX_BULK_WRITE_SIZE.
 //

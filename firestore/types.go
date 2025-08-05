@@ -11,6 +11,8 @@ import (
 	fs "cloud.google.com/go/firestore"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/jarrodhroberson/ossgo/containers"
 	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions"
@@ -18,7 +20,6 @@ import (
 	"github.com/jarrodhroberson/ossgo/seq"
 	slyces "github.com/jarrodhroberson/ossgo/slices"
 	"github.com/jarrodhroberson/ossgo/timestamp"
-	"github.com/rs/zerolog/log"
 )
 
 // MAX_BULK_WRITE_SIZE defines the maximum number of operations that can be performed in a single bulk write
@@ -37,6 +38,26 @@ const DocumentCreated = "google.cloud.firestore.v1.created"
 const DocumentUpdated = "google.cloud.firestore.v1.updated"
 const DocumentDeleted = "google.cloud.firestore.v1.deleted"
 const DocumentWritten = "google.cloud.firestore.v1.written"
+
+type Entity[T any] map[string]interface{}
+
+func (e Entity[T]) CreatedAt() *timestamp.Timestamp {
+	return e["created_at"].(*timestamp.Timestamp)
+}
+
+func (e Entity[T]) UpdatedAt() *timestamp.Timestamp {
+	return e["last_updated_at"].(*timestamp.Timestamp)
+}
+
+func (e Entity[T]) As() *T {
+	var t T
+	must.UnmarshallMap(e, &t)
+	return &t
+}
+
+func (e Entity[T]) String() string {
+	return string(must.MarshalJson(e))
+}
 
 // The op argument must be one of "==", "!=", "<", "<=", ">", ">=",
 // "array-contains", "array-contains-any", "in" or "not-in"
