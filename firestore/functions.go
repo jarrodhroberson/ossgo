@@ -107,9 +107,9 @@ func DocRefExists(ctx context.Context, docRef *fs.DocumentRef) bool {
 // The timestamps are added to the map using the keys "created_at" and "last_updated_at".
 // Both timestamps are set to the same provided time value.
 // Returns the modified map containing the added timestamp fields.
-func AddTemporalMetadata(m map[string]interface{}, t time.Time) map[string]interface{} {
-	m["created_at"] = timestamp.From(t)
-	m["last_updated_at"] = timestamp.From(t)
+func AddTemporalMetadata(m map[string]interface{}, t *timestamp.Timestamp) map[string]interface{} {
+	m["created_at"] = t.String()
+	m["last_updated_at"] = t.String()
 	return m
 }
 
