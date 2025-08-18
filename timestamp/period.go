@@ -3,9 +3,10 @@ package timestamp
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	errs "github.com/jarrodhroberson/ossgo/errors"
 	"github.com/jarrodhroberson/ossgo/functions/must"
-	"time"
 )
 
 func validate(p *Period) (*Period, error) {
@@ -16,10 +17,10 @@ func validate(p *Period) (*Period, error) {
 		return nil, errs.MustNotBeNil.New("end")
 	}
 	if p.start.After(p.end) {
-		return nil, errs.InvalidState.New("start timestamp must be before end timestamp %s:%s", p.Start, p.End)
+		return nil, errs.InvalidState.New("start timestamp must be before end timestamp %s:%s", p.Start(), p.End())
 	}
 	if p.start.t.Equal(p.end.t) {
-		return nil, errs.InvalidState.New("start and end timestamps must not be equal %s:%s", p.Start, p.End)
+		return nil, errs.InvalidState.New("start and end timestamps must not be equal %s:%s", p.Start(), p.End())
 	}
 	return p, nil
 }
@@ -31,7 +32,7 @@ func NewPeriod(start *Timestamp, end *Timestamp) *Period {
 	}))
 }
 
-// period this exists to provide json marshalling and unmarshalling proxy
+// period this exists to provide json marshaling and unmarshalling proxy
 type period struct {
 	Start *Timestamp `json:"start"`
 	End   *Timestamp `json:"end"`
@@ -115,7 +116,7 @@ func DayToPeriod(ts *Timestamp) *Period {
 	}))
 }
 
-// UntilNow returns a Period that begins at the "beginning of time" (a predefined earliest timestamp) 
+// UntilNow returns a Period that begins at the "beginning of time" (a predefined earliest timestamp)
 // and ends at the current moment in time. This function is useful for representing a period that spans
 // from the earliest point in time to the present.
 func UntilNow() *Period {

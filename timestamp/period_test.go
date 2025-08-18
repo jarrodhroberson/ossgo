@@ -23,8 +23,8 @@ func TestDayToPeriod(t *testing.T) {
 				},
 			},
 			want: &Period{
-				Start: &Timestamp{t: time.Date(2023, 10, 5, 0, 0, 0, 0, time.UTC)},
-				End: &Timestamp{
+				start: &Timestamp{t: time.Date(2023, 10, 5, 0, 0, 0, 0, time.UTC)},
+				end: &Timestamp{
 					t: time.Date(2023, 10, 6, 0, 0, 0, 0, time.UTC),
 				},
 			},

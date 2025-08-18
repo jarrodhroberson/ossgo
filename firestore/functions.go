@@ -430,3 +430,17 @@ func CollectionIterToSeq(ci *fs.CollectionIterator) iter.Seq[*fs.CollectionRef] 
 func DocumentIterToTypeSeq[T any](di *fs.DocumentIterator) iter.Seq[*T] {
 	return docSnapShotSeqToType[T](DocumentIteratorToSeq(di))
 }
+
+// ToUpdates converts an object of generic type T into a slice of fs.Update, where each map entry becomes an update.
+func ToUpdates[T any](item T) []fs.Update {
+	vmap := must.MarshallMap(item)
+	updates := make([]fs.Update, 0, len(vmap))
+	for k, v := range vmap {
+		update := fs.Update{
+			Path:  k,
+			Value: v,
+		}
+		updates = append(updates, update)
+	}
+	return updates
+}

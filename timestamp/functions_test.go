@@ -16,8 +16,8 @@ func TestToday(t *testing.T) {
 		{
 			name: "test today",
 			want: Period{
-				Start: now.ZeroTime(),
-				End:   now.Add(time.Hour * 24).ZeroTime(),
+				start: now.ZeroTime(),
+				end:   now.Add(time.Hour * 24).ZeroTime(),
 			},
 		},
 	}
@@ -259,10 +259,10 @@ func TestMonthToPeriod(t *testing.T) {
 				},
 			},
 			want: Period{
-				Start: &Timestamp{
+				start: &Timestamp{
 					t: time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC),
 				},
-				End: &Timestamp{
+				end: &Timestamp{
 					t: time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},
@@ -275,10 +275,10 @@ func TestMonthToPeriod(t *testing.T) {
 				},
 			},
 			want: Period{
-				Start: &Timestamp{
+				start: &Timestamp{
 					t: time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC),
 				},
-				End: &Timestamp{
+				end: &Timestamp{
 					t: time.Date(2024, time.March, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},
@@ -291,10 +291,10 @@ func TestMonthToPeriod(t *testing.T) {
 				},
 			},
 			want: Period{
-				Start: &Timestamp{
+				start: &Timestamp{
 					t: time.Date(2023, time.February, 1, 0, 0, 0, 0, time.UTC),
 				},
-				End: &Timestamp{
+				end: &Timestamp{
 					t: time.Date(2023, time.March, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},

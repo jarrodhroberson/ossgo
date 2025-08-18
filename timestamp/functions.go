@@ -16,6 +16,16 @@ import (
 var instances Timestamps
 var once sync.Once
 
+func init() {
+	once.Do(func() {
+		instances = enums{
+			beginningOfTime: &Timestamp{time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)},
+			endOfTime:       &Timestamp{time.Date(9999, 12, 31, 23, 59, 59, 0, time.UTC)},
+			zeroValue:       From(time.Unix(0, 0).UTC()),
+		}
+	})
+}
+
 // daysIn returns the number of days in a given month and year.
 func daysIn(m time.Month, year int) int {
 	return time.Date(year, m+1, 0, 0, 0, 0, 0, time.UTC).Day()
@@ -108,13 +118,6 @@ func ParseCompact(s string) *Timestamp {
 }
 
 func Enums() Timestamps {
-	once.Do(func() {
-		instances = enums{
-			beginningOfTime: &Timestamp{time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)},
-			endOfTime:       &Timestamp{time.Date(9999, 12, 31, 23, 59, 59, 0, time.UTC)},
-			zeroValue:       From(time.Unix(0, 0).UTC()),
-		}
-	})
 	return instances
 }
 
