@@ -1,6 +1,6 @@
 module github.com/jarrodhroberson/ossgo
 
-go 1.24.2
+go 1.25.0
 
 require (
 	cloud.google.com/go/cloudtasks v1.13.6
